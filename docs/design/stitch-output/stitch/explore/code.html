@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Explore: Find Your Favorite K-Food - MatDam</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&amp;family=Noto+Serif+KR:wght@300;400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #FAF6EF;
+            --text-main: #2C2417;
+            --text-sub: #6B5B3E;
+            --accent-gold: #D4A035;
+            --card-bg: #FFFFFF;
+            --border-color: #E6DCCD;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+        }
+        h1, h2, h3, h4, h5, h6, .serif-font {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .text-main { color: var(--text-main); }
+        .text-sub { color: var(--text-sub); }
+        .bg-accent { background-color: var(--accent-gold); }
+        .text-accent { color: var(--accent-gold); }
+        .border-custom { border-color: var(--border-color); }
+        .chip {
+            transition: all 0.2s ease;
+        }
+        .chip:hover {
+            background-color: #F0E6D8;
+            border-color: #D4A035;
+        }
+        .chip.active {
+            background-color: var(--text-main);
+            color: #fff;
+            border-color: var(--text-main);
+        }
+        .recipe-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .recipe-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px rgba(44, 36, 23, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="bg-[#FAF6EF] border-b border-[#E6DCCD] sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+<div class="flex items-center">
+<a class="serif-font text-2xl font-bold tracking-tight text-[var(--text-main)] flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-[var(--accent-gold)]">rice_bowl</span>
+                    MatDam
+                </a>
+</div>
+<nav class="hidden md:flex space-x-8">
+<a class="text-[var(--text-main)] font-semibold border-b-2 border-[var(--accent-gold)] pb-1" href="#">Explore</a>
+<a class="text-[var(--text-sub)] hover:text-[var(--text-main)] font-medium transition-colors" href="#">Glossary</a>
+</nav>
+<div class="flex items-center gap-4">
+<div class="hidden lg:flex items-center relative">
+<span class="material-symbols-outlined absolute left-3 text-[var(--text-sub)] text-sm">search</span>
+<input class="bg-white border border-[#E6DCCD] rounded-full py-1.5 pl-9 pr-4 text-sm focus:outline-none focus:border-[var(--accent-gold)] focus:ring-1 focus:ring-[var(--accent-gold)] w-48 transition-all" placeholder="Search..." type="text"/>
+</div>
+<a class="hidden md:flex items-center gap-1.5 bg-[var(--text-main)] text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-[#4A3E2A] transition-colors shadow-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                    Create
+                </a>
+<button class="flex items-center justify-center w-9 h-9 rounded-full bg-white border border-[#E6DCCD] overflow-hidden hover:border-[var(--accent-gold)] transition-colors">
+<img alt="User Avatar" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTW7WB0vIxYOMrrWME4WxYrEMly1c7A7h2xEadXCWNISLez3Li7ihkdW_ULNQi-ySXSmOfxwKlLB1PA19Jl43vVlqh2lCHLENuRTuN-6pP1ema_-LHbZ4MWrczKuyDjaWBhzMWSOhG_Ynp4t-s-4ZdcVndU7ffw8JhwFZUICW71v4H-6Zrd35z1P1eRK9-oc3jv40dfX97243WQ0pwgvV6u1wigqcLhzYPDGE-T1an4dxCSO-ijA7Su7mBj3BwV4VTZyC0KUvROw"/>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+<div class="text-center max-w-2xl mx-auto mb-12 mt-4">
+<h1 class="serif-font text-3xl md:text-4xl font-bold mb-3 text-[var(--text-main)]">Find Your Favorite K-Food</h1>
+<p class="text-[var(--text-sub)] mb-8 font-light">Discover authentic flavors and modern twists from our community.</p>
+<div class="relative w-full max-w-xl mx-auto">
+<div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[var(--text-sub)] text-2xl">search</span>
+</div>
+<input class="block w-full pl-14 pr-6 py-4 rounded-full border-0 shadow-sm ring-1 ring-inset ring-[#E6DCCD] placeholder:text-[#9C8C74] focus:ring-2 focus:ring-inset focus:ring-[var(--accent-gold)] text-lg" placeholder="Search authentic or fusion K-food..." type="text"/>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 border-b border-[#E6DCCD] pb-6">
+<div class="flex flex-wrap gap-2 justify-center md:justify-start w-full md:w-auto">
+<button class="chip active px-4 py-1.5 rounded-full border border-[var(--text-main)] text-sm font-medium">All</button>
+<button class="chip px-4 py-1.5 rounded-full border border-[#E6DCCD] bg-white text-[var(--text-sub)] text-sm font-medium">Easy</button>
+<button class="chip px-4 py-1.5 rounded-full border border-[#E6DCCD] bg-white text-[var(--text-sub)] text-sm font-medium">Intermediate</button>
+<button class="chip px-4 py-1.5 rounded-full border border-[#E6DCCD] bg-white text-[var(--text-sub)] text-sm font-medium">Advanced</button>
+<button class="chip px-4 py-1.5 rounded-full border border-[#E6DCCD] bg-white text-[var(--text-sub)] text-sm font-medium">Vegan</button>
+<button class="chip px-4 py-1.5 rounded-full border border-[#E6DCCD] bg-white text-[var(--text-sub)] text-sm font-medium">Halal</button>
+<button class="chip px-4 py-1.5 rounded-full border border-[#E6DCCD] bg-white text-[var(--text-sub)] text-sm font-medium">Gluten-free</button>
+</div>
+<div class="relative flex-shrink-0">
+<button aria-expanded="false" aria-haspopup="true" class="group inline-flex justify-center text-sm font-medium text-[var(--text-main)] hover:text-[var(--accent-gold)]" id="menu-button" type="button">
+                    Sort by: Popular
+                    <span class="material-symbols-outlined ml-1 h-5 w-5 -mr-1 text-[var(--text-sub)] group-hover:text-[var(--text-main)]">keyboard_arrow_down</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+<article class="recipe-card bg-white rounded-2xl overflow-hidden border border-[#E6DCCD] group cursor-pointer h-full flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Spicy Pork Bulgogi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4sB4SHzhIfRjz3WAlxToq3jPRnb4CNuDj9FXeqpnybOrtxEzoeqgCRe5zTY3GLr5ZH5AbXQnfnnHukLMlAUJGyh8BOzn8SwzdXcsbG4zxf4rF_vQq2gRjh0QShJUjX1lpEgejzY3UcMTltHUQ4RzyDwgrQqxeu0vP2YEGIdeqhh3lfoaaEMZbNpD5J_891O4bag3-edbSQV5F9V_AJ099MoweK6On0iZUd5yVzKQon9dYrDCb8wS-JRuOuNBNlNJrLT4SO3L9Hg"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-[var(--text-sub)] hover:text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px] fill-current">favorite</span>
+</button>
+<div class="absolute top-3 left-3 bg-[#2C2417] text-[#D4A035] text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                        Easy
+                    </div>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[16px] text-[var(--accent-gold)]">shuffle</span>
+<span class="text-xs font-medium text-[var(--text-sub)]">Remixed from <span class="text-[var(--text-main)] border-b border-[#E6DCCD]">Mama Kim's Classic</span></span>
+</div>
+<h3 class="serif-font text-xl font-bold text-[var(--text-main)] mb-1 group-hover:text-[var(--accent-gold)] transition-colors">Spicy Pork Bulgogi (Jeyuk Bokkeum)</h3>
+<div class="flex items-center gap-2 mt-auto pt-4 border-t border-[#F5F5F5]">
+<img alt="Author" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxppk86uUuOGcur9l9IgUTVB8KWIRWFumOrY8FwNk__hbPNWR4JdHeG1Wep0u3uLOHEvykt5tASVYdM0R0OjZqQ2QY8uCSul0L7YMOkpZ3eQNU-MCHEwY8sLU6mdqOrHgJ7M2ooVkouXjUtnlF-JM5j_VouJy8-Sr813j4aJfiJoMXh7SKi9zLs5qMOkZgUtiY88MStztM19jadoEza0ptjleYLHbj_fl6ci_7oR12E5pgndCI5Jm2ZNa_2tf_QAN_DMYeEVIMmA"/>
+<span class="text-sm text-[var(--text-sub)]">by <span class="font-medium text-[var(--text-main)]">Chef Min</span></span>
+<div class="ml-auto flex items-center text-[var(--text-sub)] text-sm">
+<span class="material-symbols-outlined text-[16px] mr-1">schedule</span>
+                            30m
+                        </div>
+</div>
+</div>
+</article>
+<article class="recipe-card bg-white rounded-2xl overflow-hidden border border-[#E6DCCD] group cursor-pointer h-full flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Kimchi Fried Rice" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqT7vsckYdINO3zXMbMfqATaWtDSEBmo08RBUVyQBmV6wJpHX3U3GCMfHUdaSyPQ3Jyx1Wfq-H52q6uwIeJf7ZboATEtL_J5ddwN1RYUcyg8P-RBnYzL4dXO0uKJzsGpLSTW5CxGWqg5OGypIjogBVsWwQ7V_8hMLwMVlPO3u2GaDUrlzSDoF66WRQ2DTQiWPr8N8jKJuT1dr8zpp0X2uFaKXUQnUitl-M6izexT-G0XAtAJ3VlUc8nH_0Y8RoRV8ZnPhOgG4LEQ"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-[var(--text-sub)] hover:text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+<div class="absolute top-3 left-3 bg-[#E6DCCD] text-[#6B5B3E] text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                        Easy
+                    </div>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<div class="h-6 mb-2"></div> 
+<h3 class="serif-font text-xl font-bold text-[var(--text-main)] mb-1 group-hover:text-[var(--accent-gold)] transition-colors">Classic Kimchi Fried Rice</h3>
+<div class="flex flex-wrap gap-1 mt-2 mb-3">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">Vegan Option</span>
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-50 text-orange-700 font-medium">Spicy</span>
+</div>
+<div class="flex items-center gap-2 mt-auto pt-4 border-t border-[#F5F5F5]">
+<img alt="Author" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYRJv_iL2Rou4HhE24dc6RZWGhY8cAEQDhK6PLXv_oWjePTewzK_5MZo8jqdvNPQzkcrzYLDHaPY7O3bQ6TbQqtnQjCmdVvm83__Q0cWThaJasCZmmF0aHaqeYLyEZ_YvjtzLjH9wOlCVJvtSQqHVi5UUqVTyYTcmdCJ1-C8frgkQy2nTpmCaJfxAI7mPhTo63s-FtWaHb0jtEkraHPVtKCtDX73Cr9vi1nvAAvSRzLU_GNaIZfT3oqVPMpOTKlIJnmwt6pYwYug"/>
+<span class="text-sm text-[var(--text-sub)]">by <span class="font-medium text-[var(--text-main)]">Hana Lee</span></span>
+<div class="ml-auto flex items-center text-[var(--text-sub)] text-sm">
+<span class="material-symbols-outlined text-[16px] mr-1">schedule</span>
+                            15m
+                        </div>
+</div>
+</div>
+</article>
+<article class="recipe-card bg-white rounded-2xl overflow-hidden border border-[#E6DCCD] group cursor-pointer h-full flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Galbi Jjim" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdSWbX245ifHgKanRx1_bhlILIZZGCz-wjjCMtioY6ccUH5UdSoTqpTt08WB8Yibz0iRkWKfjxlP2FQvJQcFMaK7mBCCqEliDxoiCnWYyZiGVb3cvFcf4GyQf_hnsG73OZgjBYJFz11g85f_v2I68g9oMyiduhn-jnk9SoGRWFhwWs0vLPg3mKOUFj4QXQiLxT3R6k4fV55le3H-lImVPbGSaafbuYq5-d42MFbK6eIXf2icvZNxezvXlyURH0t-pTf_RVsRLkCQ"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-[var(--text-sub)] hover:text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+<div class="absolute top-3 left-3 bg-[#D4A035] text-white text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                        Advanced
+                    </div>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<div class="h-6 mb-2"></div>
+<h3 class="serif-font text-xl font-bold text-[var(--text-main)] mb-1 group-hover:text-[var(--accent-gold)] transition-colors">Royal Court Braised Short Ribs</h3>
+<div class="flex flex-wrap gap-1 mt-2 mb-3">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 font-medium">Holiday</span>
+</div>
+<div class="flex items-center gap-2 mt-auto pt-4 border-t border-[#F5F5F5]">
+<img alt="Author" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAH3oPQ4STTiHOd5hjvsSjA_N-jIGg2lxfw-PeQJFIoBvL62pkdT8HWhUALK9osPJ4SsP-1lHbKmsTU1xs4hSvi0Xi6UF13yGyC5K7I0_pcpT2WTGebOLYWPJ9de7gd6h-IV7n7b9ULeW6nz0AMSY9l8dCJumFPBxsCajdwTg21ei7KfznwSYhKa0PMZEpHPIe19v0CbtMWLU5tpzpJf1v9_uxhM6oSwRHVyF43MZ2vOd-TJ6USDrP_H_KuCyMoEDLYzYx8MoK6fw"/>
+<span class="text-sm text-[var(--text-sub)]">by <span class="font-medium text-[var(--text-main)]">Grandma Park</span></span>
+<div class="ml-auto flex items-center text-[var(--text-sub)] text-sm">
+<span class="material-symbols-outlined text-[16px] mr-1">schedule</span>
+                            2h 30m
+                        </div>
+</div>
+</div>
+</article>
+<article class="recipe-card bg-white rounded-2xl overflow-hidden border border-[#E6DCCD] group cursor-pointer h-full flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Tteokbokki" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDawUAfR0O6NSkMaTFfN_kCZewKqnR-tDce0sZ5VyIqFE7AYH07eGvXaVWhMROrbI4ZdQv0XE13z3WnpZInjs1XzjZGnXbadhX6Jo2TvzGPOfu6ao10xTqnuqf7Uu1sf06KDz0pvhlM4jsxgWPveDBX8nUfwRFiez4rZvtRp38aq9gkPXU7Q29UhNCfAeuoTDwOv3uEaVN9l9BPmQMdGoWmk6hdH6lB01cqQnWmG8LatWpNkk7Ffwg4ivSBeqMYM7KNrxMEaznlcQ"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-[var(--text-sub)] hover:text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px] fill-current">favorite</span>
+</button>
+<div class="absolute top-3 left-3 bg-[#E6DCCD] text-[#6B5B3E] text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                        Intermediate
+                    </div>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[16px] text-[var(--accent-gold)]">shuffle</span>
+<span class="text-xs font-medium text-[var(--text-sub)]">Remixed from <span class="text-[var(--text-main)] border-b border-[#E6DCCD]">Street Food Basic</span></span>
+</div>
+<h3 class="serif-font text-xl font-bold text-[var(--text-main)] mb-1 group-hover:text-[var(--accent-gold)] transition-colors">Rosé Tteokbokki with Bacon</h3>
+<div class="flex items-center gap-2 mt-auto pt-4 border-t border-[#F5F5F5]">
+<img alt="Author" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1qHcYNhJnf33KSfBiOs8LlTpxQRVPod0xzALDu0GPvJXJfE33CTRW-TbDEN64lJp7bMemLcEz-NY_YPS7g6CBubn5pNQDThWD_CNGat70lAmOfUWjep8ojnfFWIq0ckD1gsZ7X8xiz555F1kNPMxaGDvYjiRpLpf8I7r-lfXsZDPb660t_9JFMe-bRRAJNmVgLZBBvBxi_4Fo3cLZteRZvpUeQA_yB29liLRCjJkhNjMh7om9gYJRRsHsgyZlZ_z0sNQKt8EbfA"/>
+<span class="text-sm text-[var(--text-sub)]">by <span class="font-medium text-[var(--text-main)]">Junho</span></span>
+<div class="ml-auto flex items-center text-[var(--text-sub)] text-sm">
+<span class="material-symbols-outlined text-[16px] mr-1">schedule</span>
+                            40m
+                        </div>
+</div>
+</div>
+</article>
+<article class="recipe-card bg-white rounded-2xl overflow-hidden border border-[#E6DCCD] group cursor-pointer h-full flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Bibimbap" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAM3yxsJj1bZ3QGQHwtVwplcBFNkO7_lhQK-6buCGFHLV-O_mIJMS8IRryWcUKwBc_pSyJr0A5h6v9IAgX-f735VbdZsUZCQGsahG6aExlubx4inpk32qBTq4Ez9XJKmMcbuM8iuhdhwOLB-CJ2njmGVGbIpewaQHKBvQ301garYF8l2uzDuMLL8vtTdeSxq8jmhdH0fsLxLYvaNMsA_fwJ9Q32QSJv3UW3EM4Wfeh1iBlOj4YqknJuNHZRCPJ-mKAYg4h1ppSvIw"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-[var(--text-sub)] hover:text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+<div class="absolute top-3 left-3 bg-[#E6DCCD] text-[#6B5B3E] text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                        Easy
+                    </div>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<div class="h-6 mb-2"></div>
+<h3 class="serif-font text-xl font-bold text-[var(--text-main)] mb-1 group-hover:text-[var(--accent-gold)] transition-colors">Fresh Spring Herb Bibimbap</h3>
+<div class="flex flex-wrap gap-1 mt-2 mb-3">
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-green-50 text-green-700 font-medium">Vegetarian</span>
+<span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-medium">Gluten-Free</span>
+</div>
+<div class="flex items-center gap-2 mt-auto pt-4 border-t border-[#F5F5F5]">
+<img alt="Author" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_2AdjLE_sllN_NIxhwzn2aVV5CWz5wnYTRCYxdBuUzlXDtHMlT5Kpf9E1RJSkSGgNATXRVwRVTsXOucaj_5zv1zsPUtbTaxsG3a5yorPUkCeubsfOv8LxcA9t7Q_L_VxiI1pt4QPBF0qbCJLksBPx2NsMbs5wV4-aRlcTyvR2Tz-nLNO1ffchJbRCfkzQV72docKMVb56RyXaW-hSR4VA2dH_3P5yspKrJk4ihg5o_48PsOK-nu2Bn2eaQovA90zgxevsyus2wQ"/>
+<span class="text-sm text-[var(--text-sub)]">by <span class="font-medium text-[var(--text-main)]">Yeri Kim</span></span>
+<div class="ml-auto flex items-center text-[var(--text-sub)] text-sm">
+<span class="material-symbols-outlined text-[16px] mr-1">schedule</span>
+                            20m
+                        </div>
+</div>
+</div>
+</article>
+<article class="recipe-card bg-white rounded-2xl overflow-hidden border border-[#E6DCCD] group cursor-pointer h-full flex flex-col">
+<div class="relative h-64 overflow-hidden">
+<img alt="Japchae" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdEIz7js8I-nLmQB0d5UvCJyIDCknywcN-GYI1kNK-FzHnR1ad9taIZbPe9YgNnyaBeZ-RPdu9SrD82CA8NIA82OlgIch6boyKxAsAG2Pn7mK3FKlx-4aaM4lMMOmJFnuLy__75Q4EbADJ-ZWXgsstfggrzEslEb5JudWO2NsMixrAKHr9D77tx5-vUi5w8_-ks7zu8CXqf8J3D2hMZiVVlJhew8epWUCxqAS6xpFzMFnMsr8Y5Pi7DAE6mMI8-vn-pQXwxEt7IA"/>
+<button class="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur-sm rounded-full text-[var(--text-sub)] hover:text-red-500 hover:bg-white transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">favorite_border</span>
+</button>
+<div class="absolute top-3 left-3 bg-[#E6DCCD] text-[#6B5B3E] text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider">
+                        Intermediate
+                    </div>
+</div>
+<div class="p-5 flex flex-col flex-grow">
+<div class="h-6 mb-2"></div>
+<h3 class="serif-font text-xl font-bold text-[var(--text-main)] mb-1 group-hover:text-[var(--accent-gold)] transition-colors">One-Pan Japchae (Glass Noodles)</h3>
+<div class="flex items-center gap-2 mt-auto pt-4 border-t border-[#F5F5F5]">
+<img alt="Author" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpBYACEW6kve8yhySYbZi3hddkF85JFuI0HsUT7Qz3ECd8oLBnT7-H5vzU2I8WIECCYbhThmkydds1tjw8hNNa8HiudycHhyrAUTV_YGHiUlG1sxs4AOJJmFRcXWQ27YNNhdm-LH9aKNhPYRzyIxPArMl-Re72taZxzMjxnVUKin0MVJbuEHczD78ddcZ8vYFh1fv5WeMQnhdRPIBnQfewek2yqoDFdkNypnhk5dU4FbRQKVwU7HzQQ1rkfsgnRskceSvMkq3Cng"/>
+<span class="text-sm text-[var(--text-sub)]">by <span class="font-medium text-[var(--text-main)]">David Park</span></span>
+<div class="ml-auto flex items-center text-[var(--text-sub)] text-sm">
+<span class="material-symbols-outlined text-[16px] mr-1">schedule</span>
+                            35m
+                        </div>
+</div>
+</div>
+</article>
+</div>
+<div class="flex justify-center mb-12">
+<button class="px-6 py-3 border border-[#E6DCCD] rounded-full bg-white text-[var(--text-main)] font-medium hover:bg-[#F0E6D8] transition-colors">
+                Load more recipes
+            </button>
+</div>
+</main>
+<footer class="bg-white border-t border-[#E6DCCD] py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[var(--accent-gold)]">rice_bowl</span>
+<span class="serif-font text-xl font-bold text-[var(--text-main)]">MatDam</span>
+</div>
+<div class="flex gap-6 text-[var(--text-sub)] text-sm">
+<a class="hover:text-[var(--text-main)]" href="#">Privacy Policy</a>
+<a class="hover:text-[var(--text-main)]" href="#">Terms of Service</a>
+</div>
+<div class="text-[var(--text-sub)] text-sm">
+                    © 2026 MatDam. The soul of Korean Taste.
+                </div>
+</div>
+</div>
+</footer>
+
+</body></html>

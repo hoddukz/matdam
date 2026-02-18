@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MatDam - Create Recipe: Ingredients</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #FAF6EF;
+            --text-primary: #2C2417;
+            --text-secondary: #6B5B3E;
+            --accent-color: #D4A035;
+            --card-bg: #FFFFFF;
+            --border-color: #E6DCCD;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .mat-input {
+            @apply block w-full rounded-xl border-[var(--border-color)] bg-white px-4 py-3 text-[var(--text-primary)] focus:border-[var(--accent-color)] focus:ring-[var(--accent-color)];
+        }
+        .mat-btn-primary {
+            @apply rounded-xl bg-[var(--text-primary)] px-6 py-3 font-medium text-white transition-colors hover:bg-black disabled:opacity-50;
+        }
+        .mat-btn-secondary {
+            @apply rounded-xl border border-[var(--border-color)] bg-white px-6 py-3 font-medium text-[var(--text-primary)] transition-colors hover:bg-gray-50;
+        }
+        .mat-chip {
+            @apply inline-flex items-center gap-2 rounded-full border border-[var(--border-color)] bg-white pl-4 pr-2 py-2 text-sm font-medium text-[var(--text-primary)] shadow-sm;
+        }
+        .step-active {
+            @apply text-[var(--text-primary)] font-bold;
+        }
+        .step-inactive {
+            @apply text-[var(--text-secondary)] font-medium opacity-50;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="border-b border-[var(--border-color)] bg-[var(--bg-color)] sticky top-0 z-50">
+<div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+<div class="flex items-center gap-2 cursor-pointer">
+<span class="material-symbols-outlined text-[var(--accent-color)]">rice_bowl</span>
+<span class="text-xl font-bold font-serif tracking-tight text-[var(--text-primary)]">MatDam</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-sm font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">Save Draft</button>
+<span class="text-[var(--border-color)]">|</span>
+<button class="text-sm font-medium text-[var(--text-primary)] hover:underline">Exit</button>
+</div>
+</div>
+</header>
+<main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<div class="mb-12">
+<nav aria-label="Progress">
+<ol class="flex items-center justify-center space-x-10 sm:space-x-16" role="list">
+<li class="relative flex flex-col items-center">
+<span class="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--text-primary)] text-white ring-4 ring-[var(--bg-color)]">
+<span class="material-symbols-outlined text-sm">check</span>
+</span>
+<span class="absolute top-10 w-32 text-center text-sm font-medium text-[var(--text-primary)]">Basic Info</span>
+</li>
+<li class="relative flex flex-col items-center">
+<div class="absolute -left-[50px] sm:-left-[80px] top-4 h-0.5 w-[60px] sm:w-[100px] bg-[var(--border-color)]"></div>
+<span class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--text-primary)] bg-[var(--bg-color)] text-[var(--text-primary)] ring-4 ring-[var(--bg-color)]">
+<span class="h-2.5 w-2.5 rounded-full bg-[var(--text-primary)]"></span>
+</span>
+<span class="absolute top-10 w-32 text-center text-sm font-bold text-[var(--text-primary)]">Ingredients</span>
+</li>
+<li class="relative flex flex-col items-center group">
+<div class="absolute -left-[50px] sm:-left-[80px] top-4 h-0.5 w-[60px] sm:w-[100px] bg-[var(--border-color)]"></div>
+<span class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--border-color)] bg-white text-[var(--border-color)] ring-4 ring-[var(--bg-color)]">
+</span>
+<span class="absolute top-10 w-32 text-center text-sm font-medium text-[var(--text-secondary)] opacity-60">Cooking Steps</span>
+</li>
+<li class="relative flex flex-col items-center group">
+<div class="absolute -left-[50px] sm:-left-[80px] top-4 h-0.5 w-[60px] sm:w-[100px] bg-[var(--border-color)]"></div>
+<span class="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[var(--border-color)] bg-white text-[var(--border-color)] ring-4 ring-[var(--bg-color)]">
+</span>
+<span class="absolute top-10 w-32 text-center text-sm font-medium text-[var(--text-secondary)] opacity-60">Preview</span>
+</li>
+</ol>
+</nav>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+<div class="lg:col-span-2 space-y-8">
+<div>
+<h1 class="text-3xl font-bold text-[var(--text-primary)] mb-2">What's in your recipe?</h1>
+<p class="text-[var(--text-secondary)]">List all the ingredients needed. Be specific with quantities to help others recreate your taste.</p>
+</div>
+<div class="bg-[var(--card-bg)] rounded-2xl p-6 shadow-sm border border-[var(--border-color)]">
+<h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[var(--accent-color)]">add_circle</span>
+                        Add Ingredient
+                    </h2>
+<div class="grid grid-cols-12 gap-3 mb-4 items-end">
+<div class="col-span-12 md:col-span-6 relative z-20">
+<label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Ingredient Search</label>
+<div class="relative">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-[var(--text-secondary)]">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="mat-input pl-10" placeholder="Type ingredient (e.g. gochu)" type="text" value="gochu"/>
+<div class="absolute z-50 w-full mt-1 bg-white rounded-xl shadow-lg border border-[var(--border-color)] overflow-hidden">
+<ul class="max-h-60 overflow-auto py-1 text-sm text-[var(--text-primary)]">
+<li class="px-4 py-3 hover:bg-[#FAF6EF] cursor-pointer flex items-center justify-between border-l-4 border-transparent hover:border-[var(--accent-color)] bg-orange-50/50">
+<div>
+<span class="font-bold text-[var(--text-primary)]">Gochujang</span>
+<span class="text-xs text-[var(--text-secondary)] ml-2">Korean Chili Paste</span>
+</div>
+<span class="material-symbols-outlined text-[var(--text-secondary)] text-sm">add</span>
+</li>
+<li class="px-4 py-3 hover:bg-[#FAF6EF] cursor-pointer border-l-4 border-transparent hover:border-[var(--accent-color)] flex items-center justify-between">
+<div>
+<span class="font-medium text-[var(--text-primary)]">Gochugaru</span>
+<span class="text-xs text-[var(--text-secondary)] ml-2">Chili Powder</span>
+</div>
+<span class="material-symbols-outlined text-[var(--text-secondary)] text-sm">add</span>
+</li>
+<li class="px-4 py-3 hover:bg-[#FAF6EF] cursor-pointer border-l-4 border-transparent hover:border-[var(--accent-color)] flex items-center justify-between">
+<div>
+<span class="font-medium text-[var(--text-primary)]">Gochu (Green Pepper)</span>
+<span class="text-xs text-[var(--text-secondary)] ml-2">Fresh Vegetable</span>
+</div>
+<span class="material-symbols-outlined text-[var(--text-secondary)] text-sm">add</span>
+</li>
+</ul>
+<div class="px-4 py-2 border-t border-[var(--border-color)] bg-gray-50 text-xs text-center text-[var(--text-secondary)]">
+                                            Don't see it? <a class="font-bold underline hover:text-[var(--accent-color)]" href="#">Create new ingredient</a>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-6 md:col-span-2 relative z-10">
+<label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Quantity</label>
+<input class="mat-input" placeholder="0" type="number" value="2"/>
+</div>
+<div class="col-span-6 md:col-span-4 relative z-10">
+<label class="block text-sm font-medium text-[var(--text-secondary)] mb-1">Unit</label>
+<div class="flex gap-2">
+<select class="mat-input appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232C2417%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-no-repeat bg-[right_1rem_center]">
+<option selected="" value="tbsp">tbsp</option>
+<option value="tsp">tsp</option>
+<option value="cup">cup</option>
+<option value="g">grams (g)</option>
+<option value="ml">ml</option>
+<option value="piece">pieces</option>
+<option value="sheet">sheets</option>
+<option value="handful">handful (jumeok)</option>
+</select>
+<button class="bg-[var(--text-primary)] text-white px-4 rounded-xl hover:bg-black transition-colors flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6">
+<div class="flex items-center justify-between mb-3">
+<h3 class="font-bold text-[var(--text-primary)]">Added Ingredients (3)</h3>
+<button class="text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[16px]">restart_alt</span>
+                            Clear all
+                        </button>
+</div>
+<div class="flex flex-wrap gap-3 p-4 bg-white border border-[var(--border-color)] rounded-xl min-h-[100px]">
+<div class="mat-chip group hover:border-[var(--accent-color)] transition-all animate-fade-in bg-[var(--bg-color)]">
+<span class="font-semibold text-[var(--text-primary)]">Gochujang</span>
+<span class="text-[var(--text-secondary)] border-l border-[var(--border-color)] pl-2 ml-1">2 tbsp</span>
+<button class="ml-1 p-1 rounded-full hover:bg-red-50 text-[var(--text-secondary)] group-hover:text-red-500 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="mat-chip group hover:border-[var(--accent-color)] transition-all bg-[var(--bg-color)]">
+<span class="font-semibold text-[var(--text-primary)]">Eggs</span>
+<span class="text-[var(--text-secondary)] border-l border-[var(--border-color)] pl-2 ml-1">3 large</span>
+<button class="ml-1 p-1 rounded-full hover:bg-red-50 text-[var(--text-secondary)] group-hover:text-red-500 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="mat-chip group hover:border-[var(--accent-color)] transition-all bg-[var(--bg-color)]">
+<span class="font-semibold text-[var(--text-primary)]">Seaweed (Gim)</span>
+<span class="text-[var(--text-secondary)] border-l border-[var(--border-color)] pl-2 ml-1">2 sheets</span>
+<button class="ml-1 p-1 rounded-full hover:bg-red-50 text-[var(--text-secondary)] group-hover:text-red-500 transition-colors flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+<div class="pt-8 mt-4 flex items-center justify-between">
+<button class="mat-btn-secondary flex items-center gap-2">
+<span class="material-symbols-outlined">arrow_back</span>
+                        Back
+                    </button>
+<button class="mat-btn-primary flex items-center gap-2 shadow-lg shadow-[rgba(44,36,23,0.1)]">
+                        Next: Cooking Steps
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="lg:col-span-1 space-y-6">
+<div class="bg-[#FFFBF2] rounded-2xl p-6 border border-[#F2E8D5] relative overflow-hidden sticky top-24">
+<div class="absolute top-0 right-0 p-4 opacity-10">
+<span class="material-symbols-outlined text-8xl text-[var(--accent-color)]">lightbulb</span>
+</div>
+<h3 class="font-bold font-serif text-lg mb-3 flex items-center gap-2 text-[var(--text-primary)]">
+<span class="material-symbols-outlined text-[var(--accent-color)]">school</span>
+                        Kitchen Tip
+                    </h3>
+<p class="text-sm text-[var(--text-primary)] mb-4 font-medium">Confused about Korean units?</p>
+<ul class="space-y-4 text-sm text-[var(--text-secondary)]">
+<li class="flex items-start gap-3">
+<div class="bg-white p-1.5 rounded-lg shadow-sm border border-[#E6DCCD] shrink-0">
+<span class="material-symbols-outlined text-[18px] text-[var(--accent-color)] block">scale</span>
+</div>
+<div>
+<strong class="text-[var(--text-primary)] block mb-0.5">1 Geun (근)</strong>
+<span class="leading-relaxed">~600g (meat) or 400g (vegetables). Usually for bulk buying.</span>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<div class="bg-white p-1.5 rounded-lg shadow-sm border border-[#E6DCCD] shrink-0">
+<span class="material-symbols-outlined text-[18px] text-[var(--accent-color)] block">water_drop</span>
+</div>
+<div>
+<strong class="text-[var(--text-primary)] block mb-0.5">1 Cup (컵)</strong>
+<span class="leading-relaxed">In Korea, 1 cup is often 200ml (metric), not 240ml (US).</span>
+</div>
+</li>
+<li class="flex items-start gap-3">
+<div class="bg-white p-1.5 rounded-lg shadow-sm border border-[#E6DCCD] shrink-0">
+<span class="material-symbols-outlined text-[18px] text-[var(--accent-color)] block">restaurant</span>
+</div>
+<div>
+<strong class="text-[var(--text-primary)] block mb-0.5">1 Spoon (큰술)</strong>
+<span class="leading-relaxed">Roughly 1 tablespoon (15ml). "Jageun-sul" (작은술) is a teaspoon.</span>
+</div>
+</li>
+</ul>
+<div class="mt-5 pt-4 border-t border-[#E6DCCD]/50">
+<a class="text-xs font-bold text-[var(--accent-color)] hover:underline flex items-center gap-1 group" href="#">
+                            Full measurement guide
+                            <span class="material-symbols-outlined text-[14px] group-hover:translate-x-0.5 transition-transform">open_in_new</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>

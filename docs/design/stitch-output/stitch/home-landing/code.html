@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MatDam: Home &amp; Community Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #FAF6EF;
+            --text-primary: #2C2417;
+            --text-secondary: #6B5B3E;
+            --primary-gold: #D4A035;
+            --border-color: #E6DCCD;
+            --white: #FFFFFF;
+            --accent-red: #C84C34;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .serif {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .btn-gold {
+            background-color: var(--primary-gold);
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .btn-gold:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            border: 1px solid var(--text-primary);
+            color: var(--text-primary);
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+        .btn-outline:hover {
+            background: var(--text-primary);
+            color: var(--white);
+        }
+        .card-hover {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="w-full h-20 bg-[var(--white)] border-b border-[var(--border-color)] flex items-center justify-between px-6 lg:px-12 fixed top-0 z-50">
+<div class="flex items-center gap-2">
+<a class="text-2xl font-bold serif tracking-tight text-[var(--text-primary)]" href="#">MatDam</a>
+</div>
+<nav class="hidden md:flex items-center gap-8 text-[var(--text-primary)] font-medium">
+<a class="hover:text-[var(--primary-gold)] transition-colors" href="#">Remixes</a>
+<a class="hover:text-[var(--primary-gold)] transition-colors" href="#">Ingredients</a>
+<a class="hover:text-[var(--primary-gold)] transition-colors" href="#">Community</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-[var(--text-primary)] hover:text-[var(--primary-gold)] transition-colors">search</button>
+<button class="material-symbols-outlined text-[var(--text-primary)] hover:text-[var(--primary-gold)] transition-colors">person</button>
+<button class="btn-gold px-5 py-2 rounded-full text-sm font-semibold hidden sm:block">Share Recipe</button>
+</div>
+</header>
+<main class="flex-grow pt-20 w-full">
+<section class="relative w-full h-[600px] bg-gray-900 overflow-hidden">
+<div class="absolute inset-0">
+<img alt="Traditional Korean Dish" class="w-full h-full object-cover opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgniZdShMqfs-plaS62A6COPK5kxsOQMZ63flzlmMmIlGb7DkCZcU00oQ08xzrGMRjxkcG-u5KM3zAv46tHca3i05rw_M3ZzErwKlZyjl7TjmjvTa6zULwf85PH0cgiCLzMQw_ex_O4mphGUqHOp8hfLIqhdhnBisFI8dtHrM9qzZpYUBmmCCxvcVvGGjPObjp2c8EMgJW41RFGnkK9WgFERLPX71knicm7T2nSvWeNmPhq4biSclusYN5fPNrYHBMnMuyP9W3vg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+</div>
+<div class="relative z-10 h-full flex flex-col items-center justify-center text-center px-4 max-w-4xl mx-auto space-y-6">
+<span class="inline-block px-4 py-1 rounded-full border border-white/30 text-white text-sm tracking-wide uppercase">Discover &amp; Remix</span>
+<h1 class="text-4xl md:text-6xl lg:text-7xl text-white font-bold leading-tight">
+                    The Soul of Korean Taste,<br/> <span class="italic font-light text-[var(--primary-gold)]">Your Way.</span>
+</h1>
+<p class="text-gray-200 text-lg md:text-xl max-w-2xl font-light">
+                    Explore traditional recipes and discover how the world remixes them. From grandmother's kitchen to modern fusion.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 pt-4">
+<button class="btn-gold px-8 py-3.5 rounded-full text-base font-semibold">Explore Remixes</button>
+<button class="bg-white/10 backdrop-blur-md border border-white/30 text-white px-8 py-3.5 rounded-full text-base font-semibold hover:bg-white hover:text-[var(--text-primary)] transition-all">
+                        View Originals
+                    </button>
+</div>
+</div>
+</section>
+<section class="py-16 md:py-20 px-6 lg:px-12 max-w-7xl mx-auto w-full overflow-hidden">
+<div class="flex items-end justify-between mb-10">
+<div>
+<h2 class="text-3xl md:text-4xl font-bold text-[var(--text-primary)] mb-2">Trending Remixes</h2>
+<p class="text-[var(--text-secondary)]">Creative twists on classic favorites.</p>
+</div>
+<a class="hidden sm:flex items-center gap-1 text-[var(--primary-gold)] font-medium hover:gap-2 transition-all" href="#">
+                    View all <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="flex gap-6 overflow-x-auto pb-8 scrollbar-hide snap-x snap-mandatory -mx-6 px-6 lg:-mx-0 lg:px-0">
+<article class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] bg-[var(--white)] rounded-2xl overflow-hidden shadow-sm border border-[var(--border-color)] card-hover snap-start">
+<div class="relative h-48 overflow-hidden">
+<img alt="Kimchi Carbonara" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9GkdSslAcn3W1-VdloAz1HQOezQ26wsjUXPxFUfp8rLSZ2lfKsAxvHyQ14xTa48krhIpRVNjKzKtosWEgJjN2f1fSfX7lzmC7taKZkWSbMdjlwv2BdKgpcxSI7Kmo9MymFROwbigWqng5Rgs6ru3RicRnclfPaCzK8EmsiaDVvO6O7Si8VDZ4QL4GIjw3PfRunSmcIasqNpHv_jCUm34WYpgrPt6fzuNRHBTh4kK4JslclA5sTHwDaBGJMZoUHdlyfuDTm6xoOA"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur rounded-full px-2 py-1 flex items-center gap-1 text-xs font-bold text-[var(--text-primary)]">
+<span class="material-symbols-outlined text-[14px] text-yellow-500 fill-1">star</span> 4.9
+                        </div>
+</div>
+<div class="p-5">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)] mb-1">Kimchi Carbonara</h3>
+<div class="flex items-center gap-2 mb-4 text-sm text-[var(--text-secondary)]">
+<img alt="User" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCG6AcnYeD6h47GCv1dPah7igGi50apseGv-r6YULoj3nm7ui_Cl3QYHviICIpqkLMuK6ME5iRGKI5Tmz05WkV1W5PNfWmkOa8mvb7xJqfNPSTnO25vQ77L6RIgFpoiSPBcV7v2U5Xwo7m9Ka_Yr55UTLaBKZfFf9Pi2HPYuwy72NwX65CXgmf2uDPjbiophPOp6AfB6z8yq5Y7BJi7wk4WKc9njMPpZzim1tJwn8uTmOVUIJkQpqjyCTIAjS6xfn5Rl7FdTqqcA"/>
+<span>by Sarah Jenkins</span>
+</div>
+<div class="pt-4 border-t border-[var(--border-color)]">
+<p class="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-1">Remixed from</p>
+<a class="flex items-center gap-1 text-[var(--accent-red)] font-medium text-sm hover:underline" href="#">
+                                Traditional Kimchi Jjigae <span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+</a>
+</div>
+</div>
+</article>
+<article class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] bg-[var(--white)] rounded-2xl overflow-hidden shadow-sm border border-[var(--border-color)] card-hover snap-start">
+<div class="relative h-48 overflow-hidden">
+<img alt="Bulgogi Tacos" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkMV83ZenOgmuzNoUddf63N_x5n65s4fraeGVcTx90uhuFqZeSGvzpO1BzZktoQIacm2LCaVWXdOhddDM5YQBIpPmWXN5UJ4xZzdEeTpfDP2mhh9OHs6JUnXKvOkoIhsj1pQFpaBrupJdC8EAbYfl6vc_MPf6zNSeQHW79TkTT_Ds0-zBseBw_vuU0-tEyPftYwR3wF9ljr2WFDLmmAvAOQviW9ic--q7wQH16cJVUIfI8GNz9jsAq3Zcz8chXe4EGYZRt1knHhg"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur rounded-full px-2 py-1 flex items-center gap-1 text-xs font-bold text-[var(--text-primary)]">
+<span class="material-symbols-outlined text-[14px] text-yellow-500 fill-1">star</span> 4.7
+                        </div>
+</div>
+<div class="p-5">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)] mb-1">Bulgogi Tacos</h3>
+<div class="flex items-center gap-2 mb-4 text-sm text-[var(--text-secondary)]">
+<img alt="User" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCy21W3iah9y0fTuaL0oS1dS5I6xUjN1WIB8btbZopmDQQ0IZEesIaf3vP-NcPp7I4DhK9ewLCL0edkWzSI1heNnHcXiAR5TuMwr99dP26h1hFz6rHh-93xPeGcOLmWkuzVhQIn_5igKplpFhG6iEF3PIv6k2vXkAUKdTnOg9-L14-WBdabXmYm2hF2RiIvBWPtwked6Bvny7Ti8tOkO42Of_Rm3JQbhSiZ6Od_qcIZWYAZz3kUmO8xUkApm3fLLe6HFBSxeqyWCw"/>
+<span>by Mike Chen</span>
+</div>
+<div class="pt-4 border-t border-[var(--border-color)]">
+<p class="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-1">Remixed from</p>
+<a class="flex items-center gap-1 text-[var(--accent-red)] font-medium text-sm hover:underline" href="#">
+                                Classic Beef Bulgogi <span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+</a>
+</div>
+</div>
+</article>
+<article class="min-w-[300px] w-[300px] md:min-w-[340px] md:w-[340px] bg-[var(--white)] rounded-2xl overflow-hidden shadow-sm border border-[var(--border-color)] card-hover snap-start">
+<div class="relative h-48 overflow-hidden">
+<img alt="Fried Chicken" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAIJPv_2VuTDEmXMEcrAamA1R1maDadBQw8wclADqSkcD61q5hAd3tSaK62St7zTKRgc8JGmZshfR2jFTT2SFh_ThNRiv7yu-rnjWkS_hnEkEolGRx4N5c45IoRt4CbOVWsDoLI9m-YDKzCMp1S5sA8SG36K9AssbjUBEOsf8RfkOQUdpg0mbji8m2qYc4I-LG2IuSvNJ7FUX_Y0gZRmt7O6Z2CvCj5tEA7xhTczax5nThxqXf-PNZcY6F3vfiW4-R-g7YjqA_24w"/>
+<div class="absolute top-3 right-3 bg-white/90 backdrop-blur rounded-full px-2 py-1 flex items-center gap-1 text-xs font-bold text-[var(--text-primary)]">
+<span class="material-symbols-outlined text-[14px] text-yellow-500 fill-1">star</span> 5.0
+                        </div>
+</div>
+<div class="p-5">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)] mb-1">Soy Garlic Wings</h3>
+<div class="flex items-center gap-2 mb-4 text-sm text-[var(--text-secondary)]">
+<img alt="User" class="w-6 h-6 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNc-epCfvZUv6EzkmyTqqeGvUcDzyOvzelSEeWN7hfLAaJH71XTmQh1n2pG1yvTBeLAbHoCcnH8lQimc1PxRQRNTYbg6ZHrQFioKGNPkKlyl9rXw0qDZ_H9WBgAqvpahK1Ymggl2yMimWb3HbQqEjNoBuQX45MoFddrowWuCVJP9_Ri8EHeIs2lZzVq_mkyL4aqL2fCM1AlJeLHxGwLeLLW72wUE4S15rl_nkTc8FUSD_CamxgQR55WYT5RJQYRH4MB66GfsK-5A"/>
+<span>by Emma Lee</span>
+</div>
+<div class="pt-4 border-t border-[var(--border-color)]">
+<p class="text-xs text-[var(--text-secondary)] uppercase tracking-wider mb-1">Remixed from</p>
+<a class="flex items-center gap-1 text-[var(--accent-red)] font-medium text-sm hover:underline" href="#">
+                                Dakgangjeong <span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+</a>
+</div>
+</div>
+</article>
+</div>
+</section>
+<section class="bg-[var(--white)] py-16 md:py-24 border-y border-[var(--border-color)]">
+<div class="px-6 lg:px-12 max-w-7xl mx-auto">
+<div class="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+<div class="w-full lg:w-1/2 relative">
+<div class="absolute -top-6 -left-6 bg-[var(--accent-red)] text-white text-sm font-bold px-4 py-2 uppercase tracking-wide z-10">Cook of the Week</div>
+<img alt="Cook of the Week" class="w-full h-[500px] object-cover rounded-sm shadow-xl grayscale hover:grayscale-0 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT1NAAuuXcDCwdYuJEwRKYb_HgySPqiK6CEgZhxGMCMkEIOj4kb0DpCb1sKNXhLXC1lNtuVFLpjKUw1rSvfUn-kuKFdopYVanBOBdt3EHxVxU4KD45IS3KbND4x9Gs1K_aujboHa5jVSnhofMBLVr3g9dPBWGfFmzJD_SWHuplDzC7LIaMLz9TBRP_H2DN6y-PQkDTEr81NSwvxSEqJkBTi_yT_6hLQfQBCV6_-mJDCbkqwmpJLJZw6KdvlYEf63rvQs7BRo4NTA"/>
+</div>
+<div class="w-full lg:w-1/2 space-y-6">
+<div>
+<h2 class="text-4xl lg:text-5xl font-bold serif text-[var(--text-primary)] mb-2">Chef Min-Ji's Kitchen</h2>
+<p class="text-lg text-[var(--text-secondary)]">Bringing Seoul's street food spirit to a minimalist home kitchen.</p>
+</div>
+<div class="flex gap-8 py-4 border-y border-[var(--border-color)]">
+<div>
+<span class="block text-3xl font-bold text-[var(--text-primary)]">24</span>
+<span class="text-sm text-[var(--text-secondary)]">Remixes</span>
+</div>
+<div>
+<span class="block text-3xl font-bold text-[var(--text-primary)]">1.2k</span>
+<span class="text-sm text-[var(--text-secondary)]">Followers</span>
+</div>
+<div>
+<span class="block text-3xl font-bold text-[var(--text-primary)]">Seoul</span>
+<span class="text-sm text-[var(--text-secondary)]">Based In</span>
+</div>
+</div>
+<div class="bg-[var(--bg-color)] p-6 rounded-lg border border-[var(--border-color)]">
+<p class="text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wide mb-3">Most Popular Remix</p>
+<div class="flex gap-4 items-center">
+<img alt="Dish" class="w-20 h-20 object-cover rounded-md" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD8y0qshTbcEaoLBIQQHBtq_JSezdVtYiZDhzOLSG0zRxFdF02k3SUo2a2KkZlCicfTfSMubchrA6uLNhPC45ZAev1qDTNabvMLa-MkGRuRwcbp6mICUL3PSowmTprQRUdx_71ZkkAYTZMxKXybzae2t1SolDPLknPsJs17u8cn7q2tW8FY6_MvXQqIluVnYvFK_4WH-IdzBPMUgIDb5mkZlMplDAlRGjg7-6wygRhtfaKFabZZSuZUJKzixYk6PBY25vTu9UW9lQ"/>
+<div>
+<h4 class="font-bold text-lg serif">Gochujang Rosé Pasta</h4>
+<p class="text-sm text-[var(--text-secondary)]">A creamy, spicy fusion hit.</p>
+</div>
+<button class="ml-auto btn-outline w-10 h-10 rounded-full flex items-center justify-center border-[var(--border-color)]">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<button class="btn-outline px-8 py-3 rounded-full font-medium border-[var(--text-primary)] hover:bg-[var(--text-primary)] hover:text-white transition-colors">
+                            View Profile
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<section class="py-16 md:py-24 px-6 lg:px-12 max-w-7xl mx-auto w-full">
+<div class="text-center mb-16 space-y-3">
+<span class="text-[var(--accent-red)] font-bold tracking-widest text-sm uppercase">Seen on Screen</span>
+<h2 class="text-3xl md:text-5xl font-bold serif text-[var(--text-primary)]">K-Drama Cravings</h2>
+<p class="text-[var(--text-secondary)] max-w-2xl mx-auto">Recreate the iconic dishes that made you hungry while watching.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<div class="group cursor-pointer">
+<div class="relative overflow-hidden rounded-xl aspect-[4/5] mb-4">
+<img alt="Sundubu Jjigae" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsgAomVSS5OJZWovR23FNORsyaCyJEhbJj1SvJp4_4QO-Owt4UfGB1IAcyxiWU76TceWe5peF2ssDFIFPwPmdCKxytoWdj0fXWuAlX4dBJj61fMAtnh2ZCMHx7hltQ2__P2FCT_LLULokXXDM6qCS0PNn8O6CWqPIyQBkaI9VptTa15q8VgfQv7IJ-NiCnI9zoGlYCB_4NGUvafYf1-1ASPC4GzFjMKHrDXrrJhV7P2KHbnBb4bOMyTH1Kx_NkYqI29BVw5mOVGg"/>
+<div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
+<span class="text-white/80 text-sm font-medium mb-1 block">Itaewon Class</span>
+<h3 class="text-white text-2xl font-bold serif">Soft Tofu Stew</h3>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+<span class="material-symbols-outlined text-[18px]">schedule</span> 35 mins
+                            <span class="w-1 h-1 rounded-full bg-[var(--text-secondary)]"></span>
+<span>Spicy</span>
+</div>
+<span class="material-symbols-outlined text-[var(--primary-gold)] opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-[-10px] group-hover:translate-x-0 duration-300">arrow_forward</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="relative overflow-hidden rounded-xl aspect-[4/5] mb-4">
+<img alt="Fried Chicken" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUjIQkVWa4A47XEWPhxtrtUlpLKtK_xzsVAWzcDVLtn_DWaAf1tAQopnw1ttylf6Y1r8env9D_O0vajebuP77qCPXs4IXBLyrt4Kd4SMbKGvazbiomzB7qPC4ObuOlpQfMUhzQd0q5MU9eNlv_6jPgoEmec60RLdZNQH57-I1UyJEu8aArowvgkCkhJBMGu6pSfwxAWTklSH800q3ttYJs7O8Ni2YMh9Pw79wMlAq1Poaxyt2lCKUQKAfDvi_NlmylxPw0Od01Eg"/>
+<div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
+<span class="text-white/80 text-sm font-medium mb-1 block">Crash Landing on You</span>
+<h3 class="text-white text-2xl font-bold serif">Olive Oil Fried Chicken</h3>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+<span class="material-symbols-outlined text-[18px]">schedule</span> 50 mins
+                            <span class="w-1 h-1 rounded-full bg-[var(--text-secondary)]"></span>
+<span>Crispy</span>
+</div>
+<span class="material-symbols-outlined text-[var(--primary-gold)] opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-[-10px] group-hover:translate-x-0 duration-300">arrow_forward</span>
+</div>
+</div>
+<div class="group cursor-pointer">
+<div class="relative overflow-hidden rounded-xl aspect-[4/5] mb-4">
+<img alt="Bibimbap" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGCcdZfYlQS6ZREPMMCLvgvPlUhJAeRrGlgoBWRAd5sWUMFWwXdOVrsY1lu77UZJr1n1g0VMl7O1emck3KuJVpKY-wAcxozTb5QqQBUf0rSAXwxmXlTae0EHpi08Fw7fVpL5RFciOFsOhsK5mbNZGZO581_-DvA_9zFPav7PClQe9l-wxvuKbAVkkzFeVkFDMPX2GmJqpK7dXp04sTThDimsaHQTMJ-WGRWcozpEcBtwqcLfEXH-c1KGKMVo8EkSICXj1NvAYd9g"/>
+<div class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent">
+<span class="text-white/80 text-sm font-medium mb-1 block">Vincenzo</span>
+<h3 class="text-white text-2xl font-bold serif">Stone Pot Bibimbap</h3>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-2 text-sm text-[var(--text-secondary)]">
+<span class="material-symbols-outlined text-[18px]">schedule</span> 45 mins
+                            <span class="w-1 h-1 rounded-full bg-[var(--text-secondary)]"></span>
+<span>Healthy</span>
+</div>
+<span class="material-symbols-outlined text-[var(--primary-gold)] opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-[-10px] group-hover:translate-x-0 duration-300">arrow_forward</span>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-[#F2EFE8] py-16 px-6 lg:px-12 w-full border-t border-[var(--border-color)]">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
+<h2 class="text-3xl font-bold serif text-[var(--text-primary)]">Essential Ingredients</h2>
+<a class="text-[var(--text-secondary)] hover:text-[var(--primary-gold)] font-medium text-sm flex items-center gap-1" href="#">
+                        Explore Full Glossary <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</a>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+<a class="bg-[var(--white)] p-4 rounded-xl text-center hover:shadow-md transition-shadow border border-[var(--border-color)] group" href="#">
+<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-red-50 flex items-center justify-center text-red-600 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">local_fire_department</span>
+</div>
+<h4 class="font-bold text-[var(--text-primary)]">Gochujang</h4>
+<p class="text-xs text-[var(--text-secondary)] mt-1">Chili Paste</p>
+</a>
+<a class="bg-[var(--white)] p-4 rounded-xl text-center hover:shadow-md transition-shadow border border-[var(--border-color)] group" href="#">
+<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-600 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">water_drop</span>
+</div>
+<h4 class="font-bold text-[var(--text-primary)]">Sesame Oil</h4>
+<p class="text-xs text-[var(--text-secondary)] mt-1">Nutty Aroma</p>
+</a>
+<a class="bg-[var(--white)] p-4 rounded-xl text-center hover:shadow-md transition-shadow border border-[var(--border-color)] group" href="#">
+<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-green-50 flex items-center justify-center text-green-600 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">grass</span>
+</div>
+<h4 class="font-bold text-[var(--text-primary)]">Kimchi</h4>
+<p class="text-xs text-[var(--text-secondary)] mt-1">Fermented Cabbage</p>
+</a>
+<a class="bg-[var(--white)] p-4 rounded-xl text-center hover:shadow-md transition-shadow border border-[var(--border-color)] group" href="#">
+<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-amber-50 flex items-center justify-center text-amber-700 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">soup_kitchen</span>
+</div>
+<h4 class="font-bold text-[var(--text-primary)]">Doenjang</h4>
+<p class="text-xs text-[var(--text-secondary)] mt-1">Soybean Paste</p>
+</a>
+<a class="bg-[var(--white)] p-4 rounded-xl text-center hover:shadow-md transition-shadow border border-[var(--border-color)] group" href="#">
+<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">grain</span>
+</div>
+<h4 class="font-bold text-[var(--text-primary)]">Rice</h4>
+<p class="text-xs text-[var(--text-secondary)] mt-1">Short Grain</p>
+</a>
+<a class="bg-[var(--white)] p-4 rounded-xl text-center hover:shadow-md transition-shadow border border-[var(--border-color)] group" href="#">
+<div class="w-16 h-16 mx-auto mb-3 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-3xl">ramen_dining</span>
+</div>
+<h4 class="font-bold text-[var(--text-primary)]">Noodles</h4>
+<p class="text-xs text-[var(--text-secondary)] mt-1">Wheat &amp; Glass</p>
+</a>
+</div>
+</div>
+</section>
+</main>
+<footer class="bg-[var(--text-primary)] text-[var(--bg-color)] py-12 px-6 lg:px-12 w-full">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-10">
+<div class="max-w-xs">
+<h3 class="text-2xl font-bold serif mb-4 text-white">MatDam</h3>
+<p class="text-gray-400 text-sm mb-6">Celebrating the heritage and future of Korean cuisine, one remix at a time.</p>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">alternate_email</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">photo_camera</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors" href="#">
+<span class="material-symbols-outlined text-sm">smart_display</span>
+</a>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<h4 class="text-white font-bold mb-3 text-sm uppercase tracking-wide">Settings</h4>
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between w-48 p-2 rounded border border-gray-700 bg-white/5">
+<span class="text-sm text-gray-300">Language</span>
+<div class="flex gap-2 text-xs font-bold">
+<span class="text-[var(--primary-gold)] cursor-pointer">EN</span>
+<span class="text-gray-500">|</span>
+<span class="text-gray-400 cursor-pointer hover:text-white">KR</span>
+</div>
+</div>
+<div class="flex items-center justify-between w-48 p-2 rounded border border-gray-700 bg-white/5">
+<span class="text-sm text-gray-300">Units</span>
+<div class="flex gap-2 text-xs font-bold">
+<span class="text-[var(--primary-gold)] cursor-pointer">Metric</span>
+<span class="text-gray-500">|</span>
+<span class="text-gray-400 cursor-pointer hover:text-white">US</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex gap-12">
+<div>
+<h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wide">Explore</h4>
+<ul class="space-y-2 text-sm text-gray-400">
+<li><a class="hover:text-[var(--primary-gold)]" href="#">All Recipes</a></li>
+<li><a class="hover:text-[var(--primary-gold)]" href="#">Ingredients</a></li>
+<li><a class="hover:text-[var(--primary-gold)]" href="#">Community</a></li>
+<li><a class="hover:text-[var(--primary-gold)]" href="#">Events</a></li>
+</ul>
+</div>
+<div>
+<h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wide">Legal</h4>
+<ul class="space-y-2 text-sm text-gray-400">
+<li><a class="hover:text-[var(--primary-gold)]" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-[var(--primary-gold)]" href="#">Terms of Service</a></li>
+<li><a class="hover:text-[var(--primary-gold)]" href="#">Cookie Policy</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="max-w-7xl mx-auto mt-12 pt-8 border-t border-gray-800 text-center md:text-left text-xs text-gray-500">
+            © 2024 MatDam Inc. All rights reserved.
+        </div>
+</footer>
+
+</body></html>

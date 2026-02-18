@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MatDam - Glossary: Korean Ingredient Guide</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #FAF6EF;
+            --text-primary: #2C2417;
+            --text-secondary: #6B5B3E;
+            --primary-gold: #D4A035;
+            --border-color: #E6DCCD;
+            --white: #FFFFFF;
+            --card-hover: #FFFDF5;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .serif {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .btn-gold {
+            background-color: var(--primary-gold);
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .btn-gold:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .input-base {
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.2s ease;
+        }
+        .input-base:focus {
+            border-color: var(--primary-gold);
+            outline: none;
+            ring: 1px solid var(--primary-gold);
+        }
+        .category-tab {
+            padding: 0.5rem 1.25rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
+            background-color: var(--white);
+            color: var(--text-secondary);
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .category-tab:hover {
+            border-color: var(--text-primary);
+            color: var(--text-primary);
+        }
+        .category-tab.active {
+            background-color: var(--text-primary);
+            color: var(--white);
+            border-color: var(--text-primary);
+        }
+        .card-ingredient {
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+        .card-ingredient:hover {
+            border-color: var(--primary-gold);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px -10px rgba(212, 160, 53, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="w-full h-16 bg-[var(--white)] border-b border-[var(--border-color)] flex items-center justify-between px-6 lg:px-12 fixed top-0 z-50">
+<div class="flex items-center gap-8">
+<a class="text-2xl font-bold serif tracking-tight text-[var(--text-primary)]" href="#">MatDam</a>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-[var(--text-primary)] font-medium text-sm" href="#">Glossary</a>
+<a class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-sm" href="#">Recipes</a>
+<a class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-sm" href="#">About</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] material-symbols-outlined">search</button>
+<div class="w-8 h-8 rounded-full bg-[var(--primary-gold)] text-white flex items-center justify-center text-sm font-bold">K</div>
+</div>
+</header>
+<main class="flex-grow pt-28 pb-24 w-full max-w-7xl mx-auto px-6">
+<section class="mb-12 text-center space-y-4 max-w-2xl mx-auto">
+<h1 class="text-4xl lg:text-5xl font-bold serif text-[var(--text-primary)] tracking-tight">Korean Ingredients Glossary</h1>
+<p class="text-lg text-[var(--text-secondary)] font-light">Your definitive guide to Korean pantry essentials, flavors, and staples.</p>
+</section>
+<section class="mb-16 space-y-8">
+<div class="max-w-xl mx-auto relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]">search</span>
+<input class="input-base pl-12 py-3 rounded-full shadow-sm text-lg" placeholder="Search ingredients (e.g., Gochujang, Kimchi)..." type="text"/>
+</div>
+<div class="flex flex-wrap justify-center gap-3">
+<button class="category-tab active">All</button>
+<button class="category-tab">Sauces &amp; Pastes</button>
+<button class="category-tab">Vegetables</button>
+<button class="category-tab">Proteins</button>
+<button class="category-tab">Grains &amp; Noodles</button>
+<button class="category-tab">Spices</button>
+</div>
+</section>
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+<article class="card-ingredient rounded-xl overflow-hidden group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden bg-gray-100 relative">
+<img alt="Gochujang" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9-Ozha0Z9e0VCJ0gaA814dbtmlKbuw5MB5gaBRwLUpjsjm1SQH4_fa2qTF2DXSDOtse3ViytJrKqQl_MGzUKpy78MuL_cUPyR3adAY5lHzPFC0ZomL-i59inYBdkemqZDQLtWF07-NdrtejUY2Zran5uX5oUjmryV_1CuOYp9iUeD4Z79maX_chtos2TIHuzETyWD8uPGXb_oRm41JZ8H4cY-oxYrJjT66i1G2zGkAhgiRwuowaLM1x-10V1GxSpskMALnAcVjw"/>
+<div class="absolute top-3 right-3 bg-[var(--white)] px-2 py-1 rounded text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider shadow-sm">Sauces</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)]">Gochujang</h3>
+<span class="text-lg serif text-[var(--text-secondary)] font-medium">고추장</span>
+</div>
+<p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 line-clamp-2">A savory, sweet, and spicy fermented chili paste essential for depth.</p>
+<div class="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-medium text-[var(--text-secondary)]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] fill-1 text-red-500">local_fire_department</span> Spicy</span>
+<span class="group-hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1">Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+</article>
+<article class="card-ingredient rounded-xl overflow-hidden group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden bg-gray-100 relative">
+<img alt="Kimchi" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDMl-3unyQg9tVBkgAsgAopqkBTeHXFBj54STTQcv21FbOBHYH3bkdhw-nLIrXdKfImlXSc05kEmzQ0bEJnvfEr45Od6pr42X7OVX7VxZtU8gYwBupSj3l2ZWT5oKVzcO-aUos5ZuPORxOQ3aEJTAWemB_ZSHVuznnGsAizIkh5F22btujh_wlM3SnjdSB7hWnDYXwjxOHSTm5cjNDwVO1MH8HqNiK99jUZSTWdlHv0XqZ8zI3xkB-Uec0pl9gUObcIjcVJMHhsyA"/>
+<div class="absolute top-3 right-3 bg-[var(--white)] px-2 py-1 rounded text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider shadow-sm">Vegetables</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)]">Kimchi</h3>
+<span class="text-lg serif text-[var(--text-secondary)] font-medium">김치</span>
+</div>
+<p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 line-clamp-2">Traditional salted and fermented vegetables, most commonly napa cabbage.</p>
+<div class="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-medium text-[var(--text-secondary)]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">biotech</span> Fermented</span>
+<span class="group-hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1">Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+</article>
+<article class="card-ingredient rounded-xl overflow-hidden group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden bg-gray-100 relative">
+<img alt="Doenjang" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaojdawlLvKESII4WPnD8Fzr3OeyEX4oPmXwXy_9BTswfugQZh_l4HYQclvfDMj-s-Q79neHEizm4Cp3SObxsbMNB5NnUHNLhczHBAY9pwJciZFxzL4wr4tAPW_-wWaon50HhMx5-fObG2VI2QN5C3C5bYAvjLMW_nB9AY7a4ZIdJyko8okIHd5NFIcSRxWghrWQszZKb_uapnzw0Qkn3cwyrJJcpbfxkZi8GKh2OLuhAyCyqzlBHQn5BfL7xevIkp0dnTnq8_Hg"/>
+<div class="absolute top-3 right-3 bg-[var(--white)] px-2 py-1 rounded text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider shadow-sm">Sauces</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)]">Doenjang</h3>
+<span class="text-lg serif text-[var(--text-secondary)] font-medium">된장</span>
+</div>
+<p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 line-clamp-2">Fermented soybean paste, rich in umami, used in stews and soups.</p>
+<div class="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-medium text-[var(--text-secondary)]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">soup_kitchen</span> Savory</span>
+<span class="group-hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1">Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+</article>
+<article class="card-ingredient rounded-xl overflow-hidden group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden bg-gray-100 relative">
+<img alt="Gochugaru" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCN-p13qiTA8yfsXmIwv-EuOtyoevXes6i6x8eqnC6RnZlVAnXBoSDAEk2dEIoNc4mGDtPP-9AW-WAFwCQ-LaEm4oj-XSQWfekEKjluJpABjmJD-f8nlHX8m-9X6kBoF97nsu75EhbcatkURga_OuWtAgU95VGcKy3uswgNOvIjPOS6hYW9MMuGMaHlFRQzIcEE8aZJ3F60x5RuUQdCCPqMBqqrk4Cid2TYfmJHNZsInLhuvnIkELq5dL6oCuSEPBuIHxcVNILg_g"/>
+<div class="absolute top-3 right-3 bg-[var(--white)] px-2 py-1 rounded text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider shadow-sm">Spices</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)]">Gochugaru</h3>
+<span class="text-lg serif text-[var(--text-secondary)] font-medium">고춧가루</span>
+</div>
+<p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 line-clamp-2">Korean red chili flakes, varying from mild to hot, key for kimchi.</p>
+<div class="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-medium text-[var(--text-secondary)]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-red-400">grain</span> Spice</span>
+<span class="group-hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1">Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+</article>
+<article class="card-ingredient rounded-xl overflow-hidden group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden bg-gray-100 relative">
+<img alt="Sesame Oil" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARZXpxVDio2GA_Qj3UBZXc86drbTs2Sn60FQhtN3LPA9Ff-tD8PvqBwoLxDaBtSS1pkpSrWWbtkdKqXDeSoJJL7zaJQr106EC0wOHfO_Vz5QA8PWCXAYrOWI9EnYdHPoZtEBtx7iYtIhqfaHM7nD__-FF-R7fXRbEDHPoV6Yfp2DPAw9ctHocoID5y50Uqp7ngbz4T7Iay8xhHdMJBGitzrh73dZrhIg6KMQYkkkn0hOFyL0a5nUkJYGgDSmLaEvXCJep74qRUaw"/>
+<div class="absolute top-3 right-3 bg-[var(--white)] px-2 py-1 rounded text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider shadow-sm">Sauces</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)]">Sesame Oil</h3>
+<span class="text-lg serif text-[var(--text-secondary)] font-medium">참기름</span>
+</div>
+<p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 line-clamp-2">Toasted sesame oil, used as a finishing oil for its nutty aroma.</p>
+<div class="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-medium text-[var(--text-secondary)]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">water_drop</span> Aromatic</span>
+<span class="group-hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1">Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+</article>
+<article class="card-ingredient rounded-xl overflow-hidden group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden bg-gray-100 relative">
+<img alt="Rice" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAujPf7wVVzFD2AhWLttKgHKfzTDVNF2gGcsv5t919Fy3imY1BVMqu1J5-u2o33A2HGGIRMIxFSOmgn0lgMiP7xMe76boqeRqpOLsjlPWtHfktXTYWUqREQPHv8PIpZ5c0yZTe5t9FeMc_6xpoRC2T1clrWVx152HIOc278klZd_4MQVD1dFMXK5Hl-VLQ63bTZbitmEfPcT45EnGPxU145sZd0AzDG5x6N_2ZXA2LKUMlF89ZHeLcgXZRv1HVqPyEnc0ocl3IkA"/>
+<div class="absolute top-3 right-3 bg-[var(--white)] px-2 py-1 rounded text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider shadow-sm">Grains</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)]">Short Grain Rice</h3>
+<span class="text-lg serif text-[var(--text-secondary)] font-medium">쌀</span>
+</div>
+<p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 line-clamp-2">Sticky short-grain white rice, the foundation of almost every Korean meal.</p>
+<div class="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-medium text-[var(--text-secondary)]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">rice_bowl</span> Staple</span>
+<span class="group-hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1">Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+</article>
+<article class="card-ingredient rounded-xl overflow-hidden group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden bg-gray-100 relative">
+<img alt="Tofu" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQUZd7EQBVbn0KJpSVvSR0XVSgqEkwL9V2e-gwJZgXV50r2MI6j7aRlbUqTYHuzLQLBBBjhdpGVwL7NKZTpu5mUyVS7JuKaUxW6Um5uLGl68rqxlesT01vR8U6q_najS6PEHHp1lBiIeBh5rSjL3W65WO4jQzQYYp7U8RT7uBVpNhmHoPZPAc0-0_HCDmllC5tuU3CsXmNKcRf0uZcXmKLJ9f6rNId7JzVp1pgvO7_IkBUQ8gTIp7ThIt0ib4VtU396yArxM3Ebg"/>
+<div class="absolute top-3 right-3 bg-[var(--white)] px-2 py-1 rounded text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider shadow-sm">Proteins</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)]">Tofu</h3>
+<span class="text-lg serif text-[var(--text-secondary)] font-medium">두부</span>
+</div>
+<p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 line-clamp-2">Bean curd made from soybeans, ranging from silken soft to firm.</p>
+<div class="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-medium text-[var(--text-secondary)]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">spa</span> Vegan</span>
+<span class="group-hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1">Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+</article>
+<article class="card-ingredient rounded-xl overflow-hidden group cursor-pointer">
+<div class="aspect-[4/3] overflow-hidden bg-gray-100 relative">
+<img alt="Garlic" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxxX7WO9NmhO_z1D5-8zw2pj64YHWc2PmRnV2L1enOaLfx8GSuaNJ8vlC9B1pM0nN97qi_a5xcLjq9KJCrMbnnN61Tz4p6oD8RAP5iQoLYGEwUOFdt7peUDk0H05PnoHIZUv2K_F49OuA64qK9t4lQOy1Dq8zwKJFpzF-U4Bo5XL9kO9pH0KuK7jNdxkCnQS9COAj3gqequeWBncSxul2GNUuvqvK9J4WS_iXtRL6OzfIMFgPWHzZP2ktZM6qQGmrVqUzOFm8jeQ"/>
+<div class="absolute top-3 right-3 bg-[var(--white)] px-2 py-1 rounded text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider shadow-sm">Vegetables</div>
+</div>
+<div class="p-5">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="text-xl font-bold serif text-[var(--text-primary)]">Garlic</h3>
+<span class="text-lg serif text-[var(--text-secondary)] font-medium">마늘</span>
+</div>
+<p class="text-sm text-[var(--text-secondary)] leading-relaxed mb-4 line-clamp-2">Used liberally in marinades, soups, and side dishes. Essential aromatic.</p>
+<div class="pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-medium text-[var(--text-secondary)]">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">eco</span> Aromatic</span>
+<span class="group-hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1">Details <span class="material-symbols-outlined text-[16px]">arrow_forward</span></span>
+</div>
+</div>
+</article>
+</section>
+<div class="mt-16 flex justify-center">
+<button class="btn-gold rounded-full px-8 py-3 text-base font-semibold shadow-lg flex items-center gap-2">
+                Load More Ingredients
+            </button>
+</div>
+</main>
+<footer class="bg-[var(--white)] border-t border-[var(--border-color)] py-12 px-6">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+<div>
+<a class="text-2xl font-bold serif tracking-tight text-[var(--text-primary)]" href="#">MatDam</a>
+<p class="text-sm text-[var(--text-secondary)] mt-2">© 2024 MatDam. Bringing Korean flavors to your kitchen.</p>
+</div>
+<div class="flex gap-6 text-[var(--text-secondary)] text-sm font-medium">
+<a class="hover:text-[var(--text-primary)]" href="#">Privacy</a>
+<a class="hover:text-[var(--text-primary)]" href="#">Terms</a>
+<a class="hover:text-[var(--text-primary)]" href="#">Contact</a>
+</div>
+</div>
+</footer>
+
+</body></html>

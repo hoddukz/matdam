@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MatDam - Cooking Mode: Step 3</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-dark: #1F1C18;
+            --bg-card: #2C2824;
+            --text-primary: #FAF6EF;
+            --text-secondary: #D6CFC4;
+            --primary-gold: #D4A035;
+            --primary-gold-hover: #E5B246;
+            --border-color: #453F39;
+            --progress-bg: #383430;
+        }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .serif {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .btn-gold {
+            background-color: var(--primary-gold);
+            color: #1F1C18;
+            transition: all 0.2s ease;
+        }
+        .btn-gold:hover {
+            background-color: var(--primary-gold-hover);
+            transform: translateY(-1px);
+        }
+        .btn-outline {
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .btn-outline:hover {
+            border-color: var(--primary-gold);
+            color: var(--text-primary);
+        }
+        .timer-btn {
+            background-color: #3D3832;
+            border: 1px solid var(--border-color);
+            color: var(--primary-gold);
+            transition: all 0.2s ease;
+        }
+        .timer-btn:hover {
+            background-color: #4A443D;
+            border-color: var(--primary-gold);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="w-full h-16 bg-[var(--bg-dark)] border-b border-[var(--border-color)] flex items-center justify-between px-6 lg:px-12 fixed top-0 z-50">
+<div class="flex items-center gap-4 flex-1">
+<span class="text-sm font-medium text-[var(--text-secondary)]">Step 3 of 7</span>
+<div class="h-2 flex-1 max-w-md bg-[var(--progress-bg)] rounded-full overflow-hidden">
+<div class="h-full bg-[var(--primary-gold)] w-[42%] rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-[var(--text-primary)] font-serif font-medium hidden sm:block">Classic Kimchi Jjigae</span>
+<button class="w-10 h-10 rounded-full bg-[var(--bg-card)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[#3D3832] transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</header>
+<main class="flex-grow pt-20 pb-32 w-full max-w-5xl mx-auto px-6 flex flex-col gap-8">
+<section class="w-full aspect-video md:aspect-[21/9] lg:h-[400px] bg-[var(--bg-card)] rounded-2xl overflow-hidden relative border border-[var(--border-color)] shadow-xl">
+<img alt="Cooking Step 3: Pork and Kimchi" class="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCuR4q3wicfOgas_HWUnx_OcVG-DbBM8jdzOMECG-OQmCo_36f5jvAxTRSbn21CS8GBylU6MIlhRAohWDE9rnLQiKlPYyHqGW9gOalEu4r4orUrdoxgKVt-gOP3M1zvYWyS9O9JlGevPGfiYAJolrYcWJS4JArQq5CRcLiQDwfOBvSO6nsB57lbVKX6lG_Gd4Bcfjiz-nl0kcVvgJBqFGWxFH6vUMxDgVocNn2DrdlF4elpEMuipvee1BA99Bfnkg293zBqBQDnMQ"/>
+<div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs text-white/90 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">photo_camera</span>
+<span>Visual Guide</span>
+</div>
+</section>
+<section class="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start">
+<div class="flex-1 space-y-6">
+<div class="flex items-center gap-3">
+<span class="bg-[var(--primary-gold)] text-[#1F1C18] font-bold px-3 py-1 rounded text-sm uppercase tracking-wide">Step 3</span>
+<h2 class="text-3xl md:text-4xl font-serif font-bold text-[var(--text-primary)] leading-tight">Add pork &amp; kimchi</h2>
+</div>
+<p class="text-xl md:text-2xl text-[var(--text-secondary)] leading-relaxed font-light">
+                    Add the sliced pork and kimchi into the pot. Sauté over medium-high heat until the pork is no longer pink and the kimchi softens.
+                </p>
+<div class="pt-2">
+<button class="timer-btn rounded-full px-6 py-3 text-lg font-medium flex items-center gap-3 shadow-lg">
+<span class="material-symbols-outlined text-[24px]">timer</span>
+                        Start 5m Timer
+                    </button>
+</div>
+</div>
+<div class="w-full lg:w-80 shrink-0">
+<div class="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-6 shadow-lg">
+<h3 class="text-[var(--primary-gold)] text-sm font-bold uppercase tracking-wider mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">grocery</span>
+                        Ingredients Needed
+                    </h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-3">
+<div class="mt-1 w-1.5 h-1.5 rounded-full bg-[var(--primary-gold)] shrink-0"></div>
+<span class="text-lg text-[var(--text-primary)]">200g <span class="text-[var(--text-secondary)]">Pork belly</span></span>
+</li>
+<li class="flex items-start gap-3">
+<div class="mt-1 w-1.5 h-1.5 rounded-full bg-[var(--primary-gold)] shrink-0"></div>
+<span class="text-lg text-[var(--text-primary)]">1 cup <span class="text-[var(--text-secondary)]">Aged Kimchi</span></span>
+</li>
+<li class="flex items-start gap-3">
+<div class="mt-1 w-1.5 h-1.5 rounded-full bg-[var(--primary-gold)] shrink-0"></div>
+<span class="text-lg text-[var(--text-primary)]">1 tbsp <span class="text-[var(--text-secondary)]">Sesame Oil</span></span>
+</li>
+</ul>
+</div>
+<div class="mt-4 p-4 rounded-xl bg-[#3D3832]/50 border border-[var(--border-color)] flex gap-3 items-start">
+<span class="material-symbols-outlined text-[var(--primary-gold)] mt-0.5">lightbulb</span>
+<p class="text-sm text-[var(--text-secondary)]">Rendering the fat from the pork belly adds a rich flavor base for the stew.</p>
+</div>
+</div>
+</section>
+</main>
+<footer class="fixed bottom-0 left-0 w-full bg-[var(--bg-dark)] border-t border-[var(--border-color)] px-6 lg:px-12 py-6 z-50">
+<div class="w-full max-w-5xl mx-auto flex justify-between items-center gap-4">
+<button class="btn-outline flex-1 md:flex-none md:w-40 rounded-full py-4 text-base font-semibold flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+                Previous
+            </button>
+<div class="hidden md:flex flex-col items-center">
+<button class="text-[var(--text-secondary)] hover:text-[var(--primary-gold)] transition-colors flex items-center gap-1 text-sm">
+<span class="material-symbols-outlined text-[16px]">list_alt</span>
+                    View Full Recipe
+                 </button>
+</div>
+<button class="btn-gold flex-1 md:flex-none md:w-48 rounded-full py-4 text-lg font-bold shadow-lg flex items-center justify-center gap-2 group">
+                Next Step
+                <span class="material-symbols-outlined text-[22px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</footer>
+
+</body></html>

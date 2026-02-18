@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MatDam - Create Recipe: Basic Info</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #FAF6EF;
+            --text-primary: #2C2417;
+            --text-secondary: #6B5B3E;
+            --primary-gold: #D4A035;
+            --border-color: #E6DCCD;
+            --white: #FFFFFF;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'DM Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .serif {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .btn-gold {
+            background-color: var(--primary-gold);
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .btn-gold:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .input-base {
+            background-color: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            color: var(--text-primary);
+            transition: border-color 0.2s ease;
+        }
+        .input-base:focus {
+            border-color: var(--primary-gold);
+            outline: none;
+            ring: 1px solid var(--primary-gold);
+        }
+        .difficulty-btn.active {
+            background-color: var(--text-primary);
+            color: var(--white);
+            border-color: var(--text-primary);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+<header class="w-full h-16 bg-[var(--white)] border-b border-[var(--border-color)] flex items-center justify-between px-6 lg:px-12 fixed top-0 z-50">
+<div class="flex items-center gap-2">
+<a class="text-2xl font-bold serif tracking-tight text-[var(--text-primary)]" href="#">MatDam</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-medium text-sm">Save Draft</button>
+<button class="text-[var(--text-secondary)] hover:text-[var(--text-primary)] material-symbols-outlined">close</button>
+</div>
+</header>
+<main class="flex-grow pt-24 pb-24 w-full max-w-3xl mx-auto px-6">
+<nav class="mb-12 flex justify-center w-full">
+<div class="flex items-center gap-2 text-sm font-medium">
+<div class="flex items-center gap-2 text-[var(--primary-gold)]">
+<span class="material-symbols-outlined text-[20px] fill-1">circle</span>
+<span>Basic Info</span>
+</div>
+<div class="w-12 h-[1px] bg-[var(--border-color)]"></div>
+<div class="flex items-center gap-2 text-[var(--text-secondary)] opacity-50">
+<span class="material-symbols-outlined text-[20px]">circle</span>
+<span>Ingredients</span>
+</div>
+<div class="w-12 h-[1px] bg-[var(--border-color)]"></div>
+<div class="flex items-center gap-2 text-[var(--text-secondary)] opacity-50">
+<span class="material-symbols-outlined text-[20px]">circle</span>
+<span>Steps</span>
+</div>
+<div class="w-12 h-[1px] bg-[var(--border-color)]"></div>
+<div class="flex items-center gap-2 text-[var(--text-secondary)] opacity-50">
+<span class="material-symbols-outlined text-[20px]">circle</span>
+<span>Preview</span>
+</div>
+</div>
+</nav>
+<section class="space-y-10">
+<div class="text-center space-y-2">
+<h1 class="text-3xl lg:text-4xl font-semibold serif text-[var(--text-primary)]">Let's start with the basics</h1>
+<p class="text-[var(--text-secondary)]">Name your masterpiece and give it a face.</p>
+</div>
+<div class="w-full group">
+<label class="block text-sm font-medium text-[var(--text-primary)] mb-2">Hero Image</label>
+<div class="relative w-full aspect-video lg:aspect-[21/9] rounded-xl border-2 border-dashed border-[var(--border-color)] bg-[var(--white)] hover:border-[var(--primary-gold)] hover:bg-[#FAF9F5] transition-all cursor-pointer flex flex-col items-center justify-center gap-3">
+<input accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" type="file"/>
+<div class="w-12 h-12 rounded-full bg-[var(--bg-color)] flex items-center justify-center text-[var(--text-secondary)] group-hover:text-[var(--primary-gold)] transition-colors">
+<span class="material-symbols-outlined text-2xl">add_a_photo</span>
+</div>
+<div class="text-center">
+<p class="text-[var(--text-primary)] font-medium">Upload a photo</p>
+<p class="text-xs text-[var(--text-secondary)] mt-1">Recommended: 1200x600px, JPG or PNG</p>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<div>
+<label class="block text-sm font-medium text-[var(--text-primary)] mb-2" for="recipe-title">Recipe Title</label>
+<input class="input-base text-lg placeholder:text-gray-300" id="recipe-title" placeholder="Give your recipe a name (e.g., Kimchi Carbonara)" type="text"/>
+</div>
+<div>
+<label class="block text-sm font-medium text-[var(--text-primary)] mb-2" for="recipe-desc">Description</label>
+<input class="input-base text-base placeholder:text-gray-300" id="recipe-desc" placeholder="A short, catchy summary of your dish in one line." type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<div>
+<label class="block text-sm font-medium text-[var(--text-primary)] mb-2">Difficulty Level</label>
+<div class="grid grid-cols-3 gap-2">
+<button class="difficulty-btn active py-2.5 px-2 rounded-lg border border-[var(--border-color)] text-sm font-medium bg-[var(--white)] hover:border-[var(--text-primary)] transition-all" type="button">
+                            Easy
+                        </button>
+<button class="difficulty-btn py-2.5 px-2 rounded-lg border border-[var(--border-color)] text-sm font-medium bg-[var(--white)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] transition-all" type="button">
+                            Medium
+                        </button>
+<button class="difficulty-btn py-2.5 px-2 rounded-lg border border-[var(--border-color)] text-sm font-medium bg-[var(--white)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] transition-all" type="button">
+                            Hard
+                        </button>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-[var(--text-primary)] mb-2" for="prep-time">Prep &amp; Cook Time</label>
+<div class="relative">
+<input class="input-base pr-16" id="prep-time" min="0" placeholder="30" type="number"/>
+<span class="absolute right-4 top-1/2 -translate-y-1/2 text-[var(--text-secondary)] text-sm font-medium pointer-events-none">mins</span>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-[var(--text-primary)] mb-3">Dietary Tags</label>
+<div class="flex flex-wrap gap-3">
+<label class="cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border-color)] bg-[var(--white)] text-[var(--text-secondary)] hover:bg-gray-50 peer-checked:border-[var(--primary-gold)] peer-checked:bg-[#FFFDF5] peer-checked:text-[var(--primary-gold)] transition-all select-none">
+<span class="material-symbols-outlined text-[18px]">spa</span>
+<span class="text-sm font-medium">Vegan</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border-color)] bg-[var(--white)] text-[var(--text-secondary)] hover:bg-gray-50 peer-checked:border-[var(--primary-gold)] peer-checked:bg-[#FFFDF5] peer-checked:text-[var(--primary-gold)] transition-all select-none">
+<span class="material-symbols-outlined text-[18px]">egg</span>
+<span class="text-sm font-medium">Vegetarian</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border-color)] bg-[var(--white)] text-[var(--text-secondary)] hover:bg-gray-50 peer-checked:border-[var(--primary-gold)] peer-checked:bg-[#FFFDF5] peer-checked:text-[var(--primary-gold)] transition-all select-none">
+<span class="material-symbols-outlined text-[18px]">block</span>
+<span class="text-sm font-medium">Gluten-free</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border-color)] bg-[var(--white)] text-[var(--text-secondary)] hover:bg-gray-50 peer-checked:border-[var(--primary-gold)] peer-checked:bg-[#FFFDF5] peer-checked:text-[var(--primary-gold)] transition-all select-none">
+<span class="material-symbols-outlined text-[18px]">mosque</span>
+<span class="text-sm font-medium">Halal</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border-color)] bg-[var(--white)] text-[var(--text-secondary)] hover:bg-gray-50 peer-checked:border-[var(--primary-gold)] peer-checked:bg-[#FFFDF5] peer-checked:text-[var(--primary-gold)] transition-all select-none">
+<span class="material-symbols-outlined text-[18px]">set_meal</span>
+<span class="text-sm font-medium">Pescatarian</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" type="checkbox"/>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full border border-[var(--border-color)] bg-[var(--white)] text-[var(--text-secondary)] hover:bg-gray-50 peer-checked:border-[var(--primary-gold)] peer-checked:bg-[#FFFDF5] peer-checked:text-[var(--primary-gold)] transition-all select-none">
+<span class="material-symbols-outlined text-[18px]">local_fire_department</span>
+<span class="text-sm font-medium">Spicy</span>
+</div>
+</label>
+</div>
+</div>
+</section>
+</main>
+<footer class="fixed bottom-0 left-0 w-full bg-[var(--white)] border-t border-[var(--border-color)] px-6 lg:px-12 py-4 flex justify-end items-center z-50">
+<div class="w-full max-w-3xl mx-auto flex justify-end">
+<button class="btn-gold rounded-full px-8 py-3 text-base font-semibold shadow-lg flex items-center gap-2">
+                Next: Ingredients
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</footer>
+
+</body></html>

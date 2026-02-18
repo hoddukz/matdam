@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Kitchen - MatDam</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;600;700&amp;family=DM+Sans:opsz,wght@9..40,400;500;700&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-beige: #FAF6EF;
+            --text-dark: #2C2417;
+            --text-medium: #6B5B3E;
+            --accent-gold: #D4A035;
+            --card-bg: #FFFFFF;
+            --border-color: #E6DCCD;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-beige);
+            color: var(--text-dark);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(212, 160, 53, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(212, 160, 53, 0.05) 0%, transparent 20%);
+        }
+        .font-serif {
+            font-family: 'Noto Serif KR', serif;
+        }
+        .korean-pattern {
+            background-color: var(--bg-beige);
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%236B5B3E' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #D1C4B0;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #B0A390;
+        }
+    </style>
+</head>
+<body class="min-h-screen korean-pattern">
+<nav class="sticky top-0 z-50 bg-[#FAF6EF]/90 backdrop-blur-md border-b border-[#E6DCCD]">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center h-16">
+<div class="flex items-center gap-8">
+<a class="flex items-center gap-2" href="#">
+<span class="font-serif text-2xl font-bold tracking-tight text-[#2C2417]">MatDam</span>
+</a>
+<div class="hidden md:flex gap-6">
+<a class="text-[#6B5B3E] hover:text-[#2C2417] font-medium transition-colors" href="#">Explore</a>
+<a class="text-[#6B5B3E] hover:text-[#2C2417] font-medium transition-colors" href="#">Glossary</a>
+</div>
+</div>
+<div class="hidden md:block flex-1 max-w-md mx-8">
+<div class="relative group">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-[#6B5B3E]/60 text-xl">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-2 border border-[#E6DCCD] rounded-full leading-5 bg-white placeholder-[#6B5B3E]/50 focus:outline-none focus:ring-1 focus:ring-[#D4A035] focus:border-[#D4A035] sm:text-sm transition-shadow" placeholder="Search recipes, ingredients..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="hidden md:flex items-center gap-1.5 bg-[#D4A035] hover:bg-[#C2912E] text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-sm">
+<span class="material-symbols-outlined text-lg">add</span>
+                        Create
+                    </button>
+<div class="relative">
+<button class="flex items-center gap-2 focus:outline-none">
+<img alt="User avatar" class="h-9 w-9 rounded-full object-cover border border-[#E6DCCD]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAln4Yb09OmYQLbEGnkJG6k_Fx_vnXbkrxeVNeVXDZ-IzG-YcUA0zVpg9ey8RJLM2Pn2lNNjO3TkGTIVhcTaSfMdjvy5wKZ4HQ5Wb2XbAItaD0IaF9JaXIhYtJIZWFJIocTokrlsGzxSreDAf7wGCqSoIPUYZGEkKR-kSYyM6S6era89UxUKFVMHdSzlWqmJmhUFnKejN8rm78_KgC4ZGg3ecpwcjmslaRS5vlwmqaStkdAkKvTzqL0L7L4joFcxDBmPXvy6knzTg"/>
+</button>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+<div class="bg-white rounded-2xl shadow-sm border border-[#E6DCCD] p-6 md:p-10 mb-8 relative overflow-hidden">
+<div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-[#FAF6EF] rounded-full opacity-50 z-0"></div>
+<div class="relative z-10 flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10">
+<div class="flex-shrink-0">
+<div class="relative group">
+<img alt="K-Foodie_Jane" class="w-32 h-32 md:w-40 md:h-40 rounded-full object-cover border-4 border-[#FAF6EF] shadow-md" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9bvGE1rSQmv4JhWmkxHcyOLim1X1F1KnzurPU0CrVH9_rI5J9dk_UIGZ0cyBRuwmwnNwmIBp4BE9ZDnc1oE9F_D-cwFJ9EAz42IJjbr2CepJ8vcTVZWoDJByDam-C-7O1IoEttte_B8KHLfPI1KTLpdD5CwO26v9Shl4MJ6UeEQTPf4ohP6HNKqS2wGe96Scz6P2zBoKsy2WAJCf98MJtoNdJY7D-HQAEh_gMo_rI2c9jMrdECTIGw1NXs0dZ-OVoRTrT949DXQ"/>
+<button class="absolute bottom-1 right-1 bg-white p-2 rounded-full shadow-sm border border-[#E6DCCD] text-[#6B5B3E] hover:text-[#2C2417] transition-colors">
+<span class="material-symbols-outlined text-sm md:text-base">photo_camera</span>
+</button>
+</div>
+</div>
+<div class="flex-1 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
+<div>
+<h1 class="font-serif text-3xl font-bold text-[#2C2417]">@K-Foodie_Jane</h1>
+<p class="text-[#6B5B3E] mt-1">Jane Kim</p>
+</div>
+<button class="inline-flex items-center justify-center px-4 py-2 border border-[#E6DCCD] text-sm font-medium rounded-lg text-[#6B5B3E] bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#D4A035] transition-colors shadow-sm">
+                            Edit Profile
+                        </button>
+</div>
+<p class="text-[#2C2417] text-lg max-w-2xl mb-6 font-light leading-relaxed">
+                        Exploring the intersection of Korean flavors and Italian pasta. 🍝🌶️<br/>
+                        Home cook based in Seoul &amp; Rome.
+                    </p>
+<div class="flex items-center justify-center md:justify-start gap-8 border-t border-[#E6DCCD] pt-4 md:border-none md:pt-0">
+<div class="text-center md:text-left">
+<span class="block text-xl font-bold text-[#2C2417]">12</span>
+<span class="text-sm text-[#6B5B3E]">Recipes</span>
+</div>
+<div class="w-px h-8 bg-[#E6DCCD] hidden md:block"></div>
+<div class="text-center md:text-left">
+<span class="block text-xl font-bold text-[#2C2417]">3</span>
+<span class="text-sm text-[#6B5B3E]">Remixes</span>
+</div>
+<div class="w-px h-8 bg-[#E6DCCD] hidden md:block"></div>
+<div class="text-center md:text-left">
+<span class="block text-xl font-bold text-[#2C2417]">450</span>
+<span class="text-sm text-[#6B5B3E]">Followers</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="border-b border-[#E6DCCD] mb-8">
+<nav aria-label="Tabs" class="-mb-px flex space-x-8">
+<a class="border-[#D4A035] text-[#2C2417] whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2" href="#">
+<span class="material-symbols-outlined text-lg">restaurant_menu</span>
+                    My Recipes
+                    <span class="bg-[#FAF6EF] text-[#6B5B3E] py-0.5 px-2.5 rounded-full text-xs ml-1">12</span>
+</a>
+<a class="border-transparent text-[#6B5B3E] hover:text-[#2C2417] hover:border-[#D1C4B0] whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">autorenew</span>
+                    My Remixes
+                    <span class="bg-[#FAF6EF] text-[#6B5B3E] py-0.5 px-2.5 rounded-full text-xs ml-1">3</span>
+</a>
+<a class="border-transparent text-[#6B5B3E] hover:text-[#2C2417] hover:border-[#D1C4B0] whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">bookmark</span>
+                    Bookmarks
+                </a>
+<a class="border-transparent text-[#6B5B3E] hover:text-[#2C2417] hover:border-[#D1C4B0] whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">shopping_basket</span>
+                    Shopping List
+                </a>
+</nav>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+<article class="group bg-white rounded-2xl shadow-sm border border-[#E6DCCD] overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="relative h-56 overflow-hidden">
+<img alt="Kimchi Carbonara" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtMj44YmuzyWRdtWNqajqE2nmwuVBH-PDRdkHPzjdMTwKwqbKvIe0hxURiIwz6mgHDNkNFvy-YBwpgqvzhzDr2Sq9_XQzbdbTpFHINVHhpqgV0jYI3PQjopwhTW070q_h1qVO0RQU1SjajIF_2VTki7irF5lwuzgK684q9-L3tb5Ho5xTXdAnFMHipWOIpfmg7oNaCkHzvBmQI4AQlpEdNoWNh5bnv1NnQGbCcSE45XO6LQ037ecRkIl6hnsbKphGUjZkDNQDAsw"/>
+<div class="absolute top-3 left-3 bg-[#D4A035] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                        PUBLISHED
+                    </div>
+<button class="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-[#6B5B3E] hover:text-[#D4A035] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl block">more_horiz</span>
+</button>
+<div class="absolute bottom-3 right-3 flex gap-2">
+<span class="bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 25m
+                        </span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<div class="mb-2 flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-[#FAF6EF] text-[#6B5B3E] text-xs font-medium tracking-wide">FUSION</span>
+<span class="px-2 py-0.5 rounded bg-[#FAF6EF] text-[#6B5B3E] text-xs font-medium tracking-wide">EASY</span>
+</div>
+<h3 class="font-serif text-xl font-bold text-[#2C2417] mb-2 leading-tight group-hover:text-[#D4A035] transition-colors">Kimchi Bacon Carbonara</h3>
+<p class="text-sm text-[#6B5B3E] line-clamp-2 mb-4 flex-1">
+                        A creamy Italian classic meets the spicy kick of aged Kimchi. The perfect comfort food for a rainy day.
+                    </p>
+<div class="flex items-center justify-between pt-4 border-t border-[#E6DCCD] mt-auto">
+<div class="flex items-center gap-4 text-xs text-[#6B5B3E] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 128</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">comment</span> 34</span>
+</div>
+<span class="text-xs text-[#6B5B3E]">Feb 12, 2026</span>
+</div>
+</div>
+</article>
+<article class="group bg-white rounded-2xl shadow-sm border border-[#E6DCCD] overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full opacity-90 hover:opacity-100">
+<div class="relative h-56 overflow-hidden">
+<img alt="Bulgogi Pizza" class="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo9nr6XyaFxWkxHsiUdi8tevpqGB0sNaXobOF6hSjzWNZderJOFBWPMhPKfwioTvkXlcdE4xE5Rbs6bW2MO9JlC5RFDbDfvrRndB2aBNUWE6hZvCyVQEAOCflkYAKYXmmHCYJ9Vh6sXNkJaNPETzYeJuI0dELhGp-tgTFArIs4Z_MQUdOQZhLauLC-wiZPqAxlkRQmGQQCrHmPWpYlp3DYOK63IrGGmL4fJiP-3xH67tNFvHZwpRDviEUYvpBeNgdBCbFASv0vwQ"/>
+<div class="absolute top-3 left-3 bg-gray-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                        DRAFT
+                    </div>
+<button class="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-[#6B5B3E] hover:text-[#D4A035] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl block">more_horiz</span>
+</button>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<div class="mb-2 flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-[#FAF6EF] text-[#6B5B3E] text-xs font-medium tracking-wide">WEEKEND</span>
+</div>
+<h3 class="font-serif text-xl font-bold text-[#2C2417] mb-2 leading-tight group-hover:text-[#D4A035] transition-colors">Seoul-Style Bulgogi Pizza</h3>
+<p class="text-sm text-[#6B5B3E] line-clamp-2 mb-4 flex-1">
+                        Sweet and savory beef bulgogi on a thin crust pizza with garlic mayo drizzle.
+                    </p>
+<div class="flex items-center justify-between pt-4 border-t border-[#E6DCCD] mt-auto">
+<div class="flex items-center gap-2">
+<button class="text-xs font-medium text-[#D4A035] hover:text-[#B08328] flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">edit</span> Continue Editing
+                            </button>
+</div>
+<span class="text-xs text-[#6B5B3E]">Last edited 2d ago</span>
+</div>
+</div>
+</article>
+<article class="group bg-white rounded-2xl shadow-sm border border-[#E6DCCD] overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="relative h-56 overflow-hidden">
+<img alt="Japchae" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnxWGYvcd0LnL0g4ZjwW58iiHOwf9SSVwXR0N8mIUpLW9SDoVtrU5qFMFH94RV1d6JFbGBeH37eE79Ta5wPgle7ZzhBvRk29F03rM0hsHIhVjyUf0q5aJ0iY4iONtB9OepmDeaIcccQzgUIAazGTOHL9ix8BDki_vTxebiskSrdIrXDMIh-MnsInB7KRmW5W4MYcUmefR4ZWPNq7I_k3Py6MO__hzS_mey2mStItxQHff3uRJbqoS0lNSLju-wdTuPPrwO8k54Sg"/>
+<div class="absolute top-3 left-3 bg-[#D4A035] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                        PUBLISHED
+                    </div>
+<button class="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-[#6B5B3E] hover:text-[#D4A035] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl block">more_horiz</span>
+</button>
+<div class="absolute bottom-3 right-3 flex gap-2">
+<span class="bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 45m
+                        </span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<div class="mb-2 flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-[#FAF6EF] text-[#6B5B3E] text-xs font-medium tracking-wide">CLASSIC</span>
+<span class="px-2 py-0.5 rounded bg-[#FAF6EF] text-[#6B5B3E] text-xs font-medium tracking-wide">VEGAN OPTION</span>
+</div>
+<h3 class="font-serif text-xl font-bold text-[#2C2417] mb-2 leading-tight group-hover:text-[#D4A035] transition-colors">Royal Court Japchae</h3>
+<p class="text-sm text-[#6B5B3E] line-clamp-2 mb-4 flex-1">
+                        Glass noodles stir-fried with colorful vegetables. A staple for any celebration.
+                    </p>
+<div class="flex items-center justify-between pt-4 border-t border-[#E6DCCD] mt-auto">
+<div class="flex items-center gap-4 text-xs text-[#6B5B3E] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 89</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">comment</span> 12</span>
+</div>
+<span class="text-xs text-[#6B5B3E]">Jan 28, 2026</span>
+</div>
+</div>
+</article>
+<article class="group bg-white rounded-2xl shadow-sm border border-[#E6DCCD] overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full">
+<div class="relative h-56 overflow-hidden">
+<img alt="Dessert" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQcebHweznsYn1LgK7lsljDEECTylOElFzjmvSGLL762K6-ux7bgTQjpALT0nueoXOiaB-vwWLszcgPXAcizemGdfqIh9gUSS8zq3KGHZvjyN8pthGfMuxEdioHyF480x_S-sx_Xe6X_3mE3vxokQYc3B5r9j1QJxV0J-jWS1f2C_gqm8GNNTIjxxybDflPkOYH9uSRmpOaRVf18iE_854--wqRGGshI0nDgEjcmxPmmBFYKy88nZ5d3S0PQcVMpxwlhxPFy8cRg"/>
+<div class="absolute top-3 left-3 bg-[#D4A035] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                        PUBLISHED
+                    </div>
+<div class="absolute top-3 left-[90px] bg-[#6B5B3E] text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[10px]">autorenew</span> REMIX
+                    </div>
+<button class="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-[#6B5B3E] hover:text-[#D4A035] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl block">more_horiz</span>
+</button>
+<div class="absolute bottom-3 right-3 flex gap-2">
+<span class="bg-black/60 backdrop-blur-sm text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> 1h 10m
+                        </span>
+</div>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<div class="mb-2 flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-[#FAF6EF] text-[#6B5B3E] text-xs font-medium tracking-wide">DESSERT</span>
+</div>
+<h3 class="font-serif text-xl font-bold text-[#2C2417] mb-2 leading-tight group-hover:text-[#D4A035] transition-colors">Injeolmi Tiramisu</h3>
+<p class="text-xs text-[#6B5B3E] mb-2 italic">Remixed from <span class="underline">Classic Tiramisu</span> by @ItalianChef_Marco</p>
+<p class="text-sm text-[#6B5B3E] line-clamp-2 mb-4 flex-1">
+                        Replacing cocoa powder with roasted soybean powder for a nutty, Korean twist on the Italian favorite.
+                    </p>
+<div class="flex items-center justify-between pt-4 border-t border-[#E6DCCD] mt-auto">
+<div class="flex items-center gap-4 text-xs text-[#6B5B3E] font-medium">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> 245</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">comment</span> 56</span>
+</div>
+<span class="text-xs text-[#6B5B3E]">Jan 15, 2026</span>
+</div>
+</div>
+</article>
+<article class="group bg-white rounded-2xl shadow-sm border border-[#E6DCCD] overflow-hidden hover:shadow-md transition-shadow flex flex-col h-full opacity-90 hover:opacity-100">
+<div class="relative h-56 overflow-hidden">
+<img alt="Banchan" class="w-full h-full object-cover grayscale-[30%] group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7EdgtaLw3q20cPpCUsXo7VlDfVdRM_BhZBCd0OAByY_7uLLTjVZTZQPYjxqvZALquuuuq-F4EYgYACfg0yHFjFWQdkR8fKwUEi25Glr9WlnPO6f6frbakakG_DgskGksVn-xU4LO0xCkv91a8SMouc8H0OPjZDA9Rv0gyPRcswtjUJUFLKV4gicAz5TqOPv4kZqxo6Z6rkj45Pbo6JJMpLynpwmNy9ewzT2IqeecsxH8HA_iZsPHp2ajk4UuizPrmyHZI59bmrw"/>
+<div class="absolute top-3 left-3 bg-gray-500 text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                        DRAFT
+                    </div>
+<button class="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full text-[#6B5B3E] hover:text-[#D4A035] transition-colors shadow-sm">
+<span class="material-symbols-outlined text-xl block">more_horiz</span>
+</button>
+</div>
+<div class="p-5 flex-1 flex flex-col">
+<div class="mb-2 flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-[#FAF6EF] text-[#6B5B3E] text-xs font-medium tracking-wide">SIDE DISH</span>
+</div>
+<h3 class="font-serif text-xl font-bold text-[#2C2417] mb-2 leading-tight group-hover:text-[#D4A035] transition-colors">Quick Cucumber Banchan</h3>
+<p class="text-sm text-[#6B5B3E] line-clamp-2 mb-4 flex-1">
+                        A spicy, crunchy cucumber side dish ready in 10 minutes.
+                    </p>
+<div class="flex items-center justify-between pt-4 border-t border-[#E6DCCD] mt-auto">
+<div class="flex items-center gap-2">
+<button class="text-xs font-medium text-[#D4A035] hover:text-[#B08328] flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">edit</span> Continue Editing
+                            </button>
+</div>
+<span class="text-xs text-[#6B5B3E]">Last edited 5d ago</span>
+</div>
+</div>
+</article>
+<a class="group rounded-2xl border-2 border-dashed border-[#E6DCCD] flex flex-col items-center justify-center p-8 hover:border-[#D4A035] hover:bg-[#FAF6EF]/50 transition-all h-full min-h-[400px]" href="#">
+<div class="w-16 h-16 rounded-full bg-[#FAF6EF] flex items-center justify-center mb-4 group-hover:bg-white group-hover:shadow-sm transition-all">
+<span class="material-symbols-outlined text-3xl text-[#D4A035]">add</span>
+</div>
+<h3 class="font-serif text-lg font-bold text-[#2C2417] mb-1">Create New Recipe</h3>
+<p class="text-sm text-[#6B5B3E] text-center max-w-[200px]">
+                    Share your culinary masterpiece with the world.
+                </p>
+</a>
+</div>
+</main>
+<footer class="bg-white border-t border-[#E6DCCD] mt-12 py-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+<span class="font-serif text-xl font-bold text-[#2C2417]">MatDam</span>
+<div class="text-sm text-[#6B5B3E]">© 2026 MatDam. All rights reserved.</div>
+<div class="flex gap-4">
+<a class="text-[#6B5B3E] hover:text-[#2C2417] text-sm" href="#">Privacy</a>
+<a class="text-[#6B5B3E] hover:text-[#2C2417] text-sm" href="#">Terms</a>
+</div>
+</div>
+</footer>
+
+</body></html>
