@@ -308,7 +308,9 @@ export function RecipeForm() {
             inputMode="numeric"
             min={0}
             placeholder="0"
-            {...register("prep_time_minutes", { valueAsNumber: true })}
+            {...register("prep_time_minutes", {
+              setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+            })}
           />
           {errors.prep_time_minutes && (
             <p className="text-xs text-destructive">{errors.prep_time_minutes.message}</p>
@@ -323,7 +325,9 @@ export function RecipeForm() {
             inputMode="numeric"
             min={0}
             placeholder="0"
-            {...register("cook_time_minutes", { valueAsNumber: true })}
+            {...register("cook_time_minutes", {
+              setValueAs: (v: string) => (v === "" ? undefined : Number(v)),
+            })}
           />
           {errors.cook_time_minutes && (
             <p className="text-xs text-destructive">{errors.cook_time_minutes.message}</p>
@@ -358,9 +362,19 @@ export function RecipeForm() {
             />
           )}
         />
-        {errors.steps && !Array.isArray(errors.steps) && (
-          <p className="text-xs text-destructive">{errors.steps.message}</p>
-        )}
+        {errors.steps &&
+          (Array.isArray(errors.steps)
+            ? errors.steps.map(
+                (stepError, i) =>
+                  stepError?.description && (
+                    <p key={i} className="text-xs text-destructive">
+                      Step {i + 1}: {stepError.description.message}
+                    </p>
+                  )
+              )
+            : errors.steps.message && (
+                <p className="text-xs text-destructive">{errors.steps.message}</p>
+              ))}
       </div>
 
       {/* Submit error */}
