@@ -17,6 +17,14 @@
     "subtitle": "Sign in to continue",
     "google": "Continue with Google"
   },
+  "ingredient": {
+    "searchPlaceholder": "Search ingredients...",
+    "amountPlaceholder": "Qty",
+    "metric": "Metric",
+    "imperial": "Imperial",
+    "addIngredient": "Add ingredient",
+    "noResults": "No ingredients found"
+  },
   "footer": {
     "tagline": "Discover, remix, and share Korean recipes with the world.",
     "explore": "Explore",

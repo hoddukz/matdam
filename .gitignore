@@ -30,6 +30,12 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# docs - internal strategy documents
+docs/ideas/
+docs/research/
+docs/tech/
+docs/work_order/
+
 # vercel
 .vercel/
 
