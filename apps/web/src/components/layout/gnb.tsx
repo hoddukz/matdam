@@ -14,14 +14,38 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Menu, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
 export function GNB() {
   const t = useTranslations("nav");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const supabase = createClient();
+  const router = useRouter();
 
-  // TODO: Replace with actual auth state from Supabase
-  const isLoggedIn = false;
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleSignOut() {
+    await supabase.auth.signOut();
+    router.refresh();
+  }
+
+  const isLoggedIn = !!user;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -58,7 +82,9 @@ export function GNB() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-matdam-gold text-white">U</AvatarFallback>
+                    <AvatarFallback className="bg-matdam-gold text-white">
+                      {user?.email?.charAt(0).toUpperCase() ?? "U"}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
@@ -69,7 +95,7 @@ export function GNB() {
                 <DropdownMenuItem asChild>
                   <Link href="/settings">{t("settings")}</Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem>{t("signOut")}</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut}>{t("signOut")}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -124,7 +150,10 @@ export function GNB() {
                 >
                   {t("profile")}
                 </Link>
-                <button className="text-left text-sm font-medium text-destructive">
+                <button
+                  className="text-left text-sm font-medium text-destructive"
+                  onClick={handleSignOut}
+                >
                   {t("signOut")}
                 </button>
               </>
