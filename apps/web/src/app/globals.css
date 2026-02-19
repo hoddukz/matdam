@@ -1,0 +1,161 @@
+/* Tag: core */
+/* Path: /Users/hodduk/Documents/git/mat_dam/apps/web/src/app/globals.css */
+
+@import "tailwindcss";
+
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  /* MatDam brand colors (direct access via Tailwind: bg-matdam-cream, text-matdam-gold, etc.) */
+  --color-matdam-cream: #faf6ef;
+  --color-matdam-dark: #2c2417;
+  --color-matdam-gold: #d4a035;
+  --color-matdam-brown: #6b5b3e;
+  --color-matdam-border: #e6dccd;
+}
+
+/* ===== MatDam Light Theme (default) ===== */
+:root {
+  --radius: 0.625rem;
+
+  /* Brand: cream background, dark text, gold primary */
+  --background: #faf6ef;
+  --foreground: #2c2417;
+
+  --card: #ffffff;
+  --card-foreground: #2c2417;
+
+  --popover: #ffffff;
+  --popover-foreground: #2c2417;
+
+  --primary: #d4a035;
+  --primary-foreground: #ffffff;
+
+  --secondary: #f0eae0;
+  --secondary-foreground: #2c2417;
+
+  --muted: #f0eae0;
+  --muted-foreground: #6b5b3e;
+
+  --accent: #f0eae0;
+  --accent-foreground: #2c2417;
+
+  --destructive: #dc2626;
+
+  --border: #e6dccd;
+  --input: #e6dccd;
+  --ring: #d4a035;
+
+  --chart-1: #d4a035;
+  --chart-2: #6b5b3e;
+  --chart-3: #2c2417;
+  --chart-4: #e6dccd;
+  --chart-5: #faf6ef;
+
+  --sidebar: #faf6ef;
+  --sidebar-foreground: #2c2417;
+  --sidebar-primary: #d4a035;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f0eae0;
+  --sidebar-accent-foreground: #2c2417;
+  --sidebar-border: #e6dccd;
+  --sidebar-ring: #d4a035;
+}
+
+/* ===== MatDam Dark Theme (cooking mode) ===== */
+.dark {
+  --background: #1a1a1a;
+  --foreground: #f5f0e8;
+
+  --card: #2c2417;
+  --card-foreground: #f5f0e8;
+
+  --popover: #2c2417;
+  --popover-foreground: #f5f0e8;
+
+  --primary: #d4a035;
+  --primary-foreground: #1a1a1a;
+
+  --secondary: #3d3528;
+  --secondary-foreground: #f5f0e8;
+
+  --muted: #3d3528;
+  --muted-foreground: #9a8e7a;
+
+  --accent: #3d3528;
+  --accent-foreground: #f5f0e8;
+
+  --destructive: #ef4444;
+
+  --border: #3d3528;
+  --input: #3d3528;
+  --ring: #d4a035;
+
+  --chart-1: #d4a035;
+  --chart-2: #9a8e7a;
+  --chart-3: #f5f0e8;
+  --chart-4: #3d3528;
+  --chart-5: #2c2417;
+
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #f5f0e8;
+  --sidebar-primary: #d4a035;
+  --sidebar-primary-foreground: #1a1a1a;
+  --sidebar-accent: #3d3528;
+  --sidebar-accent-foreground: #f5f0e8;
+  --sidebar-border: #3d3528;
+  --sidebar-ring: #d4a035;
+}
+
+/* ===== Base styles ===== */
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "DM Sans", sans-serif;
+  }
+}

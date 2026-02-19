@@ -2,5 +2,23 @@
   "home": {
     "title": "맛담",
     "description": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요."
+  },
+  "nav": {
+    "explore": "탐색",
+    "glossary": "재료사전",
+    "create": "만들기",
+    "signIn": "로그인",
+    "profile": "프로필",
+    "settings": "설정",
+    "signOut": "로그아웃"
+  },
+  "footer": {
+    "tagline": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요.",
+    "explore": "탐색",
+    "glossary": "재료사전",
+    "about": "소개",
+    "privacy": "개인정보처리방침",
+    "terms": "이용약관",
+    "copyright": "맛담. All rights reserved."
   }
 }

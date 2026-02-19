@@ -5,6 +5,10 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { GNB } from "@/components/layout/gnb";
+import { Footer } from "@/components/layout/footer";
+import { PostHogProvider } from "@/lib/posthog/provider";
+import "../globals.css";
 
 type Props = {
   children: React.ReactNode;
@@ -22,10 +26,14 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <html lang={locale}>
-      <body>
-        <NextIntlClientProvider messages={messages}>
-          {children}
-        </NextIntlClientProvider>
+      <body className="flex min-h-screen flex-col">
+        <PostHogProvider>
+          <NextIntlClientProvider messages={messages}>
+            <GNB />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </NextIntlClientProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
