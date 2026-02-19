@@ -119,7 +119,8 @@ export default async function ExplorePage({ params, searchParams }: Props) {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {(recipes as unknown as Recipe[]).map((recipe) => {
-            const title = recipe.title[locale] ?? recipe.title["en"] ?? "";
+            const title =
+              recipe.title[locale] ?? recipe.title["en"] ?? Object.values(recipe.title)[0] ?? "";
             const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
             const badgeVariant = DIFFICULTY_VARIANTS[recipe.difficulty_level ?? ""] ?? "outline";
             return (

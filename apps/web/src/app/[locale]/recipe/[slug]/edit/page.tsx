@@ -92,7 +92,7 @@ export default async function EditRecipePage({ params }: Props) {
     })
   );
 
-  const title = recipe.title[locale] || recipe.title["en"] || "";
+  const title = recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "";
 
   const initialData: RecipeFormInitialData = {
     recipeId: recipe.recipe_id,

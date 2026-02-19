@@ -36,7 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!recipe) return { title: "Recipe Not Found" };
 
-  const title = recipe.title[locale] || recipe.title["en"] || "Recipe";
+  const title =
+    recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "Recipe";
   const description = recipe.description?.[locale] || recipe.description?.["en"] || "";
 
   return {
@@ -78,7 +79,7 @@ export default async function RecipeDetailPage({ params }: Props) {
       .order("display_order"),
   ]);
 
-  const title = recipe.title[locale] || recipe.title["en"] || "";
+  const title = recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "";
   const description = recipe.description?.[locale] || recipe.description?.["en"] || "";
 
   // JSON-LD structured data
