@@ -5,9 +5,11 @@
 
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
+import { useTranslations } from "next-intl";
 
 export function LoginForm() {
   const supabase = createClient();
+  const t = useTranslations("login");
 
   async function handleGoogleLogin() {
     await supabase.auth.signInWithOAuth({
@@ -20,7 +22,7 @@ export function LoginForm() {
 
   return (
     <Button className="w-full" variant="outline" onClick={handleGoogleLogin} type="button">
-      Google로 계속하기
+      {t("google")}
     </Button>
   );
 }

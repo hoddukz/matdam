@@ -12,6 +12,11 @@
     "settings": "설정",
     "signOut": "로그아웃"
   },
+  "login": {
+    "title": "로그인",
+    "subtitle": "계속하려면 로그인하세요",
+    "google": "Google로 계속하기"
+  },
   "footer": {
     "tagline": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요.",
     "explore": "탐색",
