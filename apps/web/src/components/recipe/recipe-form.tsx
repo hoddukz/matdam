@@ -24,7 +24,7 @@ import { StepEditor, type StepEntry } from "@/components/recipe/step-editor";
 import { UnitToggle } from "@/components/recipe/unit-toggle";
 import { createClient } from "@/lib/supabase/client";
 import { uploadRecipeImage } from "@/lib/supabase/storage";
-import { recipeFormSchema, type RecipeFormValues } from "@/lib/validators/recipe";
+import { createRecipeFormSchema, type RecipeFormValues } from "@/lib/validators/recipe";
 import { ImageIcon, X } from "lucide-react";
 
 function generateSlug(title: string): string {
@@ -41,9 +41,11 @@ function generateSlug(title: string): string {
 
 export function RecipeForm() {
   const t = useTranslations("recipe");
+  const tv = useTranslations("validation");
   const locale = useLocale();
   const router = useRouter();
   const supabase = createClient();
+  const recipeFormSchema = createRecipeFormSchema((key) => tv(key));
 
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string | null>(null);
@@ -56,6 +58,8 @@ export function RecipeForm() {
     register,
     control,
     handleSubmit,
+    getValues,
+    setValue,
     formState: { errors },
   } = useForm<RecipeFormValues>({
     resolver: zodResolver(recipeFormSchema),
@@ -94,6 +98,15 @@ export function RecipeForm() {
     if (heroPreview) {
       URL.revokeObjectURL(heroPreview);
       setHeroPreview(null);
+    }
+  }
+
+  function cleanTrailingEmptySteps() {
+    const steps = getValues("steps");
+    const cleaned = steps.filter((s) => s.description.trim().length > 0);
+    if (cleaned.length === 0) return;
+    if (cleaned.length !== steps.length) {
+      setValue("steps", cleaned);
     }
   }
 
@@ -200,7 +213,11 @@ export function RecipeForm() {
         }
       }
 
-      router.push(`/${locale}/recipe/${slug}`);
+      if (published) {
+        router.push(`/${locale}/recipe/${slug}`);
+      } else {
+        router.push(`/${locale}/explore`);
+      }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -393,6 +410,7 @@ export function RecipeForm() {
           disabled={isSubmitting}
           onClick={() => {
             publishRef.current = false;
+            cleanTrailingEmptySteps();
             void handleSubmit(onSubmit)();
           }}
         >
@@ -404,6 +422,7 @@ export function RecipeForm() {
           disabled={isSubmitting}
           onClick={() => {
             publishRef.current = true;
+            cleanTrailingEmptySteps();
           }}
         >
           {isSubmitting ? t("submitting") : t("submit")}

@@ -50,7 +50,18 @@
     "saveDraft": "Save Draft",
     "savingDraft": "Saving...",
     "submit": "Publish Recipe",
-    "submitting": "Publishing..."
+    "submitting": "Publishing...",
+    "draftSaved": "Draft saved successfully"
+  },
+  "validation": {
+    "titleMin": "Title must be at least 3 characters",
+    "titleMax": "Title must be 200 characters or less",
+    "descriptionMax": "Description must be 1000 characters or less",
+    "servingsMin": "Servings must be at least 1",
+    "servingsMax": "Servings must be 50 or less",
+    "timeMin": "Time must be 0 or greater",
+    "stepsRequired": "Please add at least one step",
+    "stepDescriptionRequired": "Please describe this step"
   },
   "recipeDetail": {
     "ingredients": "Ingredients",

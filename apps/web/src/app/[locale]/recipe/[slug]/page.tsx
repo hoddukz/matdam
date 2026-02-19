@@ -62,10 +62,10 @@ export default async function RecipeDetailPage({ params }: Props) {
     .eq("recipe_id", recipe.recipe_id)
     .order("step_order");
 
-  // 3. Get ingredients with ingredient details
+  // 3. Get ingredients with ingredient details (left join for custom ingredients)
   const { data: recipeIngredients } = await supabase
     .from("recipe_ingredients")
-    .select("*, ingredients!inner(names, category)")
+    .select("*, ingredients(names, category)")
     .eq("recipe_id", recipe.recipe_id)
     .order("display_order");
 
@@ -89,9 +89,12 @@ export default async function RecipeDetailPage({ params }: Props) {
       (ri: {
         amount: number | null;
         unit: string | null;
-        ingredients: { names: Record<string, string> };
+        custom_name: string | null;
+        ingredients: { names: Record<string, string> } | null;
       }) => {
-        const name = ri.ingredients.names[locale] || ri.ingredients.names["en"] || "";
+        const name = ri.ingredients
+          ? ri.ingredients.names[locale] || ri.ingredients.names["en"] || ""
+          : ri.custom_name || "";
         return ri.amount ? `${ri.amount} ${ri.unit || ""} ${name}`.trim() : name;
       }
     ),

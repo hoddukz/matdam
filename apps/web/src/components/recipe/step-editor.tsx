@@ -50,6 +50,22 @@ export function StepEditor({ value, onChange, recipeId, ingredients = [] }: Step
 
   function updateStep(index: number, patch: Partial<StepEntry>) {
     const updated = value.map((step, i) => (i === index ? { ...step, ...patch } : step));
+
+    // Auto-expand: typing in last step's description adds a new empty step
+    if (
+      patch.description !== undefined &&
+      index === value.length - 1 &&
+      patch.description.length > 0
+    ) {
+      updated.push({
+        description: "",
+        timer_seconds: null,
+        image_url: null,
+        tip: null,
+        ingredient_indices: [],
+      });
+    }
+
     onChange(updated);
   }
 

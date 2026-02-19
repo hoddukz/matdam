@@ -12,6 +12,30 @@ export const ingredientEntrySchema = z.object({
   note: z.string().nullable(),
 });
 
+export function createStepEntrySchema(t: (key: string) => string) {
+  return z.object({
+    description: z.string().min(1, t("stepDescriptionRequired")),
+    timer_seconds: z.number().nullable(),
+    image_url: z.string().nullable(),
+    tip: z.string().nullable(),
+    ingredient_indices: z.array(z.number()),
+  });
+}
+
+export function createRecipeFormSchema(t: (key: string) => string) {
+  return z.object({
+    title: z.string().min(3, t("titleMin")).max(200, t("titleMax")),
+    description: z.string().max(1000, t("descriptionMax")).optional(),
+    difficulty_level: z.enum(["beginner", "intermediate", "master"]),
+    servings: z.number().min(1, t("servingsMin")).max(50, t("servingsMax")),
+    prep_time_minutes: z.number().min(0, t("timeMin")).optional(),
+    cook_time_minutes: z.number().min(0, t("timeMin")).optional(),
+    ingredients: z.array(ingredientEntrySchema),
+    steps: z.array(createStepEntrySchema(t)).min(1, t("stepsRequired")),
+  });
+}
+
+// Static schema kept for type inference
 export const stepEntrySchema = z.object({
   description: z.string().min(1),
   timer_seconds: z.number().nullable(),

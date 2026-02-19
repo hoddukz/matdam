@@ -14,10 +14,11 @@ interface IngredientData {
   unit: string | null;
   qualifier: string | null;
   note: string | null;
+  custom_name: string | null;
   ingredients: {
     names: Record<string, string>;
     category: string;
-  };
+  } | null;
 }
 
 interface RecipeDetailClientProps {
@@ -91,7 +92,9 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
       </div>
       <ul className="space-y-2">
         {ingredients.map((ing, i) => {
-          const name = ing.ingredients.names[locale] || ing.ingredients.names["en"] || "";
+          const name = ing.ingredients
+            ? ing.ingredients.names[locale] || ing.ingredients.names["en"] || ""
+            : ing.custom_name || "";
           return (
             <li
               key={i}
@@ -99,9 +102,11 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
             >
               <div className="flex items-center gap-2">
                 <span className="font-medium">{name}</span>
-                <Badge variant="outline" className="text-[10px]">
-                  {ing.ingredients.category}
-                </Badge>
+                {ing.ingredients?.category && (
+                  <Badge variant="outline" className="text-[10px]">
+                    {ing.ingredients.category}
+                  </Badge>
+                )}
               </div>
               <span className="text-sm text-muted-foreground">
                 {displayAmount(ing)}
