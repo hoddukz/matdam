@@ -41,3 +41,4 @@ docs/work_order/
 
 # supabase
 packages/supabase/.temp/
+apps/web/tsconfig.tsbuildinfo
