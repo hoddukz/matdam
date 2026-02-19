@@ -65,6 +65,12 @@ const imperialToMetric: Record<string, string> = {
 const volumeUnits = new Set(["tsp", "tbsp", "cup", "ml", "l", "fl_oz"]);
 const weightUnits = new Set(["g", "kg", "oz", "lb"]);
 
+const unitDisplayMap: Record<string, string> = {
+  l: "L",
+  ml: "mL",
+  fl_oz: "fl oz",
+};
+
 function convertAmount(amount: number, fromUnit: string, toUnit: string): number | null {
   if (volumeUnits.has(fromUnit) && volumeUnits.has(toUnit)) {
     return convertVolume(amount, fromUnit, toUnit);
@@ -279,8 +285,10 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
       }
     }
 
-    const rounded = Math.round(displayAmt * 100) / 100;
-    return `${rounded} ${displayUnit}`;
+    const rounded =
+      displayAmt < 1 ? parseFloat(displayAmt.toFixed(2)) : parseFloat(displayAmt.toFixed(1));
+    const label = unitDisplayMap[displayUnit] || displayUnit;
+    return `${rounded} ${label}`;
   }
 
   const activeUnits = isCustom ? CUSTOM_UNITS : (selected?.common_units ?? CUSTOM_UNITS);

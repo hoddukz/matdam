@@ -7,11 +7,9 @@
 const ML_PER_TSP = 5;
 const ML_PER_TBSP = 15;
 const ML_PER_CUP = 240;
-const ML_PER_FL_OZ = 29.5735;
-const G_PER_OZ = 28.3495;
-const G_PER_LB = 453.592;
-
-type ConversionMap = Record<string, Record<string, number>>;
+const ML_PER_FL_OZ = 30;
+const G_PER_OZ = 28;
+const G_PER_LB = 454;
 
 const volumeToMl: Record<string, number> = {
   tsp: ML_PER_TSP,
@@ -29,22 +27,14 @@ const weightToG: Record<string, number> = {
   lb: G_PER_LB,
 };
 
-export function convertVolume(
-  value: number,
-  fromUnit: string,
-  toUnit: string
-): number | null {
+export function convertVolume(value: number, fromUnit: string, toUnit: string): number | null {
   const fromMl = volumeToMl[fromUnit];
   const toMl = volumeToMl[toUnit];
   if (fromMl == null || toMl == null) return null;
   return (value * fromMl) / toMl;
 }
 
-export function convertWeight(
-  value: number,
-  fromUnit: string,
-  toUnit: string
-): number | null {
+export function convertWeight(value: number, fromUnit: string, toUnit: string): number | null {
   const fromG = weightToG[fromUnit];
   const toG = weightToG[toUnit];
   if (fromG == null || toG == null) return null;

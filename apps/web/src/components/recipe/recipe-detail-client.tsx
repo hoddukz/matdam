@@ -4,7 +4,6 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Badge } from "@/components/ui/badge";
 import { UnitToggle } from "@/components/recipe/unit-toggle";
 import { useUnitPreference } from "@/stores/unit-preference";
 import { convertVolume, convertWeight } from "@matdam/utils";
@@ -40,6 +39,12 @@ const imperialToMetric: Record<string, string> = {
 
 const volumeUnits = new Set(["tsp", "tbsp", "cup", "ml", "l", "fl_oz"]);
 const weightUnits = new Set(["g", "kg", "oz", "lb"]);
+
+const unitDisplayMap: Record<string, string> = {
+  l: "L",
+  ml: "mL",
+  fl_oz: "fl oz",
+};
 
 function convertAmount(amount: number, fromUnit: string, toUnit: string): number | null {
   if (volumeUnits.has(fromUnit) && volumeUnits.has(toUnit)) {
@@ -80,8 +85,10 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
       }
     }
 
-    const rounded = Math.round(displayAmt * 100) / 100;
-    return `${rounded} ${displayUnit}`;
+    const rounded =
+      displayAmt < 1 ? parseFloat(displayAmt.toFixed(2)) : parseFloat(displayAmt.toFixed(1));
+    const label = unitDisplayMap[displayUnit] || displayUnit;
+    return `${rounded} ${label}`;
   }
 
   return (
@@ -100,14 +107,7 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
               key={i}
               className="flex items-center justify-between border-b border-border/50 py-2 last:border-0"
             >
-              <div className="flex items-center gap-2">
-                <span className="font-medium">{name}</span>
-                {ing.ingredients?.category && (
-                  <Badge variant="outline" className="text-[10px]">
-                    {ing.ingredients.category}
-                  </Badge>
-                )}
-              </div>
+              <span className="font-medium">{name}</span>
               <span className="text-sm text-muted-foreground">
                 {displayAmount(ing)}
                 {ing.note && <span className="ml-1 italic">({ing.note})</span>}
