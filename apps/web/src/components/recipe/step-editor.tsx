@@ -48,13 +48,24 @@ export function StepEditor({ value, onChange, recipeId, ingredients = [] }: Step
   const t = useTranslations("recipe");
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
+  // Ref to always hold the latest steps, preventing stale closure issues
+  // when multiple rapid updates occur between React renders
+  const stepsRef = useRef(value);
+  stepsRef.current = value;
+
+  function emitUpdate(updated: StepEntry[]) {
+    stepsRef.current = updated;
+    onChange(updated);
+  }
+
   function updateStep(index: number, patch: Partial<StepEntry>) {
-    const updated = value.map((step, i) => (i === index ? { ...step, ...patch } : step));
+    const current = stepsRef.current;
+    const updated = current.map((step, i) => (i === index ? { ...step, ...patch } : step));
 
     // Auto-expand: typing in last step's description adds a new empty step
     if (
       patch.description !== undefined &&
-      index === value.length - 1 &&
+      index === current.length - 1 &&
       patch.description.length > 0
     ) {
       updated.push({
@@ -66,23 +77,24 @@ export function StepEditor({ value, onChange, recipeId, ingredients = [] }: Step
       });
     }
 
-    onChange(updated);
+    emitUpdate(updated);
   }
 
   function removeStep(index: number) {
-    if (value.length <= 1) return;
-    onChange(value.filter((_, i) => i !== index));
+    const current = stepsRef.current;
+    if (current.length <= 1) return;
+    emitUpdate(current.filter((_, i) => i !== index));
   }
 
   function addStep() {
-    onChange([
-      ...value,
+    emitUpdate([
+      ...stepsRef.current,
       { description: "", timer_seconds: null, image_url: null, tip: null, ingredient_indices: [] },
     ]);
   }
 
   function toggleIngredient(stepIndex: number, ingredientIndex: number) {
-    const step = value[stepIndex];
+    const step = stepsRef.current[stepIndex];
     const indices = step.ingredient_indices.includes(ingredientIndex)
       ? step.ingredient_indices.filter((i) => i !== ingredientIndex)
       : [...step.ingredient_indices, ingredientIndex];
