@@ -95,8 +95,9 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const amountInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const abortRef = useRef<AbortController | null>(null);
 
   // --- Search ---
 
@@ -108,12 +109,20 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
         return;
       }
 
+      // 이전 요청 취소
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       setIsSearching(true);
-      const { data, error } = await supabase.rpc("search_ingredients", {
+      const { data, error } = await supabaseRef.current.rpc("search_ingredients", {
         search_term: term,
         locale,
         result_limit: 8,
       });
+
+      // 취소된 요청이면 무시
+      if (controller.signal.aborted) return;
 
       if (!error && data) {
         setResults(data as IngredientResult[]);
@@ -121,7 +130,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
       }
       setIsSearching(false);
     },
-    [locale, supabase]
+    [locale]
   );
 
   useEffect(() => {

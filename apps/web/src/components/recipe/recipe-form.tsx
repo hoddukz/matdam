@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -45,7 +45,7 @@ export function RecipeForm() {
   const locale = useLocale();
   const router = useRouter();
   const supabase = createClient();
-  const recipeFormSchema = createRecipeFormSchema((key) => tv(key));
+  const recipeFormSchema = useMemo(() => createRecipeFormSchema((key) => tv(key)), [tv]);
 
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string | null>(null);
@@ -121,6 +121,7 @@ export function RecipeForm() {
       } = await supabase.auth.getUser();
 
       if (!user) {
+        setIsSubmitting(false);
         router.push("/login");
         return;
       }
@@ -152,65 +153,71 @@ export function RecipeForm() {
 
       const recipeId: string = recipeRow.recipe_id;
 
-      // Upload hero image if provided
-      if (heroFile) {
-        const heroUrl = await uploadRecipeImage(heroFile, recipeId, "hero");
-        if (heroUrl) {
-          await supabase
-            .from("recipes")
-            .update({ hero_image_url: heroUrl })
-            .eq("recipe_id", recipeId);
-        }
-      }
-
-      // INSERT recipe_steps
-      if (data.steps.length > 0) {
-        const stepsPayload = data.steps.map((step: StepEntry, i: number) => ({
-          recipe_id: recipeId,
-          step_order: i + 1,
-          description: step.description,
-          timer_seconds: step.timer_seconds,
-          image_url: step.image_url,
-          tip: step.tip,
-        }));
-
-        const { error: stepsError } = await supabase.from("recipe_steps").insert(stepsPayload);
-        if (stepsError) {
-          throw new Error(stepsError.message);
-        }
-      }
-
-      // Build step_number map from step ingredient_indices
-      const ingredientStepMap = new Map<number, number>();
-      data.steps.forEach((step: StepEntry, stepIdx: number) => {
-        for (const ingIdx of step.ingredient_indices) {
-          if (!ingredientStepMap.has(ingIdx)) {
-            ingredientStepMap.set(ingIdx, stepIdx + 1);
+      try {
+        // Upload hero image if provided
+        if (heroFile) {
+          const heroUrl = await uploadRecipeImage(heroFile, recipeId, "hero");
+          if (heroUrl) {
+            await supabase
+              .from("recipes")
+              .update({ hero_image_url: heroUrl })
+              .eq("recipe_id", recipeId);
           }
         }
-      });
 
-      // INSERT recipe_ingredients
-      if (data.ingredients.length > 0) {
-        const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
-          recipe_id: recipeId,
-          ingredient_id: ing.ingredient_id || null,
-          custom_name: ing.ingredient_id ? null : ing.name,
-          amount: ing.amount,
-          unit: ing.unit,
-          qualifier: ing.qualifier,
-          note: ing.note,
-          step_number: ingredientStepMap.get(i) ?? null,
-          display_order: i + 1,
-        }));
+        // INSERT recipe_steps
+        if (data.steps.length > 0) {
+          const stepsPayload = data.steps.map((step: StepEntry, i: number) => ({
+            recipe_id: recipeId,
+            step_order: i + 1,
+            description: step.description,
+            timer_seconds: step.timer_seconds,
+            image_url: step.image_url,
+            tip: step.tip,
+          }));
 
-        const { error: ingError } = await supabase
-          .from("recipe_ingredients")
-          .insert(ingredientsPayload);
-
-        if (ingError) {
-          throw new Error(ingError.message);
+          const { error: stepsError } = await supabase.from("recipe_steps").insert(stepsPayload);
+          if (stepsError) {
+            throw new Error(stepsError.message);
+          }
         }
+
+        // Build step_number map from step ingredient_indices
+        const ingredientStepMap = new Map<number, number>();
+        data.steps.forEach((step: StepEntry, stepIdx: number) => {
+          for (const ingIdx of step.ingredient_indices) {
+            if (!ingredientStepMap.has(ingIdx)) {
+              ingredientStepMap.set(ingIdx, stepIdx + 1);
+            }
+          }
+        });
+
+        // INSERT recipe_ingredients
+        if (data.ingredients.length > 0) {
+          const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
+            recipe_id: recipeId,
+            ingredient_id: ing.ingredient_id || null,
+            custom_name: ing.ingredient_id ? null : ing.name,
+            amount: ing.amount,
+            unit: ing.unit,
+            qualifier: ing.qualifier,
+            note: ing.note,
+            step_number: ingredientStepMap.get(i) ?? null,
+            display_order: i + 1,
+          }));
+
+          const { error: ingError } = await supabase
+            .from("recipe_ingredients")
+            .insert(ingredientsPayload);
+
+          if (ingError) {
+            throw new Error(ingError.message);
+          }
+        }
+      } catch (innerErr) {
+        // 고아 레코드 방지: steps/ingredients 실패 시 recipe 삭제
+        await supabase.from("recipes").delete().eq("recipe_id", recipeId);
+        throw innerErr;
       }
 
       if (published) {

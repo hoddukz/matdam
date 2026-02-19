@@ -19,6 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: t("title"),
     description: t("description"),
+    openGraph: {
+      title: t("title"),
+      description: t("description"),
+      locale: locale === "ko" ? "ko_KR" : "en_US",
+    },
   };
 }
 
@@ -36,15 +41,27 @@ type Recipe = {
   users: { display_name: string | null; avatar_url: string | null };
 };
 
+const VALID_DIFFICULTIES = ["beginner", "intermediate", "master"] as const;
+type Difficulty = (typeof VALID_DIFFICULTIES)[number];
+
 const DIFFICULTY_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
   beginner: "secondary",
   intermediate: "default",
   master: "destructive",
 };
 
+const DIFFICULTY_LABEL_KEYS: Record<string, string> = {
+  beginner: "filterBeginner",
+  intermediate: "filterIntermediate",
+  master: "filterMaster",
+};
+
 export default async function ExplorePage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { difficulty } = await searchParams;
+  const rawDifficulty = (await searchParams).difficulty;
+  const difficulty = VALID_DIFFICULTIES.includes(rawDifficulty as Difficulty)
+    ? (rawDifficulty as Difficulty)
+    : undefined;
   const t = await getTranslations({ locale, namespace: "explore" });
 
   const supabase = await createClient();
@@ -126,8 +143,10 @@ export default async function ExplorePage({ params, searchParams }: Props) {
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="line-clamp-2 text-base leading-snug">{title}</CardTitle>
                       {recipe.difficulty_level && (
-                        <Badge variant={badgeVariant} className="shrink-0 capitalize">
-                          {recipe.difficulty_level}
+                        <Badge variant={badgeVariant} className="shrink-0">
+                          {DIFFICULTY_LABEL_KEYS[recipe.difficulty_level]
+                            ? t(DIFFICULTY_LABEL_KEYS[recipe.difficulty_level])
+                            : recipe.difficulty_level}
                         </Badge>
                       )}
                     </div>

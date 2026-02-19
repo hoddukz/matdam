@@ -1,6 +1,7 @@
 // Tag: core
 // Path: /Users/hodduk/Documents/git/mat_dam/apps/web/src/app/[locale]/recipe/[slug]/page.tsx
 
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -14,15 +15,21 @@ type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale, slug } = await params;
+// React.cache로 동일 요청 내 generateMetadata + page 쿼리 중복 제거
+const getRecipe = cache(async (slug: string) => {
   const supabase = await createClient();
-  const { data: recipe } = await supabase
+  const { data } = await supabase
     .from("recipes")
-    .select("title, description, hero_image_url")
+    .select("*, users!inner(display_name, avatar_url)")
     .eq("slug", slug)
     .eq("published", true)
     .single();
+  return data;
+});
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const recipe = await getRecipe(slug);
 
   if (!recipe) return { title: "Recipe Not Found" };
 
@@ -35,6 +42,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
+      locale: locale === "ko" ? "ko_KR" : "en_US",
       images: recipe.hero_image_url ? [recipe.hero_image_url] : [],
     },
   };
@@ -45,29 +53,20 @@ export default async function RecipeDetailPage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: "recipeDetail" });
   const supabase = await createClient();
 
-  // 1. Get recipe with author
-  const { data: recipe } = await supabase
-    .from("recipes")
-    .select("*, users!inner(display_name, avatar_url)")
-    .eq("slug", slug)
-    .eq("published", true)
-    .single();
+  // 1. Get recipe with author (cached — deduped with generateMetadata)
+  const recipe = await getRecipe(slug);
 
   if (!recipe) notFound();
 
-  // 2. Get steps
-  const { data: steps } = await supabase
-    .from("recipe_steps")
-    .select("*")
-    .eq("recipe_id", recipe.recipe_id)
-    .order("step_order");
-
-  // 3. Get ingredients with ingredient details (left join for custom ingredients)
-  const { data: recipeIngredients } = await supabase
-    .from("recipe_ingredients")
-    .select("*, ingredients(names, category)")
-    .eq("recipe_id", recipe.recipe_id)
-    .order("display_order");
+  // 2+3. Get steps and ingredients in parallel
+  const [{ data: steps }, { data: recipeIngredients }] = await Promise.all([
+    supabase.from("recipe_steps").select("*").eq("recipe_id", recipe.recipe_id).order("step_order"),
+    supabase
+      .from("recipe_ingredients")
+      .select("*, ingredients(names, category)")
+      .eq("recipe_id", recipe.recipe_id)
+      .order("display_order"),
+  ]);
 
   const title = recipe.title[locale] || recipe.title["en"] || "";
   const description = recipe.description?.[locale] || recipe.description?.["en"] || "";
@@ -79,10 +78,10 @@ export default async function RecipeDetailPage({ params }: Props) {
     name: title,
     description,
     image: recipe.hero_image_url,
-    author: { "@type": "Person", name: recipe.users.display_name },
+    author: { "@type": "Person", name: recipe.users?.display_name ?? "Unknown" },
     prepTime: recipe.prep_time_minutes ? `PT${recipe.prep_time_minutes}M` : undefined,
     cookTime: recipe.cook_time_minutes ? `PT${recipe.cook_time_minutes}M` : undefined,
-    recipeYield: `${recipe.servings} servings`,
+    recipeYield: recipe.servings ? `${recipe.servings} servings` : undefined,
     recipeCategory: "Korean",
     recipeCuisine: "Korean",
     recipeIngredient: (recipeIngredients ?? []).map(
@@ -111,7 +110,12 @@ export default async function RecipeDetailPage({ params }: Props) {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd)
+            .replace(/</g, "\\u003c")
+            .replace(/>/g, "\\u003e")
+            .replace(/&/g, "\\u0026"),
+        }}
       />
 
       <article className="mx-auto max-w-3xl px-4 py-8">

@@ -7,7 +7,10 @@ import { createClient } from "@/lib/supabase/server";
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
+  const rawNext = searchParams.get("next") ?? "/";
+
+  // Open redirect 방지: 상대경로만 허용, 프로토콜 상대 URL(//) 차단
+  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
 
   if (code) {
     const supabase = await createClient();
@@ -18,6 +21,6 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // 코드가 없거나 교환 실패 시 에러 페이지로 리다이렉트
-  return NextResponse.redirect(`${origin}/auth/error`);
+  // 코드가 없거나 교환 실패 시 홈으로 리다이렉트
+  return NextResponse.redirect(`${origin}/`);
 }

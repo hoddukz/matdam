@@ -15,12 +15,7 @@ export async function middleware(request: NextRequest) {
   // 2. next-intl 미들웨어 실행
   const intlResponse = intlMiddleware(request);
 
-  // next-intl이 리다이렉트를 내릴 경우 해당 응답 우선 반환
-  if (intlResponse.status !== 200) {
-    return intlResponse;
-  }
-
-  // Supabase 쿠키를 intl 응답에 병합
+  // Supabase 쿠키를 intl 응답에 병합 (redirect 응답 포함)
   supabaseResponse.cookies.getAll().forEach((cookie) => {
     intlResponse.cookies.set(cookie.name, cookie.value, {
       ...cookie,
