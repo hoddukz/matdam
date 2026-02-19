@@ -4,7 +4,7 @@
 import { z } from "zod";
 
 export const ingredientEntrySchema = z.object({
-  ingredient_id: z.string(),
+  ingredient_id: z.string().nullable(),
   name: z.string(),
   amount: z.number().nullable(),
   unit: z.string().nullable(),
@@ -17,6 +17,7 @@ export const stepEntrySchema = z.object({
   timer_seconds: z.number().nullable(),
   image_url: z.string().nullable(),
   tip: z.string().nullable(),
+  ingredient_indices: z.array(z.number()),
 });
 
 export const recipeFormSchema = z.object({

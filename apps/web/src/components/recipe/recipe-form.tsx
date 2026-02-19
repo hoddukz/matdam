@@ -3,8 +3,8 @@
 
 "use client";
 
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useRef, useState } from "react";
+import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -50,6 +50,8 @@ export function RecipeForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
+  const publishRef = useRef(true);
+
   const {
     register,
     control,
@@ -65,9 +67,19 @@ export function RecipeForm() {
       prep_time_minutes: undefined,
       cook_time_minutes: undefined,
       ingredients: [],
-      steps: [{ description: "", timer_seconds: null, image_url: null, tip: null }],
+      steps: [
+        {
+          description: "",
+          timer_seconds: null,
+          image_url: null,
+          tip: null,
+          ingredient_indices: [],
+        },
+      ],
     },
   });
+
+  const watchedIngredients = useWatch({ control, name: "ingredients" }) as IngredientEntry[];
 
   function handleHeroChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -88,6 +100,7 @@ export function RecipeForm() {
   async function onSubmit(data: RecipeFormValues) {
     setIsSubmitting(true);
     setSubmitError(null);
+    const published = publishRef.current;
 
     try {
       const {
@@ -101,7 +114,7 @@ export function RecipeForm() {
 
       const slug = generateSlug(data.title);
 
-      // INSERT recipe row first (need recipe_id for image uploads)
+      // INSERT recipe row
       const { data: recipeRow, error: recipeError } = await supabase
         .from("recipes")
         .insert({
@@ -114,7 +127,7 @@ export function RecipeForm() {
           prep_time_minutes: data.prep_time_minutes ?? null,
           cook_time_minutes: data.cook_time_minutes ?? null,
           hero_image_url: null,
-          published: true,
+          published,
           dietary_tags: [],
         })
         .select("recipe_id")
@@ -154,16 +167,27 @@ export function RecipeForm() {
         }
       }
 
+      // Build step_number map from step ingredient_indices
+      const ingredientStepMap = new Map<number, number>();
+      data.steps.forEach((step: StepEntry, stepIdx: number) => {
+        for (const ingIdx of step.ingredient_indices) {
+          if (!ingredientStepMap.has(ingIdx)) {
+            ingredientStepMap.set(ingIdx, stepIdx + 1);
+          }
+        }
+      });
+
       // INSERT recipe_ingredients
       if (data.ingredients.length > 0) {
         const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
           recipe_id: recipeId,
-          ingredient_id: ing.ingredient_id,
+          ingredient_id: ing.ingredient_id || null,
+          custom_name: ing.ingredient_id ? null : ing.name,
           amount: ing.amount,
           unit: ing.unit,
           qualifier: ing.qualifier,
           note: ing.note,
-          step_number: null,
+          step_number: ingredientStepMap.get(i) ?? null,
           display_order: i + 1,
         }));
 
@@ -327,7 +351,11 @@ export function RecipeForm() {
           control={control}
           name="steps"
           render={({ field }) => (
-            <StepEditor value={field.value as StepEntry[]} onChange={field.onChange} />
+            <StepEditor
+              value={field.value as StepEntry[]}
+              onChange={field.onChange}
+              ingredients={watchedIngredients}
+            />
           )}
         />
         {errors.steps && !Array.isArray(errors.steps) && (
@@ -342,10 +370,31 @@ export function RecipeForm() {
         </p>
       )}
 
-      {/* Submit button */}
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? t("submitting") : t("submit")}
-      </Button>
+      {/* Action buttons */}
+      <div className="flex gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          className="flex-1"
+          disabled={isSubmitting}
+          onClick={() => {
+            publishRef.current = false;
+            void handleSubmit(onSubmit)();
+          }}
+        >
+          {t("saveDraft")}
+        </Button>
+        <Button
+          type="submit"
+          className="flex-1"
+          disabled={isSubmitting}
+          onClick={() => {
+            publishRef.current = true;
+          }}
+        >
+          {isSubmitting ? t("submitting") : t("submit")}
+        </Button>
+      </div>
     </form>
   );
 }

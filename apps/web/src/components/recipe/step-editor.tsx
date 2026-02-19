@@ -10,20 +10,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { X, Plus, Clock, Lightbulb, ImageIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { X, Plus, Clock, Lightbulb, ImageIcon, UtensilsCrossed } from "lucide-react";
 import { uploadRecipeImage } from "@/lib/supabase/storage";
+import type { IngredientEntry } from "@/components/recipe/ingredient-input";
 
 export interface StepEntry {
   description: string;
   timer_seconds: number | null;
   image_url: string | null;
   tip: string | null;
+  ingredient_indices: number[];
 }
 
 interface StepEditorProps {
   value: StepEntry[];
   onChange: (steps: StepEntry[]) => void;
   recipeId?: string;
+  ingredients?: IngredientEntry[];
 }
 
 function secondsToMinSec(seconds: number | null): { min: string; sec: string } {
@@ -40,7 +44,7 @@ function minSecToSeconds(min: string, sec: string): number | null {
   return (isNaN(m) ? 0 : m) * 60 + (isNaN(s) ? 0 : s);
 }
 
-export function StepEditor({ value, onChange, recipeId }: StepEditorProps) {
+export function StepEditor({ value, onChange, recipeId, ingredients = [] }: StepEditorProps) {
   const t = useTranslations("recipe");
   const fileInputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -55,36 +59,39 @@ export function StepEditor({ value, onChange, recipeId }: StepEditorProps) {
   }
 
   function addStep() {
-    onChange([...value, { description: "", timer_seconds: null, image_url: null, tip: null }]);
+    onChange([
+      ...value,
+      { description: "", timer_seconds: null, image_url: null, tip: null, ingredient_indices: [] },
+    ]);
   }
 
-  // Double-enter (empty line) in description triggers new step
+  function toggleIngredient(stepIndex: number, ingredientIndex: number) {
+    const step = value[stepIndex];
+    const indices = step.ingredient_indices.includes(ingredientIndex)
+      ? step.ingredient_indices.filter((i) => i !== ingredientIndex)
+      : [...step.ingredient_indices, ingredientIndex];
+    updateStep(stepIndex, { ingredient_indices: indices });
+  }
+
   function handleDescriptionKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>, index: number) {
     if (e.key === "Enter") {
       const textarea = e.currentTarget;
       const cursorPos = textarea.selectionStart;
       const textBefore = textarea.value.substring(0, cursorPos);
 
-      // If the character before cursor is a newline (or string is empty), treat as double-enter
       const isDoubleEnter =
         textBefore.endsWith("\n") || (textBefore === "" && textarea.value === "");
 
       if (isDoubleEnter) {
         e.preventDefault();
-        // Remove the trailing newline from current step description
         const trimmedDescription = textarea.value.replace(/\n$/, "");
         updateStep(index, { description: trimmedDescription });
         addStep();
-        // Focus the next step textarea after render
         setTimeout(() => {
-          const nextRef = fileInputRefs.current[index + 1];
-          if (nextRef) {
-            // find the textarea in the next card - we target by a data attribute
-            const nextCard = document.querySelector(
-              `[data-step-index="${index + 1}"] textarea`
-            ) as HTMLTextAreaElement | null;
-            nextCard?.focus();
-          }
+          const nextCard = document.querySelector(
+            `[data-step-index="${index + 1}"] textarea`
+          ) as HTMLTextAreaElement | null;
+          nextCard?.focus();
         }, 50);
       }
     }
@@ -99,7 +106,6 @@ export function StepEditor({ value, onChange, recipeId }: StepEditorProps) {
     if (url) {
       updateStep(index, { image_url: url });
     }
-    // Reset input so same file can be re-uploaded if needed
     e.target.value = "";
   }
 
@@ -139,6 +145,31 @@ export function StepEditor({ value, onChange, recipeId }: StepEditorProps) {
                 />
                 <p className="text-xs text-muted-foreground">{t("stepDoubleEnterHint")}</p>
               </div>
+
+              {/* Ingredients used in this step */}
+              {ingredients.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <UtensilsCrossed className="h-3 w-3" />
+                    {t("stepIngredients")}
+                  </Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {ingredients.map((ing, ingIdx) => {
+                      const isSelected = step.ingredient_indices.includes(ingIdx);
+                      return (
+                        <Badge
+                          key={ingIdx}
+                          variant={isSelected ? "default" : "outline"}
+                          className="cursor-pointer select-none text-xs transition-colors"
+                          onClick={() => toggleIngredient(index, ingIdx)}
+                        >
+                          {ing.name}
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* Optional fields row */}
               <div className="flex flex-wrap gap-3">

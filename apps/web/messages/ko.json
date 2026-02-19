@@ -46,6 +46,9 @@
     "stepTip": "팁",
     "stepTipPlaceholder": "이 단계에 도움이 되는 팁이 있나요?",
     "addStep": "단계 추가",
+    "stepIngredients": "사용 재료",
+    "saveDraft": "임시 저장",
+    "savingDraft": "저장 중...",
     "submit": "레시피 등록",
     "submitting": "등록 중..."
   },
@@ -79,6 +82,7 @@
     "metric": "미터법",
     "imperial": "야드파운드법",
     "addIngredient": "재료 추가",
+    "addCustom": "\"{name}\" 직접 추가",
     "noResults": "재료를 찾을 수 없습니다"
   },
   "footer": {

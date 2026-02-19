@@ -32,7 +32,7 @@ interface IngredientResult {
 }
 
 export interface IngredientEntry {
-  ingredient_id: string;
+  ingredient_id: string | null;
   name: string;
   amount: number | null;
   unit: string | null;
@@ -45,7 +45,9 @@ interface IngredientInputProps {
   onChange: (entries: IngredientEntry[]) => void;
 }
 
-// --- Metric/Imperial mapping ---
+// --- Constants ---
+
+const CUSTOM_UNITS = ["g", "kg", "ml", "l", "tsp", "tbsp", "cup", "piece", "whole"];
 
 const metricToImperial: Record<string, string> = {
   ml: "fl_oz",
@@ -80,11 +82,12 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
   const locale = useLocale();
   const { system } = useUnitPreference();
 
-  // Step state: "search" | "amount" | "unit"
   const [step, setStep] = useState<"search" | "amount" | "unit">("search");
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState<IngredientResult[]>([]);
   const [selected, setSelected] = useState<IngredientResult | null>(null);
+  const [isCustom, setIsCustom] = useState(false);
+  const [customName, setCustomName] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -135,6 +138,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
 
   function handleSelectIngredient(ingredient: IngredientResult) {
     setSelected(ingredient);
+    setIsCustom(false);
     setSearchTerm(ingredient.names[locale] || ingredient.names["en"] || ingredient.id);
     setUnit(ingredient.default_unit);
     setShowDropdown(false);
@@ -142,12 +146,24 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
     setTimeout(() => amountInputRef.current?.focus(), 50);
   }
 
+  function handleSelectCustom() {
+    setIsCustom(true);
+    setSelected(null);
+    setCustomName(searchTerm);
+    setUnit("g");
+    setShowDropdown(false);
+    setStep("amount");
+    setTimeout(() => amountInputRef.current?.focus(), 50);
+  }
+
   function handleAddIngredient() {
-    if (!selected) return;
+    if (!selected && !isCustom) return;
 
     const entry: IngredientEntry = {
-      ingredient_id: selected.id,
-      name: selected.names[locale] || selected.names["en"] || selected.id,
+      ingredient_id: isCustom ? null : selected!.id,
+      name: isCustom
+        ? customName
+        : selected!.names[locale] || selected!.names["en"] || selected!.id,
       amount: amount ? parseFloat(amount) : null,
       unit: unit || null,
       qualifier: null,
@@ -166,6 +182,8 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
     setStep("search");
     setSearchTerm("");
     setSelected(null);
+    setIsCustom(false);
+    setCustomName("");
     setAmount("");
     setUnit("");
     setResults([]);
@@ -176,7 +194,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (step === "amount" && selected) {
+      if (step === "amount" && (selected || isCustom)) {
         setStep("unit");
       } else if (step === "unit") {
         handleAddIngredient();
@@ -218,6 +236,10 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
     return `${rounded} ${displayUnit}`;
   }
 
+  const activeUnits = isCustom ? CUSTOM_UNITS : (selected?.common_units ?? CUSTOM_UNITS);
+
+  const canAdd = !!(selected || isCustom);
+
   return (
     <div className="space-y-3">
       {/* Added ingredients list */}
@@ -250,16 +272,17 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
-              if (selected) {
+              if (selected || isCustom) {
                 setSelected(null);
+                setIsCustom(false);
                 setStep("search");
               }
             }}
             placeholder={t("searchPlaceholder")}
             className="w-full"
-            disabled={step !== "search" && selected !== null}
+            disabled={step !== "search" && canAdd}
           />
-          {showDropdown && results.length > 0 && (
+          {showDropdown && (
             <div className="absolute top-full z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
               {results.map((item) => (
                 <button
@@ -275,6 +298,17 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
                   <span className="ml-auto text-xs text-muted-foreground">{item.category}</span>
                 </button>
               ))}
+              {/* Custom ingredient option */}
+              {searchTerm.length >= 2 && (
+                <button
+                  type="button"
+                  className="flex w-full items-center gap-2 rounded-sm border-t px-2 py-1.5 text-sm hover:bg-accent"
+                  onClick={handleSelectCustom}
+                >
+                  <Plus className="h-3 w-3 text-muted-foreground" />
+                  <span>{t("addCustom", { name: searchTerm })}</span>
+                </button>
+              )}
             </div>
           )}
           {isSearching && searchTerm.length >= 2 && (
@@ -300,13 +334,13 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
         )}
 
         {/* Step 3: Unit */}
-        {step !== "search" && selected && (
+        {step !== "search" && canAdd && (
           <Select value={unit} onValueChange={setUnit}>
             <SelectTrigger className="w-24">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {selected.common_units.map((u) => (
+              {activeUnits.map((u) => (
                 <SelectItem key={u} value={u}>
                   {u}
                 </SelectItem>
@@ -316,7 +350,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
         )}
 
         {/* Add button */}
-        {selected && (
+        {canAdd && (
           <Button type="button" size="icon" variant="outline" onClick={handleAddIngredient}>
             <Plus className="h-4 w-4" />
           </Button>

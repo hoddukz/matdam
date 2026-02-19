@@ -46,6 +46,9 @@
     "stepTip": "Tip",
     "stepTipPlaceholder": "Any helpful tips for this step?",
     "addStep": "Add Step",
+    "stepIngredients": "Ingredients used",
+    "saveDraft": "Save Draft",
+    "savingDraft": "Saving...",
     "submit": "Publish Recipe",
     "submitting": "Publishing..."
   },
@@ -79,6 +82,7 @@
     "metric": "Metric",
     "imperial": "Imperial",
     "addIngredient": "Add ingredient",
+    "addCustom": "Add \"{name}\" as custom",
     "noResults": "No ingredients found"
   },
   "footer": {
