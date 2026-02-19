@@ -4,7 +4,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,28 +28,32 @@ interface DeleteRecipeButtonProps {
 export function DeleteRecipeButton({ recipeId, iconOnly }: DeleteRecipeButtonProps) {
   const t = useTranslations("recipeDetail");
   const locale = useLocale();
-  const router = useRouter();
   const supabase = createClient();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleDelete() {
     setIsDeleting(true);
+    setDeleteError(null);
     try {
-      // storage 이미지 삭제 (recipeId 폴더 전체)
-      const { data: files } = await supabase.storage.from("recipe-images").list(recipeId);
-
-      if (files && files.length > 0) {
-        const paths = files.map((f) => `${recipeId}/${f.name}`);
-        await supabase.storage.from("recipe-images").remove(paths);
-      }
-
-      // recipe 삭제 (CASCADE로 steps/ingredients 자동 삭제)
+      // DB 먼저 삭제 (CASCADE로 steps/ingredients 자동 삭제)
       const { error } = await supabase.from("recipes").delete().eq("recipe_id", recipeId);
-
       if (error) throw error;
 
-      router.push(`/${locale}/profile`);
-    } catch {
+      // DB 삭제 성공 후 storage 이미지 정리 (실패해도 무시)
+      try {
+        const { data: files } = await supabase.storage.from("recipe-images").list(recipeId);
+        if (files && files.length > 0) {
+          const paths = files.map((f) => `${recipeId}/${f.name}`);
+          await supabase.storage.from("recipe-images").remove(paths);
+        }
+      } catch {
+        // storage 정리 실패는 무시 (고아 이미지는 치명적이지 않음)
+      }
+
+      window.location.href = `/${locale}/profile`;
+    } catch (err) {
+      setDeleteError(err instanceof Error ? err.message : "Delete failed");
       setIsDeleting(false);
     }
   }
@@ -81,6 +84,7 @@ export function DeleteRecipeButton({ recipeId, iconOnly }: DeleteRecipeButtonPro
         <AlertDialogHeader>
           <AlertDialogTitle>{t("deleteConfirm")}</AlertDialogTitle>
           <AlertDialogDescription>{t("deleteDescription")}</AlertDialogDescription>
+          {deleteError && <p className="mt-2 text-sm text-destructive">{deleteError}</p>}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("deleteCancel")}</AlertDialogCancel>

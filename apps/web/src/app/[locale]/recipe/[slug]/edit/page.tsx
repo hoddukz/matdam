@@ -98,6 +98,8 @@ export default async function EditRecipePage({ params }: Props) {
     recipeId: recipe.recipe_id,
     slug: recipe.slug,
     heroImageUrl: recipe.hero_image_url,
+    rawTitle: recipe.title,
+    rawDescription: recipe.description,
     title,
     description:
       recipe.description?.[locale] ||

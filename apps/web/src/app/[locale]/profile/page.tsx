@@ -94,9 +94,13 @@ export default async function ProfilePage({ params }: Props) {
           const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
           const badgeVariant = DIFFICULTY_VARIANTS[recipe.difficulty_level ?? ""] ?? "outline";
 
+          const cardHref = recipe.published
+            ? `/${locale}/recipe/${recipe.slug}`
+            : `/${locale}/recipe/${recipe.slug}/edit`;
+
           return (
             <div key={recipe.recipe_id} className="group relative">
-              <Link href={`/${locale}/recipe/${recipe.slug}`}>
+              <Link href={cardHref}>
                 <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
                   <div className="relative aspect-video w-full overflow-hidden bg-muted">
                     {recipe.hero_image_url ? (

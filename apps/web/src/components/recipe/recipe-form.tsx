@@ -43,6 +43,8 @@ export interface RecipeFormInitialData extends RecipeFormValues {
   recipeId: string;
   slug: string;
   heroImageUrl: string | null;
+  rawTitle: Record<string, string>;
+  rawDescription: Record<string, string> | null;
 }
 
 interface RecipeFormProps {
@@ -229,11 +231,17 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       heroImageUrl = null;
     }
 
+    // 기존 로케일 데이터를 보존하면서 현재 로케일만 업데이트
+    const mergedTitle = { ...initialData!.rawTitle, [locale]: data.title };
+    const mergedDescription = data.description
+      ? { ...(initialData!.rawDescription ?? {}), [locale]: data.description }
+      : initialData!.rawDescription;
+
     const { error: recipeError } = await supabase
       .from("recipes")
       .update({
-        title: { [locale]: data.title },
-        description: data.description ? { [locale]: data.description } : null,
+        title: mergedTitle,
+        description: mergedDescription,
         difficulty_level: data.difficulty_level,
         servings: data.servings,
         prep_time_minutes: data.prep_time_minutes ?? null,
@@ -248,14 +256,18 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     }
 
     // 기존 steps/ingredients 전부 DELETE → 새로 INSERT (diff보다 단순)
-    await Promise.all([
+    const [stepsDelete, ingredientsDelete] = await Promise.all([
       supabase.from("recipe_steps").delete().eq("recipe_id", recipeId),
       supabase.from("recipe_ingredients").delete().eq("recipe_id", recipeId),
     ]);
 
+    if (stepsDelete.error) throw new Error(stepsDelete.error.message);
+    if (ingredientsDelete.error) throw new Error(ingredientsDelete.error.message);
+
     await insertStepsAndIngredients(data, recipeId);
 
-    router.push(`/${locale}/recipe/${slug}`);
+    // 캐시 우회를 위해 하드 네비게이션
+    window.location.href = `/${locale}/recipe/${slug}`;
   }
 
   async function insertStepsAndIngredients(data: RecipeFormValues, recipeId: string) {

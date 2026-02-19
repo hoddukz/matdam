@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Plus } from "lucide-react";
+import { X, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useUnitPreference } from "@/stores/unit-preference";
 import { convertVolume, convertWeight } from "@matdam/utils";
@@ -92,6 +92,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
   const [unit, setUnit] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [suggestionPage, setSuggestionPage] = useState(0);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const amountInputRef = useRef<HTMLInputElement>(null);
@@ -103,29 +104,29 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
 
   const searchIngredients = useCallback(
     async (term: string) => {
-      if (term.length < 2) {
+      const trimmed = term.trim();
+      if (trimmed.length < 1) {
         setResults([]);
         setShowDropdown(false);
         return;
       }
 
-      // 이전 요청 취소
       abortRef.current?.abort();
       const controller = new AbortController();
       abortRef.current = controller;
 
       setIsSearching(true);
       const { data, error } = await supabaseRef.current.rpc("search_ingredients", {
-        search_term: term,
+        search_term: trimmed,
         locale,
-        result_limit: 8,
+        result_limit: 36,
       });
 
-      // 취소된 요청이면 무시
       if (controller.signal.aborted) return;
 
       if (!error && data) {
         setResults(data as IngredientResult[]);
+        setSuggestionPage(0);
         setShowDropdown(true);
       }
       setIsSearching(false);
@@ -197,10 +198,47 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
     setUnit("");
     setResults([]);
     setShowDropdown(false);
+    setSuggestionPage(0);
     setTimeout(() => searchInputRef.current?.focus(), 50);
   }
 
+  // 페이지네이션 계산
+  const ITEMS_PER_PAGE = 9;
+  const totalPages = Math.ceil(results.length / ITEMS_PER_PAGE);
+  const pageResults = results.slice(
+    suggestionPage * ITEMS_PER_PAGE,
+    (suggestionPage + 1) * ITEMS_PER_PAGE
+  );
+
   function handleKeyDown(e: React.KeyboardEvent) {
+    // 드롭다운이 열려있을 때: 숫자키로 선택, 화살표로 페이지 이동
+    if (showDropdown && step === "search") {
+      // 숫자 1~9 → 해당 번호 재료 선택
+      const num = parseInt(e.key);
+      if (num >= 1 && num <= 9 && num <= pageResults.length) {
+        e.preventDefault();
+        handleSelectIngredient(pageResults[num - 1]);
+        return;
+      }
+      // 0 → 커스텀 직접 추가
+      if (e.key === "0" && searchTerm.trim().length >= 1) {
+        e.preventDefault();
+        handleSelectCustom();
+        return;
+      }
+      // ← → 페이지 이동
+      if (e.key === "ArrowRight" && suggestionPage < totalPages - 1) {
+        e.preventDefault();
+        setSuggestionPage((p) => p + 1);
+        return;
+      }
+      if (e.key === "ArrowLeft" && suggestionPage > 0) {
+        e.preventDefault();
+        setSuggestionPage((p) => p - 1);
+        return;
+      }
+    }
+
     if (e.key === "Enter") {
       e.preventDefault();
       if (step === "amount" && (selected || isCustom)) {
@@ -292,35 +330,72 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
             disabled={step !== "search" && canAdd}
           />
           {showDropdown && (
-            <div className="absolute top-full z-50 mt-1 w-full rounded-md border bg-popover p-1 shadow-md">
-              {results.map((item) => (
+            <div className="absolute top-full z-50 mt-1 w-full rounded-md border bg-popover p-2 shadow-md">
+              {/* 번호 붙은 제안 목록 */}
+              <div className="grid grid-cols-1 gap-0.5">
+                {pageResults.map((item, idx) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+                    onClick={() => handleSelectIngredient(item)}
+                  >
+                    <kbd className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-xs font-mono font-medium">
+                      {idx + 1}
+                    </kbd>
+                    <span className="font-medium">{item.names[locale] || item.names["en"]}</span>
+                    {locale !== "en" && item.names["en"] && (
+                      <span className="text-muted-foreground text-xs">{item.names["en"]}</span>
+                    )}
+                    <span className="ml-auto text-xs text-muted-foreground">{item.category}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* 커스텀 직접 추가 (0번) */}
+              {searchTerm.trim().length >= 1 && (
                 <button
-                  key={item.id}
                   type="button"
-                  className="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
-                  onClick={() => handleSelectIngredient(item)}
-                >
-                  <span className="font-medium">{item.names[locale] || item.names["en"]}</span>
-                  {locale !== "en" && item.names["en"] && (
-                    <span className="text-muted-foreground text-xs">{item.names["en"]}</span>
-                  )}
-                  <span className="ml-auto text-xs text-muted-foreground">{item.category}</span>
-                </button>
-              ))}
-              {/* Custom ingredient option */}
-              {searchTerm.length >= 2 && (
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-2 rounded-sm border-t px-2 py-1.5 text-sm hover:bg-accent"
+                  className="mt-1 flex w-full items-center gap-2 rounded-sm border-t px-2 py-1.5 text-sm hover:bg-accent"
                   onClick={handleSelectCustom}
                 >
+                  <kbd className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded bg-muted text-xs font-mono font-medium">
+                    0
+                  </kbd>
                   <Plus className="h-3 w-3 text-muted-foreground" />
-                  <span>{t("addCustom", { name: searchTerm })}</span>
+                  <span>{t("addCustom", { name: searchTerm.trim() })}</span>
                 </button>
+              )}
+
+              {/* 페이지 네비게이션 */}
+              {totalPages > 1 && (
+                <div className="mt-1.5 flex items-center justify-between border-t pt-1.5 text-xs text-muted-foreground">
+                  <button
+                    type="button"
+                    className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-accent disabled:opacity-30"
+                    disabled={suggestionPage === 0}
+                    onClick={() => setSuggestionPage((p) => p - 1)}
+                  >
+                    <ChevronLeft className="h-3 w-3" />
+                    <kbd className="font-mono">&#8592;</kbd>
+                  </button>
+                  <span>
+                    {suggestionPage + 1} / {totalPages}
+                  </span>
+                  <button
+                    type="button"
+                    className="flex items-center gap-0.5 rounded px-1.5 py-0.5 hover:bg-accent disabled:opacity-30"
+                    disabled={suggestionPage >= totalPages - 1}
+                    onClick={() => setSuggestionPage((p) => p + 1)}
+                  >
+                    <kbd className="font-mono">&#8594;</kbd>
+                    <ChevronRight className="h-3 w-3" />
+                  </button>
+                </div>
               )}
             </div>
           )}
-          {isSearching && searchTerm.length >= 2 && (
+          {isSearching && searchTerm.trim().length >= 1 && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
             </div>
