@@ -39,7 +39,17 @@ function generateSlug(title: string): string {
   return `${base}-${suffix}`;
 }
 
-export function RecipeForm() {
+export interface RecipeFormInitialData extends RecipeFormValues {
+  recipeId: string;
+  slug: string;
+  heroImageUrl: string | null;
+}
+
+interface RecipeFormProps {
+  initialData?: RecipeFormInitialData;
+}
+
+export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   const t = useTranslations("recipe");
   const tv = useTranslations("validation");
   const locale = useLocale();
@@ -47,8 +57,10 @@ export function RecipeForm() {
   const supabase = createClient();
   const recipeFormSchema = useMemo(() => createRecipeFormSchema((key) => tv(key)), [tv]);
 
+  const isEditMode = !!initialData;
+
   const [heroFile, setHeroFile] = useState<File | null>(null);
-  const [heroPreview, setHeroPreview] = useState<string | null>(null);
+  const [heroPreview, setHeroPreview] = useState<string | null>(initialData?.heroImageUrl ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -63,24 +75,35 @@ export function RecipeForm() {
     formState: { errors },
   } = useForm<RecipeFormValues>({
     resolver: zodResolver(recipeFormSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      difficulty_level: "beginner",
-      servings: 2,
-      prep_time_minutes: undefined,
-      cook_time_minutes: undefined,
-      ingredients: [],
-      steps: [
-        {
+    defaultValues: initialData
+      ? {
+          title: initialData.title,
+          description: initialData.description ?? "",
+          difficulty_level: initialData.difficulty_level,
+          servings: initialData.servings,
+          prep_time_minutes: initialData.prep_time_minutes,
+          cook_time_minutes: initialData.cook_time_minutes,
+          ingredients: initialData.ingredients,
+          steps: initialData.steps,
+        }
+      : {
+          title: "",
           description: "",
-          timer_seconds: null,
-          image_url: null,
-          tip: null,
-          ingredient_indices: [],
+          difficulty_level: "beginner",
+          servings: 2,
+          prep_time_minutes: undefined,
+          cook_time_minutes: undefined,
+          ingredients: [],
+          steps: [
+            {
+              description: "",
+              timer_seconds: null,
+              image_url: null,
+              tip: null,
+              ingredient_indices: [],
+            },
+          ],
         },
-      ],
-    },
   });
 
   const watchedIngredients = useWatch({ control, name: "ingredients" }) as IngredientEntry[];
@@ -96,7 +119,9 @@ export function RecipeForm() {
   function clearHero() {
     setHeroFile(null);
     if (heroPreview) {
-      URL.revokeObjectURL(heroPreview);
+      if (heroPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(heroPreview);
+      }
       setHeroPreview(null);
     }
   }
@@ -126,104 +151,10 @@ export function RecipeForm() {
         return;
       }
 
-      const slug = generateSlug(data.title);
-
-      // INSERT recipe row
-      const { data: recipeRow, error: recipeError } = await supabase
-        .from("recipes")
-        .insert({
-          slug,
-          title: { [locale]: data.title },
-          description: data.description ? { [locale]: data.description } : null,
-          author_id: user.id,
-          difficulty_level: data.difficulty_level,
-          servings: data.servings,
-          prep_time_minutes: data.prep_time_minutes ?? null,
-          cook_time_minutes: data.cook_time_minutes ?? null,
-          hero_image_url: null,
-          published,
-          dietary_tags: [],
-        })
-        .select("recipe_id")
-        .single();
-
-      if (recipeError || !recipeRow) {
-        throw new Error(recipeError?.message ?? "Failed to create recipe");
-      }
-
-      const recipeId: string = recipeRow.recipe_id;
-
-      try {
-        // Upload hero image if provided
-        if (heroFile) {
-          const heroUrl = await uploadRecipeImage(heroFile, recipeId, "hero");
-          if (heroUrl) {
-            await supabase
-              .from("recipes")
-              .update({ hero_image_url: heroUrl })
-              .eq("recipe_id", recipeId);
-          }
-        }
-
-        // INSERT recipe_steps
-        if (data.steps.length > 0) {
-          const stepsPayload = data.steps.map((step: StepEntry, i: number) => ({
-            recipe_id: recipeId,
-            step_order: i + 1,
-            description: step.description,
-            timer_seconds: step.timer_seconds,
-            image_url: step.image_url,
-            tip: step.tip,
-          }));
-
-          const { error: stepsError } = await supabase.from("recipe_steps").insert(stepsPayload);
-          if (stepsError) {
-            throw new Error(stepsError.message);
-          }
-        }
-
-        // Build step_number map from step ingredient_indices
-        const ingredientStepMap = new Map<number, number>();
-        data.steps.forEach((step: StepEntry, stepIdx: number) => {
-          for (const ingIdx of step.ingredient_indices) {
-            if (!ingredientStepMap.has(ingIdx)) {
-              ingredientStepMap.set(ingIdx, stepIdx + 1);
-            }
-          }
-        });
-
-        // INSERT recipe_ingredients
-        if (data.ingredients.length > 0) {
-          const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
-            recipe_id: recipeId,
-            ingredient_id: ing.ingredient_id || null,
-            custom_name: ing.ingredient_id ? null : ing.name,
-            amount: ing.amount,
-            unit: ing.unit,
-            qualifier: ing.qualifier,
-            note: ing.note,
-            step_number: ingredientStepMap.get(i) ?? null,
-            display_order: i + 1,
-          }));
-
-          const { error: ingError } = await supabase
-            .from("recipe_ingredients")
-            .insert(ingredientsPayload);
-
-          if (ingError) {
-            throw new Error(ingError.message);
-          }
-        }
-      } catch (innerErr) {
-        // 고아 레코드 방지: steps/ingredients 실패 시 recipe 삭제
-        await supabase.from("recipes").delete().eq("recipe_id", recipeId);
-        throw innerErr;
-      }
-
-      if (published) {
-        router.push(`/${locale}/recipe/${slug}`);
+      if (isEditMode) {
+        await handleUpdate(data, user.id, published);
       } else {
-        router.push(`/${locale}/explore`);
+        await handleCreate(data, user.id, published);
       }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Unknown error");
@@ -232,9 +163,153 @@ export function RecipeForm() {
     }
   }
 
+  async function handleCreate(data: RecipeFormValues, userId: string, published: boolean) {
+    const slug = generateSlug(data.title);
+
+    const { data: recipeRow, error: recipeError } = await supabase
+      .from("recipes")
+      .insert({
+        slug,
+        title: { [locale]: data.title },
+        description: data.description ? { [locale]: data.description } : null,
+        author_id: userId,
+        difficulty_level: data.difficulty_level,
+        servings: data.servings,
+        prep_time_minutes: data.prep_time_minutes ?? null,
+        cook_time_minutes: data.cook_time_minutes ?? null,
+        hero_image_url: null,
+        published,
+        dietary_tags: [],
+      })
+      .select("recipe_id")
+      .single();
+
+    if (recipeError || !recipeRow) {
+      throw new Error(recipeError?.message ?? "Failed to create recipe");
+    }
+
+    const recipeId: string = recipeRow.recipe_id;
+
+    try {
+      if (heroFile) {
+        const heroUrl = await uploadRecipeImage(heroFile, recipeId, "hero");
+        if (heroUrl) {
+          await supabase
+            .from("recipes")
+            .update({ hero_image_url: heroUrl })
+            .eq("recipe_id", recipeId);
+        }
+      }
+
+      await insertStepsAndIngredients(data, recipeId);
+    } catch (innerErr) {
+      await supabase.from("recipes").delete().eq("recipe_id", recipeId);
+      throw innerErr;
+    }
+
+    if (published) {
+      router.push(`/${locale}/recipe/${slug}`);
+    } else {
+      router.push(`/${locale}/explore`);
+    }
+  }
+
+  async function handleUpdate(data: RecipeFormValues, _userId: string, published: boolean) {
+    const recipeId = initialData!.recipeId;
+    const slug = initialData!.slug;
+
+    // UPDATE recipe row (slug 유지)
+    let heroImageUrl = initialData!.heroImageUrl;
+
+    if (heroFile) {
+      const newUrl = await uploadRecipeImage(heroFile, recipeId, "hero");
+      if (newUrl) heroImageUrl = newUrl;
+    } else if (!heroPreview) {
+      // 사용자가 이미지를 제거한 경우
+      heroImageUrl = null;
+    }
+
+    const { error: recipeError } = await supabase
+      .from("recipes")
+      .update({
+        title: { [locale]: data.title },
+        description: data.description ? { [locale]: data.description } : null,
+        difficulty_level: data.difficulty_level,
+        servings: data.servings,
+        prep_time_minutes: data.prep_time_minutes ?? null,
+        cook_time_minutes: data.cook_time_minutes ?? null,
+        hero_image_url: heroImageUrl,
+        published,
+      })
+      .eq("recipe_id", recipeId);
+
+    if (recipeError) {
+      throw new Error(recipeError.message);
+    }
+
+    // 기존 steps/ingredients 전부 DELETE → 새로 INSERT (diff보다 단순)
+    await Promise.all([
+      supabase.from("recipe_steps").delete().eq("recipe_id", recipeId),
+      supabase.from("recipe_ingredients").delete().eq("recipe_id", recipeId),
+    ]);
+
+    await insertStepsAndIngredients(data, recipeId);
+
+    router.push(`/${locale}/recipe/${slug}`);
+  }
+
+  async function insertStepsAndIngredients(data: RecipeFormValues, recipeId: string) {
+    if (data.steps.length > 0) {
+      const stepsPayload = data.steps.map((step: StepEntry, i: number) => ({
+        recipe_id: recipeId,
+        step_order: i + 1,
+        description: step.description,
+        timer_seconds: step.timer_seconds,
+        image_url: step.image_url,
+        tip: step.tip,
+      }));
+
+      const { error: stepsError } = await supabase.from("recipe_steps").insert(stepsPayload);
+      if (stepsError) {
+        throw new Error(stepsError.message);
+      }
+    }
+
+    const ingredientStepMap = new Map<number, number>();
+    data.steps.forEach((step: StepEntry, stepIdx: number) => {
+      for (const ingIdx of step.ingredient_indices) {
+        if (!ingredientStepMap.has(ingIdx)) {
+          ingredientStepMap.set(ingIdx, stepIdx + 1);
+        }
+      }
+    });
+
+    if (data.ingredients.length > 0) {
+      const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
+        recipe_id: recipeId,
+        ingredient_id: ing.ingredient_id || null,
+        custom_name: ing.ingredient_id ? null : ing.name,
+        amount: ing.amount,
+        unit: ing.unit,
+        qualifier: ing.qualifier,
+        note: ing.note,
+        step_number: ingredientStepMap.get(i) ?? null,
+        display_order: i + 1,
+      }));
+
+      const { error: ingError } = await supabase
+        .from("recipe_ingredients")
+        .insert(ingredientsPayload);
+
+      if (ingError) {
+        throw new Error(ingError.message);
+      }
+    }
+  }
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-2xl space-y-8 px-4 py-8">
-      <h1 className="text-2xl font-bold">{t("createTitle")}</h1>
+      <h1 className="text-2xl font-bold">{isEditMode ? t("editTitle") : t("createTitle")}</h1>
 
       {/* Hero image */}
       <div className="space-y-2">
@@ -432,7 +507,13 @@ export function RecipeForm() {
             cleanTrailingEmptySteps();
           }}
         >
-          {isSubmitting ? t("submitting") : t("submit")}
+          {isSubmitting
+            ? isEditMode
+              ? t("updating")
+              : t("submitting")
+            : isEditMode
+              ? t("update")
+              : t("submit")}
         </Button>
       </div>
     </form>

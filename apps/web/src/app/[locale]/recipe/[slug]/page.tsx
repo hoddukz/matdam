@@ -3,13 +3,16 @@
 
 import { cache } from "react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeIngredientList } from "@/components/recipe/recipe-detail-client";
-import { Clock, Users, ChefHat, Lightbulb } from "lucide-react";
+import { DeleteRecipeButton } from "@/components/recipe/delete-recipe-button";
+import { Clock, Users, ChefHat, Lightbulb, Pencil } from "lucide-react";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -54,9 +57,16 @@ export default async function RecipeDetailPage({ params }: Props) {
   const supabase = await createClient();
 
   // 1. Get recipe with author (cached — deduped with generateMetadata)
-  const recipe = await getRecipe(slug);
+  const [
+    recipe,
+    {
+      data: { user },
+    },
+  ] = await Promise.all([getRecipe(slug), supabase.auth.getUser()]);
 
   if (!recipe) notFound();
+
+  const isAuthor = user?.id === recipe.author_id;
 
   // 2+3. Get steps and ingredients in parallel
   const [{ data: steps }, { data: recipeIngredients }] = await Promise.all([
@@ -136,11 +146,24 @@ export default async function RecipeDetailPage({ params }: Props) {
           <h1 className="mb-3 text-3xl font-bold tracking-tight">{title}</h1>
           {description && <p className="mb-4 text-muted-foreground">{description}</p>}
 
-          {/* Author */}
-          <p className="mb-4 text-sm text-muted-foreground">
-            {t("by")}{" "}
-            <span className="font-medium text-foreground">{recipe.users.display_name}</span>
-          </p>
+          {/* Author + 수정/삭제 버튼 */}
+          <div className="mb-4 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">
+              {t("by")}{" "}
+              <span className="font-medium text-foreground">{recipe.users.display_name}</span>
+            </p>
+            {isAuthor && (
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" className="gap-1" asChild>
+                  <Link href={`/${locale}/recipe/${slug}/edit`}>
+                    <Pencil className="h-4 w-4" />
+                    {t("edit")}
+                  </Link>
+                </Button>
+                <DeleteRecipeButton recipeId={recipe.recipe_id} />
+              </div>
+            )}
+          </div>
 
           {/* Meta badges */}
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">

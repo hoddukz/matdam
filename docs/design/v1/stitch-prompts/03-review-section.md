@@ -24,13 +24,16 @@
 ## 섹션 구성
 
 ### 1. 리뷰 요약 헤더
+
 ```
 Reviews
 ⭐ 4.5 average · 12 reviews · 8 photos
 ```
+
 - 평균 별점 + 리뷰 수 + 사진 포함 리뷰 수
 
 ### 2. 리뷰 필터/정렬
+
 - 정렬: [Most Recent] [Highest Rated] [With Photos]
 - "With Photos" 필터가 중요 — 실제 만든 사진을 보고 싶은 유저가 많음
 

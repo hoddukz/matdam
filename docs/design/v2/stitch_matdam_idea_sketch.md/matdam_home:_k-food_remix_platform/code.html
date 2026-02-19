@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MatDam: K-Food Remix Platform</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&amp;family=Playfair+Display:wght@400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#FFCC33", // Yellow from logo
+                        secondary: "#1F1A12", // Darker accent
+                        "background-light": "#FAF6EF", // Cream
+                        "background-dark": "#1A1612", // Dark mode background
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#2C2417",
+                        "text-main-light": "#2C2417",
+                        "text-main-dark": "#FAF6EF",
+                        "text-sub-light": "#6B5E4C",
+                        "text-sub-dark": "#B0A695",
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem",
+                    },
+                },
+            },
+        };
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark font-sans transition-colors duration-300">
+<nav class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-center h-20">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-sm">
+<span class="material-icons-round text-secondary text-2xl">soup_kitchen</span>
+</div>
+<span class="font-bold text-2xl tracking-tight text-text-main-light dark:text-text-main-dark">MatDam</span>
+</div>
+<div class="hidden md:flex items-center gap-8">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Explore</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Glossary</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">Community</a>
+</div>
+<div class="flex items-center gap-4">
+<a class="hidden md:flex items-center gap-2 bg-text-main-light dark:bg-primary text-white dark:text-secondary px-5 py-2.5 rounded-full text-sm font-medium hover:opacity-90 transition-opacity" href="#">
+<span class="material-icons-round text-sm">add</span>
+                        Create Recipe
+                    </a>
+<button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-icons-round text-2xl text-text-main-light dark:text-text-main-dark">account_circle</span>
+</button>
+<button class="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-icons-round text-2xl">menu</span>
+</button>
+</div>
+</div>
+</div>
+</nav>
+<header class="relative w-full h-[600px] flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 z-0">
+<img alt="Modern Kimchi Pasta fusion dish" class="w-full h-full object-cover object-center" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlwUx3hwAa8ZccnQDjKd3DI1OcDDAcVhhXH4lTmEo8ykprZncP4z3ONA8ggkzLLGsyigERMsvB65ft_IviJ8VC0_YdITQwbmRZdDMkRG6Yq1BFX2yWFtoxtNOqEFpY-31HR7jntPM9I0bXLoeWInK-lLI17qT74vDPqzLToylFPv6-EcN-4WB3jwXpJECvCK-928tOwFv6hdGYRIl7XSoJgL6GUyGslV6825sUWw5VP3IAZd5dpyIC2I_t2vxYzzCI3tcJb6EoBQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background-light dark:from-background-dark via-background-light/20 dark:via-background-dark/40 to-transparent"></div>
+</div>
+<div class="relative z-10 max-w-4xl mx-auto text-center px-4 mt-20">
+<h1 class="font-serif text-5xl md:text-7xl font-semibold mb-6 text-text-main-light dark:text-white leading-tight drop-shadow-sm">
+                The Soul of Korean Taste, <br/>
+<span class="italic text-primary">Your Way.</span>
+</h1>
+<p class="text-lg md:text-xl text-text-sub-light dark:text-gray-200 mb-10 max-w-2xl mx-auto font-medium">
+                Discover the art of K-Food remixing. Blend tradition with innovation to create flavors that tell your unique story.
+            </p>
+<div class="flex flex-col sm:flex-row gap-4 justify-center">
+<button class="bg-primary text-secondary px-8 py-4 rounded-full font-bold text-lg hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-center gap-2">
+                    Start Remixing
+                    <span class="material-icons-round">arrow_forward</span>
+</button>
+<button class="bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-sm text-text-main-light dark:text-text-main-dark border border-gray-200 dark:border-gray-700 px-8 py-4 rounded-full font-semibold text-lg hover:bg-surface-light dark:hover:bg-surface-dark transition-all duration-300">
+                    Watch Video
+                </button>
+</div>
+</div>
+</header>
+<section class="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between items-end mb-12">
+<div>
+<span class="uppercase tracking-widest text-xs font-bold text-primary mb-2 block">Trending Now</span>
+<h2 class="font-serif text-4xl text-text-main-light dark:text-text-main-dark">Popular Remixes</h2>
+</div>
+<a class="hidden md:flex items-center gap-1 text-text-sub-light dark:text-text-sub-dark hover:text-primary transition-colors" href="#">
+                View All <span class="material-icons-round text-sm">chevron_right</span>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+<article class="group cursor-pointer">
+<div class="relative h-80 rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-md transition-shadow">
+<img alt="Kimchi Carbonara" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAfXvC13oVRxpHzHsU2R2ekJo29iU3etqDg76LStbLudHHmZq85IpNTXQwyH4G33qKM1T-vbqM7uSnQosalAFPMPnrQFQi4b1Tklh6NipX1lChu0N7VJZyO2E-hSUb1vKqfORtjf1bMKxwGcVHXtor53CVO7terwrUg0dYbowyhqqL35SF2B1GUHK7iU_aiSs9QpUf2zgRPc95LPhKOBADXTAXYmYdNlNSEP-gAbc5U1KRiVTQeWJ_wXzknJrd4ffWvEl1WjBMJg"/>
+<div class="absolute top-4 left-4 bg-surface-light/90 dark:bg-surface-dark/90 backdrop-blur text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide text-text-main-light dark:text-text-main-dark border border-gray-100 dark:border-gray-700">
+                        Top Rated
+                    </div>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-serif text-2xl font-medium mb-1 group-hover:text-primary transition-colors">Creamy Kimchi Carbonara</h3>
+<p class="text-sm text-text-sub-light dark:text-text-sub-dark flex items-center gap-2">
+<span class="material-icons-round text-sm text-primary">autorenew</span>
+                            Remixed from <span class="font-semibold text-text-main-light dark:text-text-main-dark">Kimchi Jjigae</span>
+</p>
+</div>
+<div class="flex items-center gap-1 text-sm font-medium">
+<span class="material-icons-round text-primary text-base">star</span>
+                        4.9
+                    </div>
+</div>
+</article>
+<article class="group cursor-pointer">
+<div class="relative h-80 rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-md transition-shadow">
+<img alt="Bulgogi Tacos" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiD8YsrJ5msG0gCmcvalRQgMFUmDmJvy3bTapJcfxdUICi8o0B5v9ndsonOnfowYSlhxKq1q6mBce-OxukM7iZkRzIlzXnlxnm9tOXdENezBi7wOZXBYuEQrQ92VqhPlidv8r80P5B-BI5Vk3b5vPqzIDqqXGpn7Bgk0X7hYxXqS6y0fQLYvP0S7sJiMQY-fjynBuffyLIPVdpI8hcW9Ef5RRTFi8icJW5JyKqLb5Yp0ziHgIgdS7kbQCaNxkZtad4luDF72zpTw"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-serif text-2xl font-medium mb-1 group-hover:text-primary transition-colors">Street Bulgogi Tacos</h3>
+<p class="text-sm text-text-sub-light dark:text-text-sub-dark flex items-center gap-2">
+<span class="material-icons-round text-sm text-primary">autorenew</span>
+                            Remixed from <span class="font-semibold text-text-main-light dark:text-text-main-dark">Bulgogi</span>
+</p>
+</div>
+<div class="flex items-center gap-1 text-sm font-medium">
+<span class="material-icons-round text-primary text-base">star</span>
+                        4.7
+                    </div>
+</div>
+</article>
+<article class="group cursor-pointer">
+<div class="relative h-80 rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-md transition-shadow">
+<img alt="Gochujang Glazed Salmon" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAJQfqJcdM7g1k2dD8_0Wd9HVcH8XjrBjaSqHShpmVu0rcEb7k5QLbbAxAVNnoefwRJtH604_OE2NRtEhLTdeqwfoIsjMZZi86fefuqDIigyar9pG8KzN1Eh6UJuMjOo48YmU4aKru69246cHfXLNVElSrlrYFsw_hqBe_kR6s6Dqc7PkIUm7ok0nfj8lSu2DPThNolhTxtWcmjE7PY31JS9ONshqHTNhDdDKPownNOH1Es2bIS7u7GF6XovO22QGHR0lqzD3M1iA"/>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<h3 class="font-serif text-2xl font-medium mb-1 group-hover:text-primary transition-colors">Gochujang Glazed Salmon</h3>
+<p class="text-sm text-text-sub-light dark:text-text-sub-dark flex items-center gap-2">
+<span class="material-icons-round text-sm text-primary">autorenew</span>
+                            Remixed from <span class="font-semibold text-text-main-light dark:text-text-main-dark">Jeyuk Bokkeum</span>
+</p>
+</div>
+<div class="flex items-center gap-1 text-sm font-medium">
+<span class="material-icons-round text-primary text-base">star</span>
+                        4.8
+                    </div>
+</div>
+</article>
+</div>
+</section>
+<section class="py-20 bg-surface-light dark:bg-surface-dark">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="text-center mb-16">
+<span class="uppercase tracking-widest text-xs font-bold text-primary mb-2 block">The Basics</span>
+<h2 class="font-serif text-4xl text-text-main-light dark:text-text-main-dark mb-4">Essential K-Pantry</h2>
+<p class="text-text-sub-light dark:text-text-sub-dark max-w-2xl mx-auto">Master the core ingredients that define the depth and soul of Korean cuisine. Learn their history and how to use them.</p>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+<a class="group block text-center" href="#">
+<div class="aspect-square rounded-full bg-background-light dark:bg-background-dark mb-6 flex items-center justify-center border border-gray-200 dark:border-gray-700 group-hover:border-primary transition-colors overflow-hidden relative">
+<div class="w-4/5 h-4/5 rounded-full bg-red-700/10 dark:bg-red-900/20 absolute z-0 group-hover:scale-110 transition-transform duration-500"></div>
+<img alt="Gochujang" class="w-full h-full object-cover rounded-full z-10 p-2 group-hover:rotate-12 transition-transform duration-500 opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQNxEAimLNwLYMPF0WF2EMQciFQmhHU_atommM0xxjhZH8QeIs1Hpn7f9ZisjWJX_PXtRvm1WNg9uj9NiOIxiFb-ctpa8zAYEgkhpm3FQjR8-DU9rkAKLVLEdeFt62S5awzLDXS2Xq3pkn8Z2Mf3cCuMfQdO4wgZeQfu_xl0bMhCmPt8ZJlM6eVA7DOCkVvc91nvk71wxSjtBueoWBG5Qiqqxn-lrqia-sV7qil29e694sc24Ehcbh5-SE-hFKsT5AwcouwoLIvA"/>
+</div>
+<h3 class="font-serif text-xl mb-1 text-text-main-light dark:text-text-main-dark group-hover:text-primary transition-colors">Gochujang</h3>
+<p class="text-xs uppercase tracking-wider text-text-sub-light dark:text-text-sub-dark">Fermented Chili Paste</p>
+</a>
+<a class="group block text-center" href="#">
+<div class="aspect-square rounded-full bg-background-light dark:bg-background-dark mb-6 flex items-center justify-center border border-gray-200 dark:border-gray-700 group-hover:border-primary transition-colors overflow-hidden relative">
+<div class="w-4/5 h-4/5 rounded-full bg-yellow-900/10 dark:bg-yellow-900/20 absolute z-0 group-hover:scale-110 transition-transform duration-500"></div>
+<div class="w-24 h-24 bg-[#5D4037] rounded-full z-10 flex items-center justify-center text-white/50 text-xs shadow-inner group-hover:rotate-12 transition-transform duration-500">
+<span class="material-icons-round text-4xl opacity-50">grain</span>
+</div>
+</div>
+<h3 class="font-serif text-xl mb-1 text-text-main-light dark:text-text-main-dark group-hover:text-primary transition-colors">Doenjang</h3>
+<p class="text-xs uppercase tracking-wider text-text-sub-light dark:text-text-sub-dark">Soybean Paste</p>
+</a>
+<a class="group block text-center" href="#">
+<div class="aspect-square rounded-full bg-background-light dark:bg-background-dark mb-6 flex items-center justify-center border border-gray-200 dark:border-gray-700 group-hover:border-primary transition-colors overflow-hidden relative">
+<div class="w-4/5 h-4/5 rounded-full bg-amber-400/10 dark:bg-amber-400/20 absolute z-0 group-hover:scale-110 transition-transform duration-500"></div>
+<img alt="Sesame Oil" class="w-full h-full object-cover rounded-full z-10 p-2 group-hover:rotate-12 transition-transform duration-500 opacity-90" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2tfxr02hcNXSgneKp3DKt3DapBiu9hth-G3EozkxCvcS0DsQP17zlOHBYthYGEcqcSGKcn101l5KgPlC2q9ygxsP4GRLIdxckh1b771J5ISYue5YN0-DTN6_P6rLEL0_w_ZXCW6Y65X1ZEgg5Kg8rLnTcxFPwFD8wbZbqUyGY4M6Hln8kxyYN2xzLBXthL_bMOj4LBwB6GJ4BvKqNGMxMHauFewof-Vqkjd0xSEazE7FtVlwa0GhMRqsZQOoTYnZShvV24s0U8Q"/>
+</div>
+<h3 class="font-serif text-xl mb-1 text-text-main-light dark:text-text-main-dark group-hover:text-primary transition-colors">Chamgireum</h3>
+<p class="text-xs uppercase tracking-wider text-text-sub-light dark:text-text-sub-dark">Sesame Oil</p>
+</a>
+<a class="group block text-center" href="#">
+<div class="aspect-square rounded-full bg-background-light dark:bg-background-dark mb-6 flex items-center justify-center border border-gray-200 dark:border-gray-700 group-hover:border-primary transition-colors overflow-hidden relative">
+<div class="w-4/5 h-4/5 rounded-full bg-stone-500/10 dark:bg-stone-500/20 absolute z-0 group-hover:scale-110 transition-transform duration-500"></div>
+<div class="w-24 h-24 bg-[#3E2723] rounded-full z-10 flex items-center justify-center text-white/50 text-xs shadow-inner group-hover:rotate-12 transition-transform duration-500">
+<span class="material-icons-round text-4xl opacity-50">water_drop</span>
+</div>
+</div>
+<h3 class="font-serif text-xl mb-1 text-text-main-light dark:text-text-main-dark group-hover:text-primary transition-colors">Ganjang</h3>
+<p class="text-xs uppercase tracking-wider text-text-sub-light dark:text-text-sub-dark">Soy Sauce</p>
+</a>
+</div>
+<div class="text-center mt-12">
+<a class="inline-flex items-center gap-2 border-b-2 border-primary pb-1 text-text-main-light dark:text-text-main-dark font-medium hover:text-primary transition-colors" href="#">
+                    Explore the Full Glossary
+                    <span class="material-icons-round text-sm">arrow_forward</span>
+</a>
+</div>
+</div>
+</section>
+<footer class="bg-background-light dark:bg-background-dark border-t border-gray-200 dark:border-gray-800 py-12">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-icons-round text-secondary text-lg">soup_kitchen</span>
+</div>
+<span class="font-bold text-xl text-text-main-light dark:text-text-main-dark">MatDam</span>
+</div>
+<div class="text-sm text-text-sub-light dark:text-text-sub-dark">
+                © 2024 MatDam Global. All rights reserved.
+            </div>
+<div class="flex gap-6">
+<a class="text-text-sub-light dark:text-text-sub-dark hover:text-primary transition-colors" href="#"><i class="material-icons-round">facebook</i></a>
+<a class="text-text-sub-light dark:text-text-sub-dark hover:text-primary transition-colors" href="#"><i class="material-icons-round">thumb_up</i></a> 
+<a class="text-text-sub-light dark:text-text-sub-dark hover:text-primary transition-colors" href="#"><i class="material-icons-round">share</i></a>
+</div>
+</div>
+</footer>
+
+</body></html>

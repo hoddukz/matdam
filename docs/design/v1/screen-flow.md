@@ -28,14 +28,14 @@
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-| 위치 | 요소 | 동작 |
-|------|------|------|
-| 좌측 | 로고 (MatDam) | → Home (`/`) |
-| 중앙 | Explore | → 레시피 탐색 (`/explore`) |
-| 중앙 | Glossary | → 재료 사전 (`/glossary`) |
-| 우측 | 검색바 | 2글자 이상 입력 시 자동완성, Enter → `/explore?q=...` |
-| 우측 | + Create (버튼, 강조색) | → 레시피 작성 (`/recipes/new`). 비로그인 시 로그인 모달 |
-| 우측 | 유저 아바타 / Sign in | 로그인: 드롭다운 (My Recipes, Bookmarks, Shopping List, Settings, Logout). 비로그인: Sign in 버튼 → Google OAuth |
+| 위치 | 요소                    | 동작                                                                                                             |
+| ---- | ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 좌측 | 로고 (MatDam)           | → Home (`/`)                                                                                                     |
+| 중앙 | Explore                 | → 레시피 탐색 (`/explore`)                                                                                       |
+| 중앙 | Glossary                | → 재료 사전 (`/glossary`)                                                                                        |
+| 우측 | 검색바                  | 2글자 이상 입력 시 자동완성, Enter → `/explore?q=...`                                                            |
+| 우측 | + Create (버튼, 강조색) | → 레시피 작성 (`/recipes/new`). 비로그인 시 로그인 모달                                                          |
+| 우측 | 유저 아바타 / Sign in   | 로그인: 드롭다운 (My Recipes, Bookmarks, Shopping List, Settings, Logout). 비로그인: Sign in 버튼 → Google OAuth |
 
 ### Mobile Bottom Nav
 
@@ -50,28 +50,28 @@
 └──────┴──────┴──────┴──────┴────┘
 ```
 
-| 아이콘 | 라벨 | 동작 |
-|--------|------|------|
-| 🏠 Home | Home | → 홈/랜딩 (`/`) |
-| 🔍 Explore | Explore | → 레시피 탐색 (`/explore`), 상단에 검색바 |
-| ＋ Create | Create | → 레시피 작성. 중앙 배치 + 강조 (다른 아이콘보다 크게). 비로그인 시 로그인 모달 |
-| 📖 Glossary | Glossary | → 재료 사전 (`/glossary`) |
-| 👤 Me | Me | → 프로필/마이페이지 (`/profile`) |
+| 아이콘      | 라벨     | 동작                                                                            |
+| ----------- | -------- | ------------------------------------------------------------------------------- |
+| 🏠 Home     | Home     | → 홈/랜딩 (`/`)                                                                 |
+| 🔍 Explore  | Explore  | → 레시피 탐색 (`/explore`), 상단에 검색바                                       |
+| ＋ Create   | Create   | → 레시피 작성. 중앙 배치 + 강조 (다른 아이콘보다 크게). 비로그인 시 로그인 모달 |
+| 📖 Glossary | Glossary | → 재료 사전 (`/glossary`)                                                       |
+| 👤 Me       | Me       | → 프로필/마이페이지 (`/profile`)                                                |
 
 ### 단계별 메뉴 변화
 
 메뉴 구조 자체는 바뀌지 않음. **메뉴 안의 내용**이 단계별로 채워짐:
 
-| 메뉴 | MVP-α | MVP-β | V1 |
-|------|-------|-------|-----|
-| Home | 랜딩 페이지 (히어로 + 시드 레시피) | + 트렌딩 리믹스 | + 개인화 추천 |
-| Explore | 카드 그리드 + 검색 + 난이도 필터 | + Dietary Filter | + 정렬 옵션 고도화 |
-| Create | 단일 페이지 폼 + 재료 자동완성 | (동일) | + 드래그 재정렬, 비정형 수량 |
-| Glossary | "Coming soon" 또는 재료 시드 30개 기본 목록 | 풀 Glossary (사진+설명+대체재) | (동일) |
-| Profile > My Recipes | 내가 만든 레시피 목록 | (동일) | (동일) |
-| Profile > Bookmarks | — | 저장한 레시피 | (동일) |
-| Profile > Shopping List | — | — | 쇼핑 리스트 |
-| Profile > Settings | 언어, 단위 토글 | + Dietary 기본 설정 | + 온보딩 재설정 |
+| 메뉴                    | MVP-α                                       | MVP-β                          | V1                           |
+| ----------------------- | ------------------------------------------- | ------------------------------ | ---------------------------- |
+| Home                    | 랜딩 페이지 (히어로 + 시드 레시피)          | + 트렌딩 리믹스                | + 개인화 추천                |
+| Explore                 | 카드 그리드 + 검색 + 난이도 필터            | + Dietary Filter               | + 정렬 옵션 고도화           |
+| Create                  | 단일 페이지 폼 + 재료 자동완성              | (동일)                         | + 드래그 재정렬, 비정형 수량 |
+| Glossary                | "Coming soon" 또는 재료 시드 30개 기본 목록 | 풀 Glossary (사진+설명+대체재) | (동일)                       |
+| Profile > My Recipes    | 내가 만든 레시피 목록                       | (동일)                         | (동일)                       |
+| Profile > Bookmarks     | —                                           | 저장한 레시피                  | (동일)                       |
+| Profile > Shopping List | —                                           | —                              | 쇼핑 리스트                  |
+| Profile > Settings      | 언어, 단위 토글                             | + Dietary 기본 설정            | + 온보딩 재설정              |
 
 ---
 
@@ -105,39 +105,39 @@
 
 #### MVP-α (Step 1~5)
 
-| # | 페이지 | URL | 비고 |
-|---|--------|-----|------|
-| 1 | 홈/랜딩 | `/` | 히어로 + 시드 레시피 카드 + CTA |
-| 2 | 레시피 탐색 | `/explore` | 카드 그리드, 검색, 난이도 필터 |
-| 3 | 레시피 상세 | `/recipes/[slug]` | 재료 목록, 스텝 카드, 리믹스 버튼, Inspired by |
-| 4 | 레시피 작성 | `/recipes/new` | 단일 페이지 연속 폼, 재료 자동완성 |
-| 5 | 레시피 수정 | `/recipes/[slug]/edit` | 작성 폼과 동일 구조 |
-| 6 | 리믹스 | `/recipes/[slug]/remix` | 원본 데이터 프리필, "Remixed from" 자동 표시 |
-| 7 | 프로필 | `/profile` | 내 레시피 목록, 기본 정보 |
-| 8 | 설정 | `/profile/settings` | 언어, 단위 토글 |
-| 9 | Privacy Policy | `/privacy` | 정적 페이지 |
-| 10 | Terms of Service | `/terms` | 정적 페이지 |
-| — | 로그인 모달 | (오버레이) | Google OAuth, 비로그인 액션 시 표시 |
+| #   | 페이지           | URL                     | 비고                                           |
+| --- | ---------------- | ----------------------- | ---------------------------------------------- |
+| 1   | 홈/랜딩          | `/`                     | 히어로 + 시드 레시피 카드 + CTA                |
+| 2   | 레시피 탐색      | `/explore`              | 카드 그리드, 검색, 난이도 필터                 |
+| 3   | 레시피 상세      | `/recipes/[slug]`       | 재료 목록, 스텝 카드, 리믹스 버튼, Inspired by |
+| 4   | 레시피 작성      | `/recipes/new`          | 단일 페이지 연속 폼, 재료 자동완성             |
+| 5   | 레시피 수정      | `/recipes/[slug]/edit`  | 작성 폼과 동일 구조                            |
+| 6   | 리믹스           | `/recipes/[slug]/remix` | 원본 데이터 프리필, "Remixed from" 자동 표시   |
+| 7   | 프로필           | `/profile`              | 내 레시피 목록, 기본 정보                      |
+| 8   | 설정             | `/profile/settings`     | 언어, 단위 토글                                |
+| 9   | Privacy Policy   | `/privacy`              | 정적 페이지                                    |
+| 10  | Terms of Service | `/terms`                | 정적 페이지                                    |
+| —   | 로그인 모달      | (오버레이)              | Google OAuth, 비로그인 액션 시 표시            |
 
 #### MVP-β 추가 (Step 6~7)
 
-| # | 페이지 | URL | 비고 |
-|---|--------|-----|------|
-| 11 | Glossary 인덱스 | `/glossary` | 재료 카드 그리드, 검색, 카테고리 필터 |
-| 12 | Glossary 상세 | `/glossary/[slug]` | 사진, 다국어 설명, 대체재, "Where to buy", 관련 레시피 |
-| 13 | 북마크 | `/profile/bookmarks` | 저장한 레시피 카드 목록 |
-| — | 리뷰 작성 | (레시피 상세 내 섹션) | 별점 + 텍스트 + 사진 업로드 |
-| — | 로그인 유도 모달 | (오버레이) | "Sign in to save this recipe" |
+| #   | 페이지           | URL                   | 비고                                                   |
+| --- | ---------------- | --------------------- | ------------------------------------------------------ |
+| 11  | Glossary 인덱스  | `/glossary`           | 재료 카드 그리드, 검색, 카테고리 필터                  |
+| 12  | Glossary 상세    | `/glossary/[slug]`    | 사진, 다국어 설명, 대체재, "Where to buy", 관련 레시피 |
+| 13  | 북마크           | `/profile/bookmarks`  | 저장한 레시피 카드 목록                                |
+| —   | 리뷰 작성        | (레시피 상세 내 섹션) | 별점 + 텍스트 + 사진 업로드                            |
+| —   | 로그인 유도 모달 | (오버레이)            | "Sign in to save this recipe"                          |
 
 #### V1 추가 (Step 8~12)
 
-| # | 페이지 | URL | 비고 |
-|---|--------|-----|------|
-| 14 | 쿠킹 모드 | `/recipes/[slug]/cook` | 풀스크린, 스텝별 카드, 타이머, 재료 하이라이트 |
-| 15 | 쇼핑 리스트 | `/profile/shopping-list` | 선택한 레시피들의 재료 합산 목록 |
-| 16 | 냉장고 털이 | `/explore?mode=fridge` | 보유 재료 입력 → 매칭 레시피 |
-| 17 | 온보딩 | `/onboarding` | 식단 제한 + 난이도 선택 |
-| — | 신고 모달 | (오버레이) | 사유 선택 |
+| #   | 페이지      | URL                      | 비고                                           |
+| --- | ----------- | ------------------------ | ---------------------------------------------- |
+| 14  | 쿠킹 모드   | `/recipes/[slug]/cook`   | 풀스크린, 스텝별 카드, 타이머, 재료 하이라이트 |
+| 15  | 쇼핑 리스트 | `/profile/shopping-list` | 선택한 레시피들의 재료 합산 목록               |
+| 16  | 냉장고 털이 | `/explore?mode=fridge`   | 보유 재료 입력 → 매칭 레시피                   |
+| 17  | 온보딩      | `/onboarding`            | 식단 제한 + 난이도 선택                        |
+| —   | 신고 모달   | (오버레이)               | 사유 선택                                      |
 
 ---
 
@@ -525,6 +525,7 @@ Profile > Shopping List (/profile/shopping-list)
 ```
 
 **재료 자동완성 동작 상세:**
+
 - 텍스트 입력 시 2글자 이상이면 하단에 추천 목록 표시 (Glossary DB 기반)
 - 탭 또는 클릭으로 선택 → 수량/단위 입력 필드 활성화
 - 추가 버튼 클릭 → 칩으로 재료 목록에 추가
@@ -576,11 +577,11 @@ Profile > Shopping List (/profile/shopping-list)
 
 **디바이스별 변형:**
 
-| 디바이스 | 레이아웃 |
-|---------|---------|
-| 모바일 (세로) | 풀카드 1장 + 하단에 다음 카드 peek (10%) |
+| 디바이스      | 레이아웃                                          |
+| ------------- | ------------------------------------------------- |
+| 모바일 (세로) | 풀카드 1장 + 하단에 다음 카드 peek (10%)          |
 | 태블릿 (가로) | 좌: 현재 스텝 / 우: 재료+타이머 (PPT 발표자 보기) |
-| 데스크톱 | 좌: 재료 목록 고정 / 우: 스텝 카드 (좌우 분할) |
+| 데스크톱      | 좌: 재료 목록 고정 / 우: 스텝 카드 (좌우 분할)    |
 
 ### 4.6 Glossary 인덱스 (/glossary) — MVP-β
 
@@ -687,13 +688,13 @@ Profile > Shopping List (/profile/shopping-list)
 
 ### 4.9 모달/오버레이 상태
 
-| 모달 | 트리거 | 내용 |
-|------|--------|------|
-| 로그인 모달 | 비로그인 상태에서 Create/Remix/Bookmark/Review 클릭 | "Sign in to continue" + Google 로그인 버튼 + 한 줄 설명 |
-| 로그인 유도 모달 | 비로그인 상태에서 Bookmark 클릭 | "Sign in to save this recipe" + Google 버튼 |
-| 리뷰 작성 (MVP-β) | 레시피 상세에서 "Write a Review" | 별점 선택 + 텍스트 + 사진 업로드 (인라인 섹션, 모달 아님) |
-| 신고 (V1) | 레시피/리뷰의 ⋯ 메뉴 → Report | 사유 선택 라디오 + 추가 설명 텍스트 |
-| 삭제 확인 | 내 레시피/리뷰 삭제 | "Are you sure?" + Cancel/Delete |
+| 모달              | 트리거                                              | 내용                                                      |
+| ----------------- | --------------------------------------------------- | --------------------------------------------------------- |
+| 로그인 모달       | 비로그인 상태에서 Create/Remix/Bookmark/Review 클릭 | "Sign in to continue" + Google 로그인 버튼 + 한 줄 설명   |
+| 로그인 유도 모달  | 비로그인 상태에서 Bookmark 클릭                     | "Sign in to save this recipe" + Google 버튼               |
+| 리뷰 작성 (MVP-β) | 레시피 상세에서 "Write a Review"                    | 별점 선택 + 텍스트 + 사진 업로드 (인라인 섹션, 모달 아님) |
+| 신고 (V1)         | 레시피/리뷰의 ⋯ 메뉴 → Report                       | 사유 선택 라디오 + 추가 설명 텍스트                       |
+| 삭제 확인         | 내 레시피/리뷰 삭제                                 | "Are you sure?" + Cancel/Delete                           |
 
 ---
 
@@ -703,31 +704,31 @@ Stitch로 화면을 만들 때, 이 순서로 진행하면 효율적:
 
 ### Phase 1: 핵심 화면 (MVP-α 필수)
 
-| 순서 | 화면 | 의존 | Stitch 프롬프트 핵심 키워드 |
-|------|------|------|--------------------------|
-| 1 | 레시피 상세 | — | recipe detail, ingredient list with unit toggle, step cards, remix button, warm beige tone |
-| 2 | 레시피 탐색 | 1 (카드 디자인 재사용) | recipe card grid, search bar, filter chips, Korean food |
-| 3 | 레시피 작성 | — | single page recipe form, ingredient text input with autocomplete dropdown, step cards, save/preview/publish |
-| 4 | 홈/랜딩 리디자인 | 1, 2 | 기존 프로토타입 기반 개선 |
-| 5 | 프로필 | 1 (카드 재사용) | user profile, my recipes grid |
+| 순서 | 화면             | 의존                   | Stitch 프롬프트 핵심 키워드                                                                                 |
+| ---- | ---------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------- |
+| 1    | 레시피 상세      | —                      | recipe detail, ingredient list with unit toggle, step cards, remix button, warm beige tone                  |
+| 2    | 레시피 탐색      | 1 (카드 디자인 재사용) | recipe card grid, search bar, filter chips, Korean food                                                     |
+| 3    | 레시피 작성      | —                      | single page recipe form, ingredient text input with autocomplete dropdown, step cards, save/preview/publish |
+| 4    | 홈/랜딩 리디자인 | 1, 2                   | 기존 프로토타입 기반 개선                                                                                   |
+| 5    | 프로필           | 1 (카드 재사용)        | user profile, my recipes grid                                                                               |
 
 ### Phase 2: MVP-β 화면
 
-| 순서 | 화면 | Stitch 프롬프트 핵심 키워드 |
-|------|------|--------------------------|
-| 6 | Glossary 인덱스 | ingredient glossary, card grid, category tabs, Korean pantry |
-| 7 | Glossary 상세 | ingredient detail, photo, substitutes, where to buy |
-| 8 | 리뷰 섹션 (상세 페이지 내) | review section, star rating, photo review, "I made this" |
+| 순서 | 화면                       | Stitch 프롬프트 핵심 키워드                                  |
+| ---- | -------------------------- | ------------------------------------------------------------ |
+| 6    | Glossary 인덱스            | ingredient glossary, card grid, category tabs, Korean pantry |
+| 7    | Glossary 상세              | ingredient detail, photo, substitutes, where to buy          |
+| 8    | 리뷰 섹션 (상세 페이지 내) | review section, star rating, photo review, "I made this"     |
 
 ### Phase 3: V1 화면
 
-| 순서 | 화면 | Stitch 프롬프트 핵심 키워드 |
-|------|------|--------------------------|
-| 9 | 쿠킹 모드 (모바일) | cooking mode, fullscreen step card, timer, swipe navigation |
-| 10 | 쿠킹 모드 (태블릿) | split view, ingredients left, steps right |
-| 11 | 쿠킹 모드 (데스크톱) | split layout, fixed ingredients sidebar |
-| 12 | 쇼핑 리스트 | shopping list, ingredient merge, checkbox |
-| 13 | 온보딩 | onboarding wizard, dietary preferences, difficulty selection |
+| 순서 | 화면                 | Stitch 프롬프트 핵심 키워드                                  |
+| ---- | -------------------- | ------------------------------------------------------------ |
+| 9    | 쿠킹 모드 (모바일)   | cooking mode, fullscreen step card, timer, swipe navigation  |
+| 10   | 쿠킹 모드 (태블릿)   | split view, ingredients left, steps right                    |
+| 11   | 쿠킹 모드 (데스크톱) | split layout, fixed ingredients sidebar                      |
+| 12   | 쇼핑 리스트          | shopping list, ingredient merge, checkbox                    |
+| 13   | 온보딩               | onboarding wizard, dietary preferences, difficulty selection |
 
 ---
 
@@ -735,15 +736,15 @@ Stitch로 화면을 만들 때, 이 순서로 진행하면 효율적:
 
 Stitch에 넣을 때 일관성을 위한 참고:
 
-| 항목 | 값 |
-|------|-----|
-| 배경색 | `#FAF6EF` (따뜻한 베이지) |
-| 텍스트 | `#2C2417` (다크 브라운) |
-| 포인트 | `#D4A035` (골드) |
-| 보조 텍스트 | `#6B5B3E` (미디엄 브라운) |
-| 카드 배경 | `#FFFFFF` |
-| 보더 | `#E6DCCD` |
-| 제목 폰트 | Noto Serif KR (serif) |
-| 본문 폰트 | DM Sans (sans-serif) |
-| 카드 모서리 | 16px (rounded-2xl) |
-| 톤 | 따뜻하고 고급스러운 한식 느낌. 미니멀하지만 차갑지 않게 |
+| 항목        | 값                                                      |
+| ----------- | ------------------------------------------------------- |
+| 배경색      | `#FAF6EF` (따뜻한 베이지)                               |
+| 텍스트      | `#2C2417` (다크 브라운)                                 |
+| 포인트      | `#D4A035` (골드)                                        |
+| 보조 텍스트 | `#6B5B3E` (미디엄 브라운)                               |
+| 카드 배경   | `#FFFFFF`                                               |
+| 보더        | `#E6DCCD`                                               |
+| 제목 폰트   | Noto Serif KR (serif)                                   |
+| 본문 폰트   | DM Sans (sans-serif)                                    |
+| 카드 모서리 | 16px (rounded-2xl)                                      |
+| 톤          | 따뜻하고 고급스러운 한식 느낌. 미니멀하지만 차갑지 않게 |

@@ -18,16 +18,16 @@
 
 ## 브랜드 가이드
 
-| 항목 | 값 |
-|------|-----|
-| 배경색 | `#FAF6EF` |
-| 텍스트 | `#2C2417` |
-| 포인트 | `#D4A035` |
-| 보조 텍스트 | `#6B5B3E` |
-| 카드 배경 | `#FFFFFF` |
-| 보더 | `#E6DCCD` |
-| 제목 폰트 | Noto Serif KR |
-| 본문 폰트 | DM Sans |
+| 항목        | 값            |
+| ----------- | ------------- |
+| 배경색      | `#FAF6EF`     |
+| 텍스트      | `#2C2417`     |
+| 포인트      | `#D4A035`     |
+| 보조 텍스트 | `#6B5B3E`     |
+| 카드 배경   | `#FFFFFF`     |
+| 보더        | `#E6DCCD`     |
+| 제목 폰트   | Noto Serif KR |
+| 본문 폰트   | DM Sans       |
 
 ---
 
@@ -40,23 +40,28 @@
 ## 페이지 구성
 
 ### 1. 뒤로가기
+
 - [← Back to Glossary] 링크
 
 ### 2. 재료 히어로 이미지
+
 - 재료 사진 크게 (넓은 히어로, 실제 재료 사진)
 - 예시: 고추장 병/항아리 사진
 
 ### 3. 재료 이름
+
 - **영어명:** Gochujang (크게, Noto Serif KR)
 - **한국어명:** 고추장 (영어명 옆에 작게)
 - **설명:** Korean Chili Paste (보조 텍스트)
 - **카테고리 뱃지:** [SAUCES] (칩 스타일)
 
 ### 4. What is it? (설명 섹션)
+
 - "A thick, fermented chili paste made from red chili, glutinous rice, and soybeans. It's the backbone of many Korean dishes, providing a sweet-spicy depth of flavor."
 - 2~3문단 정도의 설명
 
 ### 5. Substitutes (대체재)
+
 - 이 재료를 못 구할 때 쓸 수 있는 대안
 - 리스트 형태:
   - • **Sriracha + miso** (closest match) — Mix 1:1 for similar heat and fermented flavor
@@ -65,6 +70,7 @@
 - 각 대체재에 간단한 비율/설명 포함
 
 ### 6. Where to buy (구매 안내)
+
 - **In-store:**
   - H-Mart (US, Canada)
   - Any Asian grocery store — look in the sauce/condiment aisle
@@ -74,11 +80,13 @@
 - 텍스트 기반 안내 (MVP에서는 실제 링크 없이 텍스트만)
 
 ### 7. Recipes using this ingredient
+
 - 이 재료를 사용한 레시피 카드 가로 스크롤
 - 레시피 카드 3~4개 (사진, 제목, 난이도, 시간)
 - [View all →] 링크
 
 ### 8. Reviews mentioning this ingredient (MVP-β 라벨)
+
 - "12 reviews mention this ingredient"
 - 리뷰 카드 1~2개 미리보기
 - 예: "@sarah_cooks: The gochujang really made this dish. Don't skip it!"
@@ -89,10 +97,10 @@
 
 ## 반응형
 
-| 디바이스 | 레이아웃 |
-|---------|---------|
+| 디바이스 | 레이아웃                                             |
+| -------- | ---------------------------------------------------- |
 | 데스크톱 | 2컬럼 — 좌: 사진+이름+설명, 우: 대체재+구매 사이드바 |
-| 모바일 | 단일 컬럼, 위에서 아래로 스크롤 |
+| 모바일   | 단일 컬럼, 위에서 아래로 스크롤                      |
 
 ---
 

@@ -51,7 +51,10 @@
     "savingDraft": "저장 중...",
     "submit": "레시피 등록",
     "submitting": "등록 중...",
-    "draftSaved": "임시 저장되었습니다"
+    "draftSaved": "임시 저장되었습니다",
+    "editTitle": "레시피 수정",
+    "update": "수정 완료",
+    "updating": "수정 중..."
   },
   "validation": {
     "titleMin": "제목을 3자 이상 입력해주세요",
@@ -73,7 +76,13 @@
     "by": "작성자",
     "stepNumber": "{number}단계",
     "timer": "타이머",
-    "tip": "팁"
+    "tip": "팁",
+    "edit": "수정",
+    "delete": "삭제",
+    "deleteConfirm": "정말 삭제하시겠습니까?",
+    "deleteDescription": "삭제된 레시피는 복구할 수 없습니다.",
+    "deleteCancel": "취소",
+    "deleting": "삭제 중..."
   },
   "explore": {
     "title": "레시피 탐색",
@@ -95,6 +104,16 @@
     "addIngredient": "재료 추가",
     "addCustom": "\"{name}\" 직접 추가",
     "noResults": "재료를 찾을 수 없습니다"
+  },
+  "profile": {
+    "title": "내 프로필",
+    "publishedTab": "공개 레시피",
+    "draftsTab": "임시저장",
+    "noRecipes": "레시피가 없습니다",
+    "memberSince": "가입일",
+    "recipeCount": "레시피 {count}개",
+    "servings": "인분",
+    "minutes": "분"
   },
   "footer": {
     "tagline": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요.",

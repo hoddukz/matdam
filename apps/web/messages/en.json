@@ -51,7 +51,10 @@
     "savingDraft": "Saving...",
     "submit": "Publish Recipe",
     "submitting": "Publishing...",
-    "draftSaved": "Draft saved successfully"
+    "draftSaved": "Draft saved successfully",
+    "editTitle": "Edit Recipe",
+    "update": "Update Recipe",
+    "updating": "Updating..."
   },
   "validation": {
     "titleMin": "Title must be at least 3 characters",
@@ -73,7 +76,13 @@
     "by": "by",
     "stepNumber": "Step {number}",
     "timer": "Timer",
-    "tip": "Tip"
+    "tip": "Tip",
+    "edit": "Edit",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this recipe?",
+    "deleteDescription": "This action cannot be undone.",
+    "deleteCancel": "Cancel",
+    "deleting": "Deleting..."
   },
   "explore": {
     "title": "Explore Recipes",
@@ -95,6 +104,16 @@
     "addIngredient": "Add ingredient",
     "addCustom": "Add \"{name}\" as custom",
     "noResults": "No ingredients found"
+  },
+  "profile": {
+    "title": "My Profile",
+    "publishedTab": "Published",
+    "draftsTab": "Drafts",
+    "noRecipes": "No recipes yet",
+    "memberSince": "Member since",
+    "recipeCount": "{count} recipes",
+    "servings": "servings",
+    "minutes": "min"
   },
   "footer": {
     "tagline": "Discover, remix, and share Korean recipes with the world.",
