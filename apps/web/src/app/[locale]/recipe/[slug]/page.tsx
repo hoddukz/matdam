@@ -38,7 +38,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title =
     recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "Recipe";
-  const description = recipe.description?.[locale] || recipe.description?.["en"] || "";
+  const description =
+    recipe.description?.[locale] ||
+    recipe.description?.["en"] ||
+    (recipe.description ? Object.values(recipe.description)[0] : "") ||
+    "";
 
   return {
     title,
@@ -80,7 +84,11 @@ export default async function RecipeDetailPage({ params }: Props) {
   ]);
 
   const title = recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "";
-  const description = recipe.description?.[locale] || recipe.description?.["en"] || "";
+  const description =
+    recipe.description?.[locale] ||
+    recipe.description?.["en"] ||
+    (recipe.description ? Object.values(recipe.description)[0] : "") ||
+    "";
 
   // JSON-LD structured data
   const jsonLd = {

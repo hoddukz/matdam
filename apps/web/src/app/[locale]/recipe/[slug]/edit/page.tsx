@@ -99,7 +99,11 @@ export default async function EditRecipePage({ params }: Props) {
     slug: recipe.slug,
     heroImageUrl: recipe.hero_image_url,
     title,
-    description: recipe.description?.[locale] || recipe.description?.["en"] || "",
+    description:
+      recipe.description?.[locale] ||
+      recipe.description?.["en"] ||
+      (recipe.description ? Object.values(recipe.description)[0] : "") ||
+      "",
     difficulty_level: recipe.difficulty_level ?? "beginner",
     servings: recipe.servings ?? 2,
     prep_time_minutes: recipe.prep_time_minutes ?? undefined,
