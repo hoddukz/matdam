@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { IngredientInput, type IngredientEntry } from "@/components/recipe/ingredient-input";
-import { StepEditor, type StepEntry } from "@/components/recipe/step-editor";
+import { StepEditor, makeStep, type StepEntry } from "@/components/recipe/step-editor";
 import { UnitToggle } from "@/components/recipe/unit-toggle";
 import { createClient } from "@/lib/supabase/client";
 import { uploadRecipeImage } from "@/lib/supabase/storage";
@@ -96,15 +96,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
           prep_time_minutes: undefined,
           cook_time_minutes: undefined,
           ingredients: [],
-          steps: [
-            {
-              description: "",
-              timer_seconds: null,
-              image_url: null,
-              tip: null,
-              ingredient_indices: [],
-            },
-          ],
+          steps: [makeStep()],
         },
   });
 
@@ -272,7 +264,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
 
   async function insertStepsAndIngredients(data: RecipeFormValues, recipeId: string) {
     if (data.steps.length > 0) {
-      const stepsPayload = data.steps.map((step: StepEntry, i: number) => ({
+      const stepsPayload = data.steps.map((step, i) => ({
         recipe_id: recipeId,
         step_order: i + 1,
         description: step.description,
@@ -288,7 +280,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     }
 
     const ingredientStepMap = new Map<number, number>();
-    data.steps.forEach((step: StepEntry, stepIdx: number) => {
+    data.steps.forEach((step, stepIdx) => {
       for (const ingIdx of step.ingredient_indices) {
         if (!ingredientStepMap.has(ingIdx)) {
           ingredientStepMap.set(ingIdx, stepIdx + 1);

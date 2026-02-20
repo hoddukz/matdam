@@ -16,11 +16,25 @@ import { uploadRecipeImage } from "@/lib/supabase/storage";
 import type { IngredientEntry } from "@/components/recipe/ingredient-input";
 
 export interface StepEntry {
+  // _id is a client-only stable key for React reconciliation; not sent to DB
+  _id: string;
   description: string;
   timer_seconds: number | null;
   image_url: string | null;
   tip: string | null;
   ingredient_indices: number[];
+}
+
+export function makeStep(
+  partial: Omit<StepEntry, "_id"> = {
+    description: "",
+    timer_seconds: null,
+    image_url: null,
+    tip: null,
+    ingredient_indices: [],
+  }
+): StepEntry {
+  return { _id: Math.random().toString(36).slice(2), ...partial };
 }
 
 interface StepEditorProps {
@@ -68,13 +82,7 @@ export function StepEditor({ value, onChange, recipeId, ingredients = [] }: Step
       index === current.length - 1 &&
       patch.description.length > 0
     ) {
-      updated.push({
-        description: "",
-        timer_seconds: null,
-        image_url: null,
-        tip: null,
-        ingredient_indices: [],
-      });
+      updated.push(makeStep());
     }
 
     emitUpdate(updated);
@@ -87,10 +95,7 @@ export function StepEditor({ value, onChange, recipeId, ingredients = [] }: Step
   }
 
   function addStep() {
-    emitUpdate([
-      ...stepsRef.current,
-      { description: "", timer_seconds: null, image_url: null, tip: null, ingredient_indices: [] },
-    ]);
+    emitUpdate([...stepsRef.current, makeStep()]);
   }
 
   function toggleIngredient(stepIndex: number, ingredientIndex: number) {
@@ -143,7 +148,7 @@ export function StepEditor({ value, onChange, recipeId, ingredients = [] }: Step
         const { min, sec } = secondsToMinSec(step.timer_seconds);
 
         return (
-          <Card key={index} data-step-index={index} className="relative">
+          <Card key={step._id} data-step-index={index} className="relative">
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <CardTitle className="text-base font-semibold">
                 {t("stepNumber", { number: index + 1 })}

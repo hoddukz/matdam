@@ -14,6 +14,7 @@ export const ingredientEntrySchema = z.object({
 
 export function createStepEntrySchema(t: (key: string) => string) {
   return z.object({
+    _id: z.string().optional(),
     description: z.string().min(1, t("stepDescriptionRequired")),
     timer_seconds: z.number().nullable(),
     image_url: z.string().nullable(),
@@ -37,6 +38,7 @@ export function createRecipeFormSchema(t: (key: string) => string) {
 
 // Static schema kept for type inference
 export const stepEntrySchema = z.object({
+  _id: z.string().optional(),
   description: z.string().min(1),
   timer_seconds: z.number().nullable(),
   image_url: z.string().nullable(),

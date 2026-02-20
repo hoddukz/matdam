@@ -2,16 +2,23 @@
 // Path: apps/web/src/app/[locale]/recipe/[slug]/edit/page.tsx
 
 import { notFound, redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { RecipeForm } from "@/components/recipe/recipe-form";
 import type { RecipeFormInitialData } from "@/components/recipe/recipe-form";
 import type { IngredientEntry } from "@/components/recipe/ingredient-input";
-import type { StepEntry } from "@/components/recipe/step-editor";
+import { makeStep, type StepEntry } from "@/components/recipe/step-editor";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "recipe" });
+  return { title: t("editTitle") };
+}
 
 export default async function EditRecipePage({ params }: Props) {
   const { locale, slug } = await params;
@@ -60,13 +67,13 @@ export default async function EditRecipePage({ params }: Props) {
           }
         }
       );
-      return {
+      return makeStep({
         description: s.description,
         timer_seconds: s.timer_seconds,
         image_url: s.image_url,
         tip: s.tip,
         ingredient_indices: indices,
-      };
+      });
     }
   );
 
@@ -111,25 +118,11 @@ export default async function EditRecipePage({ params }: Props) {
     prep_time_minutes: recipe.prep_time_minutes ?? undefined,
     cook_time_minutes: recipe.cook_time_minutes ?? undefined,
     ingredients: formIngredients,
-    steps:
-      formSteps.length > 0
-        ? formSteps
-        : [
-            {
-              description: "",
-              timer_seconds: null,
-              image_url: null,
-              tip: null,
-              ingredient_indices: [],
-            },
-          ],
+    steps: formSteps.length > 0 ? formSteps : [makeStep()],
   };
-
-  const t = await getTranslations("recipe");
 
   return (
     <div>
-      <title>{t("editTitle")}</title>
       <RecipeForm initialData={initialData} />
     </div>
   );

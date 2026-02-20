@@ -3,6 +3,7 @@
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -16,6 +17,12 @@ import { Pencil } from "lucide-react";
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "profile" });
+  return { title: t("title") };
+}
 
 type Recipe = {
   recipe_id: string;
@@ -159,8 +166,6 @@ export default async function ProfilePage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <title>{t("title")}</title>
-
       {/* 유저 프로필 헤더 */}
       <div className="mb-8 flex items-center gap-4">
         <Avatar className="h-16 w-16">
