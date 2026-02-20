@@ -1,5 +1,5 @@
 // Tag: core
-// Path: apps/web/src/app/[locale]/recipe/[slug]/edit/page.tsx
+// Path: apps/web/src/app/[locale]/recipe/[slug]/remix/page.tsx
 
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -17,10 +17,10 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "recipe" });
-  return { title: t("editTitle") };
+  return { title: t("remixTitle") };
 }
 
-export default async function EditRecipePage({ params }: Props) {
+export default async function RemixRecipePage({ params }: Props) {
   const { locale, slug } = await params;
   const supabase = await createClient();
   const {
@@ -31,13 +31,15 @@ export default async function EditRecipePage({ params }: Props) {
     redirect("/login");
   }
 
-  // 레시피 조회 (published 무관 — 작성자 본인이므로)
-  const { data: recipe } = await supabase.from("recipes").select("*").eq("slug", slug).single();
+  // 원본 레시피 조회 (published만 리믹스 가능)
+  const { data: recipe } = await supabase
+    .from("recipes")
+    .select("*")
+    .eq("slug", slug)
+    .eq("published", true)
+    .single();
 
   if (!recipe) notFound();
-
-  // 작성자 확인
-  if (recipe.author_id !== user.id) notFound();
 
   // steps + ingredients 병렬 조회
   const [{ data: steps }, { data: recipeIngredients }] = await Promise.all([
@@ -50,7 +52,6 @@ export default async function EditRecipePage({ params }: Props) {
   ]);
 
   // steps → StepEntry 변환
-  // ingredient_indices 재구성: step_number와 ingredient display_order 매핑
   const formSteps: StepEntry[] = (steps ?? []).map(
     (s: {
       step_order: number;
@@ -102,12 +103,13 @@ export default async function EditRecipePage({ params }: Props) {
   const title = recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "";
 
   const initialData: RecipeFormInitialData = {
-    mode: "edit",
-    recipeId: recipe.recipe_id,
-    slug: recipe.slug,
-    heroImageUrl: recipe.hero_image_url,
+    mode: "remix",
+    // recipeId, slug 미포함 — 새 레시피 생성
+    heroImageUrl: null, // 리믹스 시 원본 이미지는 복사하지 않음
     rawTitle: recipe.title,
     rawDescription: recipe.description,
+    parentRecipeId: recipe.recipe_id,
+    rootRecipeId: recipe.root_recipe_id ?? recipe.recipe_id,
     title,
     description:
       recipe.description?.[locale] ||

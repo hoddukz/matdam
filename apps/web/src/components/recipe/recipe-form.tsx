@@ -39,12 +39,17 @@ function generateSlug(title: string): string {
   return `${base}-${suffix}`;
 }
 
+export type RecipeFormMode = "create" | "edit" | "remix";
+
 export interface RecipeFormInitialData extends RecipeFormValues {
-  recipeId: string;
-  slug: string;
+  recipeId?: string;
+  slug?: string;
   heroImageUrl: string | null;
   rawTitle: Record<string, string>;
   rawDescription: Record<string, string> | null;
+  parentRecipeId?: string;
+  rootRecipeId?: string;
+  mode: RecipeFormMode;
 }
 
 interface RecipeFormProps {
@@ -59,7 +64,9 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   const supabase = createClient();
   const recipeFormSchema = useMemo(() => createRecipeFormSchema((key) => tv(key)), [tv]);
 
-  const isEditMode = !!initialData;
+  const mode: RecipeFormMode = initialData?.mode ?? "create";
+  const isEditMode = mode === "edit";
+  const isRemixMode = mode === "remix";
 
   const [heroFile, setHeroFile] = useState<File | null>(null);
   const [heroPreview, setHeroPreview] = useState<string | null>(initialData?.heroImageUrl ?? null);
@@ -148,7 +155,10 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       if (isEditMode) {
         await handleUpdate(data, user.id, published);
       } else {
-        await handleCreate(data, user.id, published);
+        await handleCreate(data, user.id, published, {
+          parentRecipeId: initialData?.parentRecipeId,
+          rootRecipeId: initialData?.rootRecipeId,
+        });
       }
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : "Unknown error");
@@ -157,7 +167,12 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     }
   }
 
-  async function handleCreate(data: RecipeFormValues, userId: string, published: boolean) {
+  async function handleCreate(
+    data: RecipeFormValues,
+    userId: string,
+    published: boolean,
+    remix?: { parentRecipeId?: string; rootRecipeId?: string }
+  ) {
     const slug = generateSlug(data.title);
 
     const { data: recipeRow, error: recipeError } = await supabase
@@ -174,6 +189,8 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
         hero_image_url: null,
         published,
         dietary_tags: [],
+        parent_recipe_id: remix?.parentRecipeId ?? null,
+        root_recipe_id: remix?.rootRecipeId ?? null,
       })
       .select("recipe_id")
       .single();
@@ -209,8 +226,8 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   }
 
   async function handleUpdate(data: RecipeFormValues, _userId: string, published: boolean) {
-    const recipeId = initialData!.recipeId;
-    const slug = initialData!.slug;
+    const recipeId = initialData!.recipeId!;
+    const slug = initialData!.slug!;
 
     // UPDATE recipe row (slug 유지)
     let heroImageUrl = initialData!.heroImageUrl;
@@ -313,7 +330,9 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-2xl space-y-8 px-4 py-8">
-      <h1 className="text-2xl font-bold">{isEditMode ? t("editTitle") : t("createTitle")}</h1>
+      <h1 className="text-2xl font-bold">
+        {isEditMode ? t("editTitle") : isRemixMode ? t("remixTitle") : t("createTitle")}
+      </h1>
 
       {/* Hero image */}
       <div className="space-y-2">
@@ -514,10 +533,14 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
           {isSubmitting
             ? isEditMode
               ? t("updating")
-              : t("submitting")
+              : isRemixMode
+                ? t("publishingRemix")
+                : t("submitting")
             : isEditMode
               ? t("update")
-              : t("submit")}
+              : isRemixMode
+                ? t("publishRemix")
+                : t("submit")}
         </Button>
       </div>
     </form>

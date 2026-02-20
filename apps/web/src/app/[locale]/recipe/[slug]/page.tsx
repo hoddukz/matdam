@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeIngredientList } from "@/components/recipe/recipe-detail-client";
 import { DeleteRecipeButton } from "@/components/recipe/delete-recipe-button";
-import { Clock, Users, ChefHat, Lightbulb, Pencil } from "lucide-react";
+import { Clock, Users, ChefHat, Lightbulb, Pencil, GitFork } from "lucide-react";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -73,15 +73,37 @@ export default async function RecipeDetailPage({ params }: Props) {
 
   const isAuthor = user?.id === recipe.author_id;
 
-  // 2+3. Get steps and ingredients in parallel
-  const [{ data: steps }, { data: recipeIngredients }] = await Promise.all([
-    supabase.from("recipe_steps").select("*").eq("recipe_id", recipe.recipe_id).order("step_order"),
-    supabase
-      .from("recipe_ingredients")
-      .select("*, ingredients(names, category)")
-      .eq("recipe_id", recipe.recipe_id)
-      .order("display_order"),
-  ]);
+  // 2+3. Get steps, ingredients, and remix data in parallel
+  const [{ data: steps }, { data: recipeIngredients }, { data: parentRecipe }, { data: remixes }] =
+    await Promise.all([
+      supabase
+        .from("recipe_steps")
+        .select("*")
+        .eq("recipe_id", recipe.recipe_id)
+        .order("step_order"),
+      supabase
+        .from("recipe_ingredients")
+        .select("*, ingredients(names, category)")
+        .eq("recipe_id", recipe.recipe_id)
+        .order("display_order"),
+      // 부모 레시피 조회 (리믹스 출처 표시용, published만)
+      recipe.parent_recipe_id
+        ? supabase
+            .from("recipes")
+            .select("slug, title, users!inner(display_name)")
+            .eq("recipe_id", recipe.parent_recipe_id)
+            .eq("published", true)
+            .single()
+            .then(({ data }) => ({ data }))
+        : Promise.resolve({ data: null }),
+      // 이 레시피의 리믹스 목록
+      supabase
+        .from("recipes")
+        .select("recipe_id, slug, title, hero_image_url, users!inner(display_name)")
+        .eq("parent_recipe_id", recipe.recipe_id)
+        .eq("published", true)
+        .order("created_at", { ascending: false }),
+    ]);
 
   const title = recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "";
   const description =
@@ -155,24 +177,66 @@ export default async function RecipeDetailPage({ params }: Props) {
           <h1 className="mb-3 text-3xl font-bold tracking-tight">{title}</h1>
           {description && <p className="mb-4 text-muted-foreground">{description}</p>}
 
-          {/* Author + 수정/삭제 버튼 */}
+          {/* Author + 수정/삭제/리믹스 버튼 */}
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {t("by")}{" "}
               <span className="font-medium text-foreground">{recipe.users.display_name}</span>
             </p>
-            {isAuthor && (
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              {user ? (
                 <Button variant="outline" size="sm" className="gap-1" asChild>
-                  <Link href={`/${locale}/recipe/${slug}/edit`}>
-                    <Pencil className="h-4 w-4" />
-                    {t("edit")}
+                  <Link href={`/${locale}/recipe/${slug}/remix`}>
+                    <GitFork className="h-4 w-4" />
+                    {t("remix")}
                   </Link>
                 </Button>
-                <DeleteRecipeButton recipeId={recipe.recipe_id} />
-              </div>
-            )}
+              ) : (
+                <Button variant="outline" size="sm" className="gap-1" asChild>
+                  <Link href="/login" title={t("loginToRemix")}>
+                    <GitFork className="h-4 w-4" />
+                    {t("remix")}
+                  </Link>
+                </Button>
+              )}
+              {isAuthor && (
+                <>
+                  <Button variant="outline" size="sm" className="gap-1" asChild>
+                    <Link href={`/${locale}/recipe/${slug}/edit`}>
+                      <Pencil className="h-4 w-4" />
+                      {t("edit")}
+                    </Link>
+                  </Button>
+                  <DeleteRecipeButton recipeId={recipe.recipe_id} />
+                </>
+              )}
+            </div>
           </div>
+
+          {/* Remixed from (출처 표시) */}
+          {parentRecipe && (
+            <div className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground">
+              <GitFork className="h-4 w-4" />
+              <span>{t("remixedFrom")}</span>
+              <Link
+                href={`/${locale}/recipe/${parentRecipe.slug}`}
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                &ldquo;
+                {parentRecipe.title[locale] ||
+                  parentRecipe.title["en"] ||
+                  Object.values(parentRecipe.title)[0] ||
+                  ""}
+                &rdquo;
+              </Link>
+              <span>
+                {t("by")}{" "}
+                {Array.isArray(parentRecipe.users)
+                  ? parentRecipe.users[0]?.display_name
+                  : (parentRecipe.users as { display_name: string }).display_name}
+              </span>
+            </div>
+          )}
 
           {/* Meta badges */}
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
@@ -266,6 +330,52 @@ export default async function RecipeDetailPage({ params }: Props) {
                 </Card>
               )
             )}
+          </section>
+        )}
+
+        {/* Remixes of this recipe */}
+        {remixes && remixes.length > 0 && (
+          <section className="mt-10 space-y-4">
+            <h2 className="text-lg font-semibold">{t("remixesOfThis")}</h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {remixes.map(
+                (remix: {
+                  recipe_id: string;
+                  slug: string;
+                  title: Record<string, string>;
+                  hero_image_url: string | null;
+                  users: { display_name: string } | { display_name: string }[];
+                }) => {
+                  const remixTitle =
+                    remix.title[locale] || remix.title["en"] || Object.values(remix.title)[0] || "";
+                  const authorName = Array.isArray(remix.users)
+                    ? remix.users[0]?.display_name
+                    : remix.users.display_name;
+                  return (
+                    <Link key={remix.recipe_id} href={`/${locale}/recipe/${remix.slug}`}>
+                      <Card className="overflow-hidden transition-shadow hover:shadow-md">
+                        {remix.hero_image_url && (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={remix.hero_image_url}
+                            alt={remixTitle}
+                            className="h-32 w-full object-cover"
+                          />
+                        )}
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-base">{remixTitle}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <p className="text-xs text-muted-foreground">
+                            {t("by")} {authorName}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    </Link>
+                  );
+                }
+              )}
+            </div>
           </section>
         )}
       </article>

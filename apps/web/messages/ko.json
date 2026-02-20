@@ -54,7 +54,10 @@
     "draftSaved": "임시 저장되었습니다",
     "editTitle": "레시피 수정",
     "update": "수정 완료",
-    "updating": "수정 중..."
+    "updating": "수정 중...",
+    "remixTitle": "레시피 리믹스",
+    "publishRemix": "리믹스 게시",
+    "publishingRemix": "게시 중..."
   },
   "validation": {
     "titleMin": "제목을 3자 이상 입력해주세요",
@@ -82,7 +85,11 @@
     "deleteConfirm": "정말 삭제하시겠습니까?",
     "deleteDescription": "삭제된 레시피는 복구할 수 없습니다.",
     "deleteCancel": "취소",
-    "deleting": "삭제 중..."
+    "deleting": "삭제 중...",
+    "remix": "리믹스",
+    "remixedFrom": "리믹스 출처",
+    "remixesOfThis": "이 레시피의 리믹스",
+    "loginToRemix": "로그인 후 리믹스할 수 있습니다"
   },
   "explore": {
     "title": "레시피 탐색",

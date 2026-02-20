@@ -54,7 +54,10 @@
     "draftSaved": "Draft saved successfully",
     "editTitle": "Edit Recipe",
     "update": "Update Recipe",
-    "updating": "Updating..."
+    "updating": "Updating...",
+    "remixTitle": "Remix Recipe",
+    "publishRemix": "Publish Remix",
+    "publishingRemix": "Publishing..."
   },
   "validation": {
     "titleMin": "Title must be at least 3 characters",
@@ -82,7 +85,11 @@
     "deleteConfirm": "Are you sure you want to delete this recipe?",
     "deleteDescription": "This action cannot be undone.",
     "deleteCancel": "Cancel",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "remix": "Remix",
+    "remixedFrom": "Remixed from",
+    "remixesOfThis": "Remixes of this recipe",
+    "loginToRemix": "Sign in to remix"
   },
   "explore": {
     "title": "Explore Recipes",
