@@ -7,6 +7,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { GitFork } from "lucide-react";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -38,6 +39,7 @@ type Recipe = {
   cook_time_minutes: number | null;
   servings: number | null;
   created_at: string;
+  parent_recipe_id: string | null;
   users: { display_name: string | null; avatar_url: string | null };
 };
 
@@ -69,7 +71,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
   let query = supabase
     .from("recipes")
     .select(
-      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, users!inner(display_name, avatar_url)"
+      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, users!inner(display_name, avatar_url)"
     )
     .eq("published", true)
     .order("created_at", { ascending: false })
@@ -80,6 +82,24 @@ export default async function ExplorePage({ params, searchParams }: Props) {
   }
 
   const { data: recipes } = await query;
+
+  // 리믹스 레시피의 부모 제목을 일괄 조회
+  const parentIds = (recipes ?? [])
+    .map((r: { parent_recipe_id: string | null }) => r.parent_recipe_id)
+    .filter((id): id is string => id !== null);
+
+  const parentTitleMap: Record<string, string> = {};
+  if (parentIds.length > 0) {
+    const { data: parents } = await supabase
+      .from("recipes")
+      .select("recipe_id, title")
+      .in("recipe_id", parentIds);
+
+    (parents ?? []).forEach((p: { recipe_id: string; title: Record<string, string> }) => {
+      parentTitleMap[p.recipe_id] =
+        p.title[locale] || p.title["en"] || Object.values(p.title)[0] || "";
+    });
+  }
 
   const difficultyFilters = [
     { value: undefined, label: t("filterAll") },
@@ -156,6 +176,12 @@ export default async function ExplorePage({ params, searchParams }: Props) {
                     <p className="text-sm text-muted-foreground">
                       {t("by")} {recipe.users?.display_name ?? "—"}
                     </p>
+                    {recipe.parent_recipe_id && parentTitleMap[recipe.parent_recipe_id] && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                        <GitFork className="h-3 w-3" />
+                        {t("remixOf", { title: parentTitleMap[recipe.parent_recipe_id] })}
+                      </p>
+                    )}
                   </CardContent>
                   <CardFooter className="gap-4 text-xs text-muted-foreground">
                     {totalMinutes > 0 && (

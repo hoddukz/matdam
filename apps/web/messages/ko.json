@@ -101,7 +101,8 @@
     "filterMaster": "고급",
     "servings": "인분",
     "minutes": "분",
-    "by": "작성자"
+    "by": "작성자",
+    "remixOf": "\"{title}\"의 리믹스"
   },
   "ingredient": {
     "searchPlaceholder": "재료 검색...",

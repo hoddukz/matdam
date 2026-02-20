@@ -101,7 +101,8 @@
     "filterMaster": "Master",
     "servings": "servings",
     "minutes": "min",
-    "by": "by"
+    "by": "by",
+    "remixOf": "Remix of \"{title}\""
   },
   "ingredient": {
     "searchPlaceholder": "Search ingredients...",
