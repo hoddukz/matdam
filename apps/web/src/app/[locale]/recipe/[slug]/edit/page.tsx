@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { RecipeForm } from "@/components/recipe/recipe-form";
 import type { RecipeFormInitialData } from "@/components/recipe/recipe-form";
 import type { IngredientEntry } from "@/components/recipe/ingredient-input";
-import { makeStep, type StepEntry } from "@/components/recipe/step-editor";
+import { makeStep, type StepEntry } from "@/components/recipe/step-types";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
