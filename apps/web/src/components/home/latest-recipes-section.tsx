@@ -44,20 +44,20 @@ export function LatestRecipesSection({ locale, recipes, t }: LatestRecipesSectio
   if (recipes.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-end justify-between">
-        <h2 className="font-heading-ko text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
+      <div className="mb-6 flex items-end justify-between sm:mb-8">
+        <h2 className="font-heading-ko text-xl font-bold tracking-tight text-foreground sm:text-2xl md:text-3xl">
           {t.latestRecipes}
         </h2>
         <Link
           href={`/${locale}/explore`}
-          className="text-sm font-medium text-matdam-gold hover:underline"
+          className="shrink-0 text-sm font-medium text-matdam-gold hover:underline"
         >
           {t.viewAll} &rarr;
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {recipes.map((recipe) => {
           const title =
             recipe.title[locale] ?? recipe.title["en"] ?? Object.values(recipe.title)[0] ?? "";
