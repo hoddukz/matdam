@@ -24,9 +24,46 @@
 - [ ] temp step 이미지 (`temp-{timestamp}/`) — 레시피 생성 후 실제 recipeId 경로로 이동 또는 정리 로직 추가
 - [ ] `handleUpdate` — DELETE→INSERT 비원자적 작업에 대한 롤백/복구 전략 (현재는 에러만 표시)
 
+### 홈 페이지 코드리뷰 잔여 항목 (나중에)
+
+- [ ] `page.tsx` — Supabase `users` 조인 배열 반환 `as unknown as` 이중 캐스트 → 공유 타입 정의로 개선
+- [ ] `explore` 페이지에 리믹스 전용 필터 추가 후, 리믹스 섹션 "View all" 링크를 필터 적용된 URL로 변경
+- [ ] 대기 컴포넌트 활성화 시: `chef-of-the-week-section.tsx` — "View Profile" 링크를 해당 셰프 프로필로 연결
+- [ ] 대기 컴포넌트 활성화 시: `essential-ingredients-section.tsx` — glossary 페이지 구현 후 링크 연결
+- [ ] 대기 컴포넌트 활성화 시: `kdrama-cravings-section.tsx` — KDramaItem type에 `id` 필드 추가 (React key 안정성)
+
 ---
 
 ## 2026-02-20 (목)
+
+### 홈/랜딩 페이지 개선
+
+**신규 파일 생성 (6개):**
+
+- `components/home/hero-section.tsx` — 어두운 그라디언트 히어로 + CTA 버튼 2개
+- `components/home/latest-recipes-section.tsx` — 최신 published 레시피 6개, 3열 카드 그리드
+- `components/home/recent-remixes-section.tsx` — 최신 리믹스 6개, GitFork + 원본 표시 (없으면 미표시)
+- `components/home/chef-of-the-week-section.tsx` — 대기 컴포넌트 (props 기반)
+- `components/home/kdrama-cravings-section.tsx` — 대기 컴포넌트 (props 기반)
+- `components/home/essential-ingredients-section.tsx` — 대기 컴포넌트 (props 기반)
+
+**기존 파일 수정:**
+
+- `app/[locale]/page.tsx` — Server Component 전환, Supabase 병렬 쿼리, 3개 활성 섹션 배치
+- `messages/en.json` + `messages/ko.json` — home 네임스페이스 21개 번역 키 추가
+
+**코드리뷰 반영 (4건):**
+
+1. `remixOf` 번역 보간 깨짐 → 함수 방식 `(title) => t("remixOf", { title })` 으로 변경
+2. 난이도 라벨 영어 하드코딩 → `difficultyBeginner/Intermediate/Master` 번역 키 추가
+3. Supabase 쿼리 순차 실행 → `Promise.all` 병렬화
+4. Path 주석 상대경로 → 절대경로 6개 파일 수정
+
+### Git 커밋 이력
+
+```
+f0cdfcc 홈/랜딩 페이지 개선 — 히어로 + 최신 레시피 + 리믹스 3개 활성 섹션 + 대기 컴포넌트 3개
+```
 
 ### 단위 표시 개선
 
@@ -131,6 +168,7 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-20 — 홈/랜딩 페이지 개선 (히어로 + 최신 레시피 + 리믹스 + 대기 컴포넌트 3개) + 코드리뷰 4건 반영
 - [x] 2026-02-20 — 단위 표시 개선 (요리용 변환 계수 + L/mL 표기 + 소수점 정리)
 - [x] 2026-02-20 — 카테고리 뱃지 제거
 - [x] 2026-02-20 — RLS 정책 확인 완료 (recipe_steps + recipe_ingredients)

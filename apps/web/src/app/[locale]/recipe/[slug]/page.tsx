@@ -174,7 +174,7 @@ export default async function RecipeDetailPage({ params }: Props) {
 
         {/* Header */}
         <header className="mb-8">
-          <h1 className="mb-3 text-3xl font-bold tracking-tight">{title}</h1>
+          <h1 className="mb-3 text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
           {description && <p className="mb-4 text-muted-foreground">{description}</p>}
 
           {/* Author + 수정/삭제/리믹스 버튼 */}
@@ -183,7 +183,7 @@ export default async function RecipeDetailPage({ params }: Props) {
               {t("by")}{" "}
               <span className="font-medium text-foreground">{recipe.users.display_name}</span>
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {user ? (
                 <Button variant="outline" size="sm" className="gap-1" asChild>
                   <Link href={`/${locale}/recipe/${slug}/remix`}>
@@ -239,7 +239,7 @@ export default async function RecipeDetailPage({ params }: Props) {
           )}
 
           {/* Meta badges */}
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-sm text-muted-foreground">
             {recipe.difficulty_level && (
               <Badge variant="secondary" className="gap-1 capitalize">
                 <ChefHat className="h-3 w-3" />
@@ -275,7 +275,7 @@ export default async function RecipeDetailPage({ params }: Props) {
 
         {/* Ingredients - client component for unit toggle */}
         {recipeIngredients && recipeIngredients.length > 0 && (
-          <section className="mb-10">
+          <section className="mb-6 sm:mb-10">
             <RecipeIngredientList ingredients={recipeIngredients} />
           </section>
         )}

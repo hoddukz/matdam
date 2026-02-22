@@ -329,7 +329,10 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-2xl space-y-8 px-4 py-8">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="mx-auto max-w-2xl space-y-6 sm:space-y-8 px-4 py-8"
+    >
       <h1 className="text-2xl font-bold">
         {isEditMode ? t("editTitle") : isRemixMode ? t("remixTitle") : t("createTitle")}
       </h1>
@@ -343,7 +346,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
             <img
               src={heroPreview}
               alt={t("heroImagePreview")}
-              className="h-48 w-full rounded-lg object-cover"
+              className="h-36 sm:h-48 w-full rounded-lg object-cover"
             />
             <Button
               type="button"
@@ -408,7 +411,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       </div>
 
       {/* Servings / Prep / Cook */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="servings">{t("servingsLabel")}</Label>
           <Input

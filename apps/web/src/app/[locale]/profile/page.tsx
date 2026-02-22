@@ -94,7 +94,7 @@ export default async function ProfilePage({ params }: Props) {
     }
 
     return (
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((recipe) => {
           const title =
             recipe.title[locale] ?? recipe.title["en"] ?? Object.values(recipe.title)[0] ?? "";
@@ -149,7 +149,7 @@ export default async function ProfilePage({ params }: Props) {
               </Link>
 
               {/* 수정/삭제 오버레이 */}
-              <div className="absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="absolute right-2 top-2 flex gap-1 opacity-100 sm:opacity-0 transition-opacity sm:group-hover:opacity-100">
                 <Button variant="secondary" size="icon" className="h-8 w-8" asChild>
                   <Link href={`/${locale}/recipe/${recipe.slug}/edit`}>
                     <Pencil className="h-3.5 w-3.5" />
@@ -167,7 +167,7 @@ export default async function ProfilePage({ params }: Props) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       {/* 유저 프로필 헤더 */}
-      <div className="mb-8 flex items-center gap-4">
+      <div className="mb-8 flex flex-col items-center text-center sm:flex-row sm:text-left gap-4">
         <Avatar className="h-16 w-16">
           {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
           <AvatarFallback className="bg-matdam-gold text-xl text-white">
@@ -177,7 +177,7 @@ export default async function ProfilePage({ params }: Props) {
           </AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-2xl font-bold">{profile?.display_name ?? user.email}</h1>
+          <h1 className="text-lg sm:text-2xl font-bold">{profile?.display_name ?? user.email}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             {memberSince && (
               <span>

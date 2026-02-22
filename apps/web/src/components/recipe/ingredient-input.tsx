@@ -319,7 +319,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
       )}
 
       {/* Input form */}
-      <div className="flex items-center gap-2" onKeyDown={handleKeyDown}>
+      <div className="flex flex-wrap items-center gap-2" onKeyDown={handleKeyDown}>
         {/* Step 1: Search */}
         <div className="relative flex-1">
           <Input
@@ -419,7 +419,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder={t("amountPlaceholder")}
-            className="w-20"
+            className="w-16 sm:w-20"
             min={0}
             step="any"
           />
@@ -428,7 +428,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
         {/* Step 3: Unit */}
         {step !== "search" && canAdd && (
           <Select value={unit} onValueChange={setUnit}>
-            <SelectTrigger className="w-24">
+            <SelectTrigger className="w-20 sm:w-24">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

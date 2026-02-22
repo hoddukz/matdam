@@ -107,7 +107,7 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
               key={i}
               className="flex items-center justify-between border-b border-border/50 py-2 last:border-0"
             >
-              <span className="font-medium">{name}</span>
+              <span className="min-w-0 truncate font-medium">{name}</span>
               <span className="text-sm text-muted-foreground">
                 {displayAmount(ing)}
                 {ing.note && <span className="ml-1 italic">({ing.note})</span>}

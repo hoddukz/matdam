@@ -187,7 +187,7 @@ export function StepEditor({ value, onChange, recipeId, ingredients = [] }: Step
               )}
 
               {/* Optional fields row */}
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
                 {/* Timer */}
                 <div className="space-y-1.5">
                   <Label className="flex items-center gap-1 text-xs text-muted-foreground">
