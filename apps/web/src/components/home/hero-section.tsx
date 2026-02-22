@@ -49,7 +49,7 @@ export function HeroSection({ locale, t }: HeroSectionProps) {
             asChild
             variant="outline"
             size="lg"
-            className="w-full rounded-full border-2 border-matdam-cream px-8 text-matdam-cream hover:bg-matdam-cream/10 hover:text-matdam-cream sm:w-auto"
+            className="w-full rounded-full border-2 border-matdam-cream bg-transparent px-8 text-matdam-cream hover:bg-matdam-cream/10 hover:text-matdam-cream sm:w-auto"
           >
             <Link href={`/${locale}/create`}>{t.createRecipe}</Link>
           </Button>
