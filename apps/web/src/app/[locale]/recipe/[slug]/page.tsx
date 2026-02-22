@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeIngredientList } from "@/components/recipe/recipe-detail-client";
 import { DeleteRecipeButton } from "@/components/recipe/delete-recipe-button";
+import { BookmarkButton } from "@/components/recipe/bookmark-button";
 import { Clock, Users, ChefHat, Lightbulb, Pencil, GitFork } from "lucide-react";
 
 type Props = {
@@ -69,38 +70,49 @@ export default async function RecipeDetailPage({ params }: Props) {
 
   const isAuthor = user?.id === recipe.author_id;
 
-  // 2+3. Get steps, ingredients, and remix data in parallel
-  const [{ data: steps }, { data: recipeIngredients }, { data: parentRecipe }, { data: remixes }] =
-    await Promise.all([
-      supabase
-        .from("recipe_steps")
-        .select("*")
-        .eq("recipe_id", recipe.recipe_id)
-        .order("step_order"),
-      supabase
-        .from("recipe_ingredients")
-        .select("*, ingredients(names, category)")
-        .eq("recipe_id", recipe.recipe_id)
-        .order("display_order"),
-      // 부모 레시피 조회 (리믹스 출처 표시용, published만)
-      recipe.parent_recipe_id
-        ? supabase
-            .from("recipes")
-            .select("slug, title, users!inner(display_name)")
-            .eq("recipe_id", recipe.parent_recipe_id)
-            .eq("published", true)
-            .single()
-            .then(({ data }) => ({ data }))
-        : Promise.resolve({ data: null }),
-      // 이 레시피의 리믹스 목록
-      supabase
-        .from("recipes")
-        .select("recipe_id, slug, title, hero_image_url, users!inner(display_name)")
-        .eq("parent_recipe_id", recipe.recipe_id)
-        .eq("published", true)
-        .order("created_at", { ascending: false }),
-    ]);
+  // 2+3. Get steps, ingredients, remix data, and bookmark status in parallel
+  const [
+    { data: steps },
+    { data: recipeIngredients },
+    { data: parentRecipe },
+    { data: remixes },
+    { data: bookmarkRow },
+  ] = await Promise.all([
+    supabase.from("recipe_steps").select("*").eq("recipe_id", recipe.recipe_id).order("step_order"),
+    supabase
+      .from("recipe_ingredients")
+      .select("*, ingredients(names, category)")
+      .eq("recipe_id", recipe.recipe_id)
+      .order("display_order"),
+    // 부모 레시피 조회 (리믹스 출처 표시용, published만)
+    recipe.parent_recipe_id
+      ? supabase
+          .from("recipes")
+          .select("slug, title, users!inner(display_name)")
+          .eq("recipe_id", recipe.parent_recipe_id)
+          .eq("published", true)
+          .single()
+          .then(({ data }) => ({ data }))
+      : Promise.resolve({ data: null }),
+    // 이 레시피의 리믹스 목록
+    supabase
+      .from("recipes")
+      .select("recipe_id, slug, title, hero_image_url, users!inner(display_name)")
+      .eq("parent_recipe_id", recipe.recipe_id)
+      .eq("published", true)
+      .order("created_at", { ascending: false }),
+    // 북마크 상태 조회 (로그인 시에만)
+    user
+      ? supabase
+          .from("bookmarks")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("recipe_id", recipe.recipe_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
 
+  const isBookmarked = bookmarkRow !== null;
   const title = getLocalizedText(recipe.title, locale);
   const description = getLocalizedText(recipe.description, locale);
 
@@ -178,6 +190,11 @@ export default async function RecipeDetailPage({ params }: Props) {
               {t("by")} <span className="font-medium text-foreground">{author?.display_name}</span>
             </p>
             <div className="flex flex-wrap items-center gap-2">
+              <BookmarkButton
+                recipeId={recipe.recipe_id}
+                initialBookmarked={isBookmarked}
+                isLoggedIn={!!user}
+              />
               {user ? (
                 <Button variant="outline" size="sm" className="gap-1" asChild>
                   <Link href={`/${locale}/recipe/${slug}/remix`}>

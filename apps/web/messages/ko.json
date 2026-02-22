@@ -41,7 +41,18 @@
   "login": {
     "title": "로그인",
     "subtitle": "계속하려면 로그인하세요",
-    "google": "Google로 계속하기"
+    "google": "Google로 계속하기",
+    "apple": "Apple로 계속하기",
+    "facebook": "Facebook으로 계속하기",
+    "autoSignup": "계정이 없으신가요? 로그인하면 자동으로 가입됩니다."
+  },
+  "onboarding": {
+    "title": "맛담에 오신 것을 환영합니다!",
+    "subtitle": "닉네임을 설정하고 시작하세요",
+    "displayNameLabel": "닉네임",
+    "displayNamePlaceholder": "예: 김셰프",
+    "submit": "시작하기",
+    "submitting": "저장 중..."
   },
   "recipe": {
     "createTitle": "레시피 작성",
@@ -115,7 +126,9 @@
     "remix": "리믹스",
     "remixedFrom": "리믹스 출처",
     "remixesOfThis": "이 레시피의 리믹스",
-    "loginToRemix": "로그인 후 리믹스할 수 있습니다"
+    "loginToRemix": "로그인 후 리믹스할 수 있습니다",
+    "bookmark": "북마크",
+    "bookmarked": "북마크됨"
   },
   "explore": {
     "title": "레시피 탐색",
@@ -128,7 +141,8 @@
     "servings": "인분",
     "minutes": "분",
     "by": "작성자",
-    "remixOf": "\"{title}\"의 리믹스"
+    "remixOf": "\"{title}\"의 리믹스",
+    "searchPlaceholder": "레시피 검색..."
   },
   "ingredient": {
     "searchPlaceholder": "재료 검색...",
@@ -143,11 +157,32 @@
     "title": "내 프로필",
     "publishedTab": "공개 레시피",
     "draftsTab": "임시저장",
+    "bookmarksTab": "북마크",
     "noRecipes": "레시피가 없습니다",
+    "noBookmarks": "북마크한 레시피가 없습니다",
     "memberSince": "가입일",
     "recipeCount": "레시피 {count}개",
     "servings": "인분",
     "minutes": "분"
+  },
+  "glossary": {
+    "title": "재료사전",
+    "description": "한식 요리에 필수적인 재료를 탐색하세요",
+    "searchPlaceholder": "재료 검색...",
+    "filterAll": "전체",
+    "filterSaucePaste": "장류 & 소스",
+    "filterSeasoning": "양념",
+    "filterVegetable": "채소",
+    "filterProtein": "단백질",
+    "filterGrainNoodle": "곡물 & 면",
+    "filterDairyEgg": "유제품 & 달걀",
+    "filterOther": "기타",
+    "substitutes": "대체 재료",
+    "usedInRecipes": "이 재료를 사용한 레시피",
+    "noResults": "재료를 찾을 수 없습니다",
+    "noRecipesUsing": "이 재료를 사용한 레시피가 아직 없습니다",
+    "backToGlossary": "재료사전으로 돌아가기",
+    "about": "설명"
   },
   "footer": {
     "tagline": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요.",

@@ -1,39 +1,44 @@
 // Tag: core
-// Path: /Users/hodduk/Documents/git/mat_dam/apps/web/src/app/[locale]/login/page.tsx
+// Path: /Users/hodduk/Documents/git/mat_dam/apps/web/src/app/[locale]/onboarding/page.tsx
 
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { LoginForm } from "./_components/login-form";
+import { OnboardingForm } from "./_components/onboarding-form";
 
-export default async function LoginPage() {
+export default async function OnboardingPage() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (user) {
+  if (!user) {
+    redirect("/login");
+  }
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("display_name, preferences")
+    .eq("user_id", user.id)
+    .single();
+
+  // 이미 온보딩 완료한 유저는 홈으로 리다이렉트
+  if (profile?.preferences?.onboarding_complete === true) {
     redirect("/");
   }
 
-  const t = await getTranslations("login");
+  const t = await getTranslations("onboarding");
 
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-sm space-y-6 px-4">
         <div className="space-y-2 text-center">
           <p className="text-4xl font-bold tracking-tight">🍲 맛담</p>
-          <p className="text-muted-foreground text-xs">MatDam</p>
-        </div>
-
-        <div className="space-y-2 text-center">
           <h1 className="text-2xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground text-sm">{t("subtitle")}</p>
         </div>
 
-        <LoginForm />
-
-        <p className="text-muted-foreground text-center text-xs">{t("autoSignup")}</p>
+        <OnboardingForm defaultDisplayName={profile?.display_name ?? ""} />
       </div>
     </div>
   );

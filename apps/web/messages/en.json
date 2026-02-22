@@ -41,7 +41,18 @@
   "login": {
     "title": "Sign In",
     "subtitle": "Sign in to continue",
-    "google": "Continue with Google"
+    "google": "Continue with Google",
+    "apple": "Continue with Apple",
+    "facebook": "Continue with Facebook",
+    "autoSignup": "No account? Signing in creates one automatically."
+  },
+  "onboarding": {
+    "title": "Welcome to MatDam!",
+    "subtitle": "Set your display name to get started",
+    "displayNameLabel": "Display Name",
+    "displayNamePlaceholder": "e.g. Chef Kim",
+    "submit": "Get Started",
+    "submitting": "Saving..."
   },
   "recipe": {
     "createTitle": "Create Recipe",
@@ -115,7 +126,9 @@
     "remix": "Remix",
     "remixedFrom": "Remixed from",
     "remixesOfThis": "Remixes of this recipe",
-    "loginToRemix": "Sign in to remix"
+    "loginToRemix": "Sign in to remix",
+    "bookmark": "Bookmark",
+    "bookmarked": "Bookmarked"
   },
   "explore": {
     "title": "Explore Recipes",
@@ -128,7 +141,8 @@
     "servings": "servings",
     "minutes": "min",
     "by": "by",
-    "remixOf": "Remix of \"{title}\""
+    "remixOf": "Remix of \"{title}\"",
+    "searchPlaceholder": "Search recipes..."
   },
   "ingredient": {
     "searchPlaceholder": "Search ingredients...",
@@ -143,11 +157,32 @@
     "title": "My Profile",
     "publishedTab": "Published",
     "draftsTab": "Drafts",
+    "bookmarksTab": "Bookmarks",
     "noRecipes": "No recipes yet",
+    "noBookmarks": "No bookmarked recipes yet",
     "memberSince": "Member since",
     "recipeCount": "{count} recipes",
     "servings": "servings",
     "minutes": "min"
+  },
+  "glossary": {
+    "title": "Ingredient Glossary",
+    "description": "Explore essential Korean cooking ingredients",
+    "searchPlaceholder": "Search ingredients...",
+    "filterAll": "All",
+    "filterSaucePaste": "Sauces & Pastes",
+    "filterSeasoning": "Seasonings",
+    "filterVegetable": "Vegetables",
+    "filterProtein": "Proteins",
+    "filterGrainNoodle": "Grains & Noodles",
+    "filterDairyEgg": "Dairy & Eggs",
+    "filterOther": "Other",
+    "substitutes": "Substitutes",
+    "usedInRecipes": "Used in Recipes",
+    "noResults": "No ingredients found",
+    "noRecipesUsing": "No recipes using this ingredient yet",
+    "backToGlossary": "Back to Glossary",
+    "about": "About"
   },
   "footer": {
     "tagline": "Discover, remix, and share Korean recipes with the world.",

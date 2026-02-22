@@ -1,6 +1,7 @@
 // Tag: core
 // Path: /Users/hodduk/Documents/git/mat_dam/apps/web/src/app/[locale]/explore/page.tsx
 
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -10,10 +11,11 @@ import { Badge } from "@/components/ui/badge";
 import { GitFork } from "lucide-react";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 import { DIFFICULTY_VARIANTS, DIFFICULTY_LABEL_KEYS } from "@/lib/recipe/constants";
+import { ExploreSearch } from "@/components/explore/explore-search";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ difficulty?: string }>;
+  searchParams: Promise<{ difficulty?: string; q?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -50,10 +52,11 @@ type Difficulty = (typeof VALID_DIFFICULTIES)[number];
 
 export default async function ExplorePage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const rawDifficulty = (await searchParams).difficulty;
+  const { difficulty: rawDifficulty, q: rawQ } = await searchParams;
   const difficulty = VALID_DIFFICULTIES.includes(rawDifficulty as Difficulty)
     ? (rawDifficulty as Difficulty)
     : undefined;
+  const q = rawQ?.trim() || undefined;
   const t = await getTranslations({ locale, namespace: "explore" });
 
   const supabase = await createClient();
@@ -69,6 +72,12 @@ export default async function ExplorePage({ params, searchParams }: Props) {
 
   if (difficulty) {
     query = query.eq("difficulty_level", difficulty);
+  }
+
+  if (q) {
+    // PostgREST 필터 구문 문자 + LIKE 와일드카드 이스케이프
+    const escaped = q.replace(/[%_\\]/g, (ch) => `\\${ch}`).replace(/[.,()]/g, "");
+    query = query.or(`title->>'en'.ilike.%${escaped}%,title->>'ko'.ilike.%${escaped}%`);
   }
 
   const { data: recipes } = await query;
@@ -104,12 +113,22 @@ export default async function ExplorePage({ params, searchParams }: Props) {
         <p className="mt-2 text-muted-foreground">{t("description")}</p>
       </div>
 
+      {/* 검색 */}
+      <div className="mb-6">
+        <Suspense fallback={null}>
+          <ExploreSearch />
+        </Suspense>
+      </div>
+
       <div className="mb-6 flex flex-wrap gap-2">
         {difficultyFilters.map((filter) => {
-          const href = filter.value ? `?difficulty=${filter.value}` : "?";
+          const params = new URLSearchParams();
+          if (filter.value) params.set("difficulty", filter.value);
+          if (q) params.set("q", q);
+          const href = `?${params.toString()}`;
           const isActive = difficulty === filter.value || (!difficulty && !filter.value);
           return (
-            <Link key={filter.label} href={href}>
+            <Link key={filter.value ?? "all"} href={href}>
               <Badge
                 variant={isActive ? "default" : "outline"}
                 className="cursor-pointer px-3 py-1 text-sm"
