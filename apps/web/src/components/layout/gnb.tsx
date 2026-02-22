@@ -50,6 +50,23 @@ export function GNB() {
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-matdam-gold shadow-sm">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              className="h-5 w-5 text-matdam-dark"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 12.5C5 8.36 8.36 5 12.5 5H16V7H12.5C9.46 7 7 9.46 7 12.5S9.46 18 12.5 18H13V20H12.5C8.36 20 5 16.64 5 12.5Z"
+                fill="currentColor"
+              />
+              <path
+                d="M16 3C16 3 16 7 16 8C16 9.1 16.9 10 18 10H20V12H18C15.79 12 14 10.21 14 8V3H16Z"
+                fill="currentColor"
+              />
+            </svg>
+          </div>
           <span className="font-heading-ko text-xl font-bold text-matdam-dark">맛담</span>
           <span className="hidden font-body-en text-sm text-matdam-brown sm:inline">MatDam</span>
         </Link>

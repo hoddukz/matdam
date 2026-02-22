@@ -19,7 +19,9 @@ export function GlossarySearch() {
     const q = (formData.get("q") as string).trim();
 
     const params = new URLSearchParams();
-    // 기존 category 파라미터 보존
+    // 기존 category, cuisine 파라미터 보존
+    const cuisine = searchParams.get("cuisine");
+    if (cuisine) params.set("cuisine", cuisine);
     const category = searchParams.get("category");
     if (category) params.set("category", category);
     if (q) params.set("q", q);

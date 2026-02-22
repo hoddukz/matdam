@@ -10,11 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GlossarySearch } from "@/components/glossary/glossary-search";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
-import { CATEGORY_LABEL_KEYS, DIETARY_FLAG_LABELS } from "@/lib/recipe/glossary-constants";
+import {
+  CATEGORY_LABEL_KEYS,
+  DIETARY_FLAG_LABELS,
+  CUISINE_LABEL_KEYS,
+} from "@/lib/recipe/glossary-constants";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; cuisine?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -49,10 +53,12 @@ type Ingredient = {
 
 export default async function GlossaryPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { category: rawCategory, q } = await searchParams;
+  const { category: rawCategory, q, cuisine: rawCuisine } = await searchParams;
   const category = VALID_CATEGORIES.includes(rawCategory as Category)
     ? (rawCategory as Category)
     : undefined;
+  const VALID_CUISINES = Object.keys(CUISINE_LABEL_KEYS);
+  const cuisine = VALID_CUISINES.includes(rawCuisine ?? "") ? rawCuisine : undefined;
   const t = await getTranslations({ locale, namespace: "glossary" });
   const supabase = await createClient();
 
@@ -64,25 +70,48 @@ export default async function GlossaryPage({ params, searchParams }: Props) {
         locale,
         result_limit: 50,
       });
-      const results = (data ?? []) as Ingredient[];
+      let results = (data ?? []) as Ingredient[];
       // 카테고리 필터 적용
-      return category ? results.filter((i) => i.category === category) : results;
+      if (category) results = results.filter((i) => i.category === category);
+      // cuisine 필터: RPC는 cuisines를 반환하지 않으므로 id 목록으로 2차 필터
+      if (cuisine && results.length > 0) {
+        const ids = results.map((i) => i.id);
+        const { data: filtered } = await supabase
+          .from("ingredients")
+          .select("id")
+          .in("id", ids)
+          .contains("cuisines", [cuisine]);
+        const validIds = new Set((filtered ?? []).map((r: { id: string }) => r.id));
+        results = results.filter((i) => validIds.has(i.id));
+      }
+      return results;
     }
 
     // 검색어 없으면 직접 쿼리
     let query = supabase
       .from("ingredients")
-      .select("id, names, category, dietary_flags, description, image_url")
+      .select("id, names, category, dietary_flags, description, image_url, cuisines")
       .order("names->en")
       .limit(100);
 
     if (category) {
       query = query.eq("category", category);
     }
+    if (cuisine) {
+      query = query.contains("cuisines", [cuisine]);
+    }
 
     const { data } = await query;
     return (data ?? []) as Ingredient[];
   })();
+
+  const cuisineFilters = [
+    { value: undefined, labelKey: "cuisineAll" as const },
+    ...VALID_CUISINES.map((c) => ({
+      value: c,
+      labelKey: CUISINE_LABEL_KEYS[c] as string,
+    })),
+  ];
 
   const categoryFilters = [
     { value: undefined, labelKey: "filterAll" as const },
@@ -106,10 +135,41 @@ export default async function GlossaryPage({ params, searchParams }: Props) {
         </Suspense>
       </div>
 
+      {/* 문화권 필터 */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        {cuisineFilters.map((filter) => {
+          const params = new URLSearchParams();
+          if (filter.value) params.set("cuisine", filter.value);
+          if (category) params.set("category", category);
+          if (q) params.set("q", q);
+          const href = `?${params.toString()}`;
+          const isActive = cuisine === filter.value || (!cuisine && !filter.value);
+          return (
+            <Link key={filter.labelKey} href={href}>
+              <Badge
+                variant={isActive ? "default" : "outline"}
+                className="cursor-pointer px-3 py-1 text-sm"
+              >
+                {t(filter.labelKey)}
+              </Badge>
+            </Link>
+          );
+        })}
+        {cuisine && (
+          <Link
+            href={`/${locale}/glossary/pantry/${cuisine}`}
+            className="ml-2 text-sm text-primary hover:underline"
+          >
+            {t("viewPantryGuide")} →
+          </Link>
+        )}
+      </div>
+
       {/* 카테고리 필터 */}
       <div className="mb-6 flex flex-wrap gap-2">
         {categoryFilters.map((filter) => {
           const params = new URLSearchParams();
+          if (cuisine) params.set("cuisine", cuisine);
           if (filter.value) params.set("category", filter.value);
           if (q) params.set("q", q);
           const href = `?${params.toString()}`;

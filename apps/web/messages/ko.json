@@ -183,7 +183,19 @@
     "noResults": "재료를 찾을 수 없습니다",
     "noRecipesUsing": "이 재료를 사용한 레시피가 아직 없습니다",
     "backToGlossary": "재료사전으로 돌아가기",
-    "about": "설명"
+    "about": "설명",
+    "cuisineAll": "전체",
+    "cuisineKorean": "한식",
+    "cuisineJapanese": "일식",
+    "cuisineChinese": "중식",
+    "cuisineThai": "태국",
+    "cuisineWestern": "양식",
+    "pantryTitle": "{cuisine} 필수 재료",
+    "pantryDescription": "{cuisine} 요리에 필수적인 재료 가이드",
+    "importanceMustHave": "필수",
+    "importanceRecommended": "권장",
+    "importanceAdvanced": "고급",
+    "viewPantryGuide": "필수 재료 가이드 보기"
   },
   "footer": {
     "tagline": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요.",

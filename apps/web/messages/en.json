@@ -183,7 +183,19 @@
     "noResults": "No ingredients found",
     "noRecipesUsing": "No recipes using this ingredient yet",
     "backToGlossary": "Back to Glossary",
-    "about": "About"
+    "about": "About",
+    "cuisineAll": "All Cuisines",
+    "cuisineKorean": "Korean",
+    "cuisineJapanese": "Japanese",
+    "cuisineChinese": "Chinese",
+    "cuisineThai": "Thai",
+    "cuisineWestern": "Western",
+    "pantryTitle": "{cuisine} Pantry Essentials",
+    "pantryDescription": "Essential ingredients for {cuisine} cooking",
+    "importanceMustHave": "Must-Have",
+    "importanceRecommended": "Recommended",
+    "importanceAdvanced": "Advanced",
+    "viewPantryGuide": "View Pantry Guide"
   },
   "footer": {
     "tagline": "Discover, remix, and share Korean recipes with the world.",
