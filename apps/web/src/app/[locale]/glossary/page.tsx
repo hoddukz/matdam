@@ -140,7 +140,15 @@ export default async function GlossaryPage({ params, searchParams }: Props) {
 
             return (
               <Link key={ingredient.id} href={`/${locale}/glossary/${ingredient.id}`}>
-                <Card className="h-full transition-shadow hover:shadow-md">
+                <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+                  {ingredient.image_url && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={ingredient.image_url}
+                      alt={primaryName}
+                      className="h-32 w-full object-cover"
+                    />
+                  )}
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">{primaryName}</CardTitle>
                     {secondaryName && (

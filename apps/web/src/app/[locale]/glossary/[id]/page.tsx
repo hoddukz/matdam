@@ -119,6 +119,14 @@ export default async function GlossaryDetailPage({ params }: Props) {
         </Link>
       </Button>
 
+      {/* 이미지 */}
+      {ing.image_url && (
+        <div className="mb-6 overflow-hidden rounded-xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={ing.image_url} alt={primaryName} className="h-48 w-full object-cover sm:h-64" />
+        </div>
+      )}
+
       {/* 헤더 */}
       <header className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">{primaryName}</h1>

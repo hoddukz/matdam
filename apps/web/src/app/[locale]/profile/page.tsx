@@ -18,6 +18,7 @@ import { Pencil } from "lucide-react";
 
 type Props = {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ tab?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -39,8 +40,9 @@ type Recipe = {
   created_at: string;
 };
 
-export default async function ProfilePage({ params }: Props) {
+export default async function ProfilePage({ params, searchParams }: Props) {
   const { locale } = await params;
+  const { tab } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -261,7 +263,9 @@ export default async function ProfilePage({ params }: Props) {
       </div>
 
       {/* 공개/임시저장/북마크 탭 */}
-      <Tabs defaultValue="published">
+      <Tabs
+        defaultValue={tab === "bookmarks" ? "bookmarks" : tab === "drafts" ? "drafts" : "published"}
+      >
         <TabsList>
           <TabsTrigger value="published">
             {t("publishedTab")} ({publishedRecipes.length})
