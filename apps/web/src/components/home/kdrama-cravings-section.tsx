@@ -1,5 +1,5 @@
-// Tag: core
-// Path: /Users/hodduk/Documents/git/mat_dam/apps/web/src/components/home/kdrama-cravings-section.tsx
+// Tag: temp (대기 컴포넌트 — 기능 활성화 시 core로 변경)
+// Path: apps/web/src/components/home/kdrama-cravings-section.tsx
 
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";

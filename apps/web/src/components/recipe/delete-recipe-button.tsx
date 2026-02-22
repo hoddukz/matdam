@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +28,8 @@ interface DeleteRecipeButtonProps {
 export function DeleteRecipeButton({ recipeId, iconOnly }: DeleteRecipeButtonProps) {
   const t = useTranslations("recipeDetail");
   const locale = useLocale();
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 

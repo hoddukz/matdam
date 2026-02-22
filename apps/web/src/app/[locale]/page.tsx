@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { HeroSection } from "@/components/home/hero-section";
 import { LatestRecipesSection } from "@/components/home/latest-recipes-section";
 import { RecentRemixesSection } from "@/components/home/recent-remixes-section";
+import { getLocalizedText } from "@/lib/recipe/localized-text";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -65,8 +66,7 @@ export default async function HomePage({ params }: Props) {
       .in("recipe_id", parentIds);
 
     (parents ?? []).forEach((p: { recipe_id: string; title: Record<string, string> }) => {
-      parentTitleMap[p.recipe_id] =
-        p.title[locale] || p.title["en"] || Object.values(p.title)[0] || "";
+      parentTitleMap[p.recipe_id] = getLocalizedText(p.title, locale);
     });
   }
 
@@ -86,9 +86,10 @@ export default async function HomePage({ params }: Props) {
 
       <LatestRecipesSection
         locale={locale}
-        recipes={
-          (latestRecipes ?? []) as unknown as Parameters<typeof LatestRecipesSection>[0]["recipes"]
-        }
+        recipes={(latestRecipes ?? []).map((r) => ({
+          ...r,
+          users: Array.isArray(r.users) ? r.users[0] : r.users,
+        }))}
         t={{
           latestRecipes: t("latestRecipes"),
           viewAll: t("viewAll"),
@@ -103,9 +104,10 @@ export default async function HomePage({ params }: Props) {
 
       <RecentRemixesSection
         locale={locale}
-        remixes={
-          (remixRecipes ?? []) as unknown as Parameters<typeof RecentRemixesSection>[0]["remixes"]
-        }
+        remixes={(remixRecipes ?? []).map((r) => ({
+          ...r,
+          users: Array.isArray(r.users) ? r.users[0] : r.users,
+        }))}
         parentTitleMap={parentTitleMap}
         t={{
           trendingRemixes: t("trendingRemixes"),

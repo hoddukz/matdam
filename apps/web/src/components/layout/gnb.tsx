@@ -14,21 +14,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Menu, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
-import { useRouter } from "next/navigation";
-
 export function GNB() {
   const t = useTranslations("nav");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const supabase = createClient();
-  const router = useRouter();
+  const supabaseRef = useRef(createClient());
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
+    const supabase = supabaseRef.current;
+    supabase.auth.getUser().then(({ data: { user: u } }) => {
+      setUser(u);
     });
 
     const {
@@ -41,8 +39,8 @@ export function GNB() {
   }, []);
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    router.refresh();
+    await supabaseRef.current.auth.signOut();
+    window.location.href = "/";
   }
 
   const isLoggedIn = !!user;

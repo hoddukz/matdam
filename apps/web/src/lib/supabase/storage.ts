@@ -21,8 +21,10 @@ export async function uploadRecipeImage(
     return null;
   }
 
-  // 경로 순회 방지
-  if (/[/\\.]/.test(recipeId) || /[/\\.]/.test(prefix)) {
+  // 경로 순회 방지 + recipeId UUID 검증
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const SAFE_PREFIX_RE = /^[a-z0-9_-]+$/i;
+  if ((!UUID_RE.test(recipeId) && !/^temp-\d+$/.test(recipeId)) || !SAFE_PREFIX_RE.test(prefix)) {
     console.error("Invalid path segment:", recipeId, prefix);
     return null;
   }

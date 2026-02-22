@@ -9,8 +9,9 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const rawNext = searchParams.get("next") ?? "/";
 
-  // Open redirect 방지: 상대경로만 허용, 프로토콜 상대 URL(//) 차단
-  const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "/";
+  // Open redirect 방지: 디코딩 후 검증, 프로토콜 상대 URL(//) 차단
+  const decoded = decodeURIComponent(rawNext);
+  const next = decoded.startsWith("/") && !decoded.startsWith("//") ? decoded : "/";
 
   if (code) {
     const supabase = await createClient();

@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useRef, useMemo, useState } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,7 @@ function generateSlug(title: string): string {
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "");
 
-  const suffix = Math.random().toString(36).slice(2, 8);
+  const suffix = crypto.randomUUID().slice(0, 8);
   return `${base}-${suffix}`;
 }
 
@@ -61,7 +61,8 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   const tv = useTranslations("validation");
   const locale = useLocale();
   const router = useRouter();
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
   const recipeFormSchema = useMemo(() => createRecipeFormSchema((key) => tv(key)), [tv]);
 
   const mode: RecipeFormMode = initialData?.mode ?? "create";
@@ -221,15 +222,15 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     if (published) {
       router.push(`/${locale}/recipe/${slug}`);
     } else {
-      router.push(`/${locale}/explore`);
+      router.push(`/${locale}/profile`);
     }
   }
 
-  async function handleUpdate(data: RecipeFormValues, _userId: string, published: boolean) {
+  async function handleUpdate(data: RecipeFormValues, userId: string, published: boolean) {
     const recipeId = initialData!.recipeId!;
     const slug = initialData!.slug!;
 
-    // UPDATE recipe row (slug 유지)
+    // UPDATE recipe row (slug 유지, author_id 검증 포함)
     let heroImageUrl = initialData!.heroImageUrl;
 
     if (heroFile) {
@@ -258,7 +259,8 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
         hero_image_url: heroImageUrl,
         published,
       })
-      .eq("recipe_id", recipeId);
+      .eq("recipe_id", recipeId)
+      .eq("author_id", userId);
 
     if (recipeError) {
       throw new Error(recipeError.message);
@@ -276,7 +278,11 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     await insertStepsAndIngredients(data, recipeId);
 
     // 캐시 우회를 위해 하드 네비게이션
-    window.location.href = `/${locale}/recipe/${slug}`;
+    if (published) {
+      window.location.href = `/${locale}/recipe/${slug}`;
+    } else {
+      window.location.href = `/${locale}/profile`;
+    }
   }
 
   async function insertStepsAndIngredients(data: RecipeFormValues, recipeId: string) {

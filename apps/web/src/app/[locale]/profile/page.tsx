@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { getLocalizedText } from "@/lib/recipe/localized-text";
+import { DIFFICULTY_VARIANTS } from "@/lib/recipe/constants";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,12 +37,6 @@ type Recipe = {
   servings: number | null;
   published: boolean;
   created_at: string;
-};
-
-const DIFFICULTY_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  beginner: "secondary",
-  intermediate: "default",
-  master: "destructive",
 };
 
 export default async function ProfilePage({ params }: Props) {
@@ -96,8 +92,7 @@ export default async function ProfilePage({ params }: Props) {
     return (
       <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {list.map((recipe) => {
-          const title =
-            recipe.title[locale] ?? recipe.title["en"] ?? Object.values(recipe.title)[0] ?? "";
+          const title = getLocalizedText(recipe.title, locale);
           const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
           const badgeVariant = DIFFICULTY_VARIANTS[recipe.difficulty_level ?? ""] ?? "outline";
 

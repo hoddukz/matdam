@@ -7,8 +7,9 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { RecipeForm } from "@/components/recipe/recipe-form";
 import type { RecipeFormInitialData } from "@/components/recipe/recipe-form";
-import type { IngredientEntry } from "@/components/recipe/ingredient-input";
-import { makeStep, type StepEntry } from "@/components/recipe/step-types";
+import { makeStep } from "@/components/recipe/step-types";
+import { getLocalizedText } from "@/lib/recipe/localized-text";
+import { dbStepsToForm, dbIngredientsToForm } from "@/lib/recipe/transforms";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -51,56 +52,11 @@ export default async function RemixRecipePage({ params }: Props) {
       .order("display_order"),
   ]);
 
-  // steps → StepEntry 변환
-  const formSteps: StepEntry[] = (steps ?? []).map(
-    (s: {
-      step_order: number;
-      description: string;
-      timer_seconds: number | null;
-      image_url: string | null;
-      tip: string | null;
-    }) => {
-      const indices: number[] = [];
-      (recipeIngredients ?? []).forEach(
-        (ing: { step_number: number | null; display_order: number }, idx: number) => {
-          if (ing.step_number === s.step_order) {
-            indices.push(idx);
-          }
-        }
-      );
-      return makeStep({
-        description: s.description,
-        timer_seconds: s.timer_seconds,
-        image_url: s.image_url,
-        tip: s.tip,
-        ingredient_indices: indices,
-      });
-    }
-  );
+  const formSteps = dbStepsToForm(steps ?? [], recipeIngredients ?? []);
 
-  // ingredients → IngredientEntry 변환
-  const formIngredients: IngredientEntry[] = (recipeIngredients ?? []).map(
-    (ri: {
-      ingredient_id: string | null;
-      custom_name: string | null;
-      amount: number | null;
-      unit: string | null;
-      qualifier: string | null;
-      note: string | null;
-      ingredients: { id: string; names: Record<string, string> } | null;
-    }) => ({
-      ingredient_id: ri.ingredient_id,
-      name: ri.ingredients
-        ? ri.ingredients.names[locale] || ri.ingredients.names["en"] || ""
-        : ri.custom_name || "",
-      amount: ri.amount,
-      unit: ri.unit,
-      qualifier: ri.qualifier,
-      note: ri.note,
-    })
-  );
+  const formIngredients = dbIngredientsToForm(recipeIngredients ?? [], locale);
 
-  const title = recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "";
+  const title = getLocalizedText(recipe.title, locale);
 
   const initialData: RecipeFormInitialData = {
     mode: "remix",
@@ -111,11 +67,7 @@ export default async function RemixRecipePage({ params }: Props) {
     parentRecipeId: recipe.recipe_id,
     rootRecipeId: recipe.root_recipe_id ?? recipe.recipe_id,
     title,
-    description:
-      recipe.description?.[locale] ||
-      recipe.description?.["en"] ||
-      (recipe.description ? Object.values(recipe.description)[0] : "") ||
-      "",
+    description: getLocalizedText(recipe.description, locale),
     difficulty_level: recipe.difficulty_level ?? "beginner",
     servings: recipe.servings ?? 2,
     prep_time_minutes: recipe.prep_time_minutes ?? undefined,

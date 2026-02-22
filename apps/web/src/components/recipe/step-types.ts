@@ -20,5 +20,5 @@ export function makeStep(
     ingredient_indices: [],
   }
 ): StepEntry {
-  return { _id: Math.random().toString(36).slice(2), ...partial };
+  return { _id: crypto.randomUUID(), ...partial };
 }

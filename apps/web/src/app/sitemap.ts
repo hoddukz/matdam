@@ -11,7 +11,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .select("slug, updated_at")
     .eq("published", true);
 
-  const baseUrl = "https://matdam.vercel.app";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://matdam.vercel.app";
 
   const staticPages = [
     { url: baseUrl, lastModified: new Date() },

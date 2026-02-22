@@ -5,7 +5,7 @@ export type UserTier = "beginner" | "intermediate" | "master";
 
 export interface UserPreferences {
   dietary: string[]; // ["vegan", "halal", "gluten_free", ...]
-  skill_level: DifficultyLevel;
+  skill_level: import("./recipe").DifficultyLevel;
   preferred_unit: "metric" | "imperial";
 }
 
@@ -18,5 +18,3 @@ export interface UserProfile {
   preferences: UserPreferences;
   created_at: string;
 }
-
-type DifficultyLevel = "beginner" | "intermediate" | "master";

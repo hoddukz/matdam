@@ -4,6 +4,8 @@
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { getLocalizedText } from "@/lib/recipe/localized-text";
+import { DIFFICULTY_VARIANTS } from "@/lib/recipe/constants";
 
 type Recipe = {
   recipe_id: string;
@@ -34,12 +36,6 @@ type LatestRecipesSectionProps = {
   };
 };
 
-const DIFFICULTY_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  beginner: "secondary",
-  intermediate: "default",
-  master: "destructive",
-};
-
 export function LatestRecipesSection({ locale, recipes, t }: LatestRecipesSectionProps) {
   if (recipes.length === 0) return null;
 
@@ -59,8 +55,7 @@ export function LatestRecipesSection({ locale, recipes, t }: LatestRecipesSectio
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {recipes.map((recipe) => {
-          const title =
-            recipe.title[locale] ?? recipe.title["en"] ?? Object.values(recipe.title)[0] ?? "";
+          const title = getLocalizedText(recipe.title, locale);
           const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
           const badgeVariant = DIFFICULTY_VARIANTS[recipe.difficulty_level ?? ""] ?? "outline";
 

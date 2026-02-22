@@ -18,7 +18,7 @@ import {
 import { X, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useUnitPreference } from "@/stores/unit-preference";
-import { convertVolume, convertWeight } from "@matdam/utils";
+import { formatAmount } from "@/lib/recipe/unit-display";
 
 // --- Types ---
 
@@ -48,38 +48,6 @@ interface IngredientInputProps {
 // --- Constants ---
 
 const CUSTOM_UNITS = ["g", "kg", "ml", "l", "tsp", "tbsp", "cup", "piece", "whole"];
-
-const metricToImperial: Record<string, string> = {
-  ml: "fl_oz",
-  l: "fl_oz",
-  g: "oz",
-  kg: "lb",
-};
-
-const imperialToMetric: Record<string, string> = {
-  fl_oz: "ml",
-  oz: "g",
-  lb: "kg",
-};
-
-const volumeUnits = new Set(["tsp", "tbsp", "cup", "ml", "l", "fl_oz"]);
-const weightUnits = new Set(["g", "kg", "oz", "lb"]);
-
-const unitDisplayMap: Record<string, string> = {
-  l: "L",
-  ml: "mL",
-  fl_oz: "fl oz",
-};
-
-function convertAmount(amount: number, fromUnit: string, toUnit: string): number | null {
-  if (volumeUnits.has(fromUnit) && volumeUnits.has(toUnit)) {
-    return convertVolume(amount, fromUnit, toUnit);
-  }
-  if (weightUnits.has(fromUnit) && weightUnits.has(toUnit)) {
-    return convertWeight(amount, fromUnit, toUnit);
-  }
-  return null;
-}
 
 // --- Component ---
 
@@ -258,39 +226,6 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
     }
   }
 
-  // --- Display helpers ---
-
-  function displayAmount(entry: IngredientEntry): string {
-    if (entry.amount == null || entry.unit == null) {
-      return entry.qualifier || "";
-    }
-
-    const currentUnit = entry.unit;
-    let displayAmt = entry.amount;
-    let displayUnit = currentUnit;
-
-    if (system === "imperial" && metricToImperial[currentUnit]) {
-      const targetUnit = metricToImperial[currentUnit];
-      const converted = convertAmount(entry.amount, currentUnit, targetUnit);
-      if (converted != null) {
-        displayAmt = converted;
-        displayUnit = targetUnit;
-      }
-    } else if (system === "metric" && imperialToMetric[currentUnit]) {
-      const targetUnit = imperialToMetric[currentUnit];
-      const converted = convertAmount(entry.amount, currentUnit, targetUnit);
-      if (converted != null) {
-        displayAmt = converted;
-        displayUnit = targetUnit;
-      }
-    }
-
-    const rounded =
-      displayAmt < 1 ? parseFloat(displayAmt.toFixed(2)) : parseFloat(displayAmt.toFixed(1));
-    const label = unitDisplayMap[displayUnit] || displayUnit;
-    return `${rounded} ${label}`;
-  }
-
   const activeUnits = isCustom ? CUSTOM_UNITS : (selected?.common_units ?? CUSTOM_UNITS);
 
   const canAdd = !!(selected || isCustom);
@@ -304,7 +239,9 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
             <Badge key={i} variant="secondary" className="gap-1 py-1 pl-3 pr-1">
               <span>{entry.name}</span>
               {(entry.amount || entry.qualifier) && (
-                <span className="text-muted-foreground">{displayAmount(entry)}</span>
+                <span className="text-muted-foreground">
+                  {formatAmount(entry.amount, entry.unit, entry.qualifier, system)}
+                </span>
               )}
               <button
                 type="button"

@@ -8,6 +8,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GitFork } from "lucide-react";
+import { getLocalizedText } from "@/lib/recipe/localized-text";
+import { DIFFICULTY_VARIANTS, DIFFICULTY_LABEL_KEYS } from "@/lib/recipe/constants";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -45,18 +47,6 @@ type Recipe = {
 
 const VALID_DIFFICULTIES = ["beginner", "intermediate", "master"] as const;
 type Difficulty = (typeof VALID_DIFFICULTIES)[number];
-
-const DIFFICULTY_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  beginner: "secondary",
-  intermediate: "default",
-  master: "destructive",
-};
-
-const DIFFICULTY_LABEL_KEYS: Record<string, string> = {
-  beginner: "filterBeginner",
-  intermediate: "filterIntermediate",
-  master: "filterMaster",
-};
 
 export default async function ExplorePage({ params, searchParams }: Props) {
   const { locale } = await params;
@@ -96,8 +86,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
       .in("recipe_id", parentIds);
 
     (parents ?? []).forEach((p: { recipe_id: string; title: Record<string, string> }) => {
-      parentTitleMap[p.recipe_id] =
-        p.title[locale] || p.title["en"] || Object.values(p.title)[0] || "";
+      parentTitleMap[p.recipe_id] = getLocalizedText(p.title, locale);
     });
   }
 
@@ -139,8 +128,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {(recipes as unknown as Recipe[]).map((recipe) => {
-            const title =
-              recipe.title[locale] ?? recipe.title["en"] ?? Object.values(recipe.title)[0] ?? "";
+            const title = getLocalizedText(recipe.title, locale);
             const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
             const badgeVariant = DIFFICULTY_VARIANTS[recipe.difficulty_level ?? ""] ?? "outline";
             return (

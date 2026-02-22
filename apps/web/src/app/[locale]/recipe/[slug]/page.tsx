@@ -7,6 +7,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { getLocalizedText } from "@/lib/recipe/localized-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,13 +37,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!recipe) return { title: "Recipe Not Found" };
 
-  const title =
-    recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "Recipe";
-  const description =
-    recipe.description?.[locale] ||
-    recipe.description?.["en"] ||
-    (recipe.description ? Object.values(recipe.description)[0] : "") ||
-    "";
+  const title = getLocalizedText(recipe.title, locale) || "Recipe";
+  const description = getLocalizedText(recipe.description, locale);
 
   return {
     title,
@@ -105,12 +101,11 @@ export default async function RecipeDetailPage({ params }: Props) {
         .order("created_at", { ascending: false }),
     ]);
 
-  const title = recipe.title[locale] || recipe.title["en"] || Object.values(recipe.title)[0] || "";
-  const description =
-    recipe.description?.[locale] ||
-    recipe.description?.["en"] ||
-    (recipe.description ? Object.values(recipe.description)[0] : "") ||
-    "";
+  const title = getLocalizedText(recipe.title, locale);
+  const description = getLocalizedText(recipe.description, locale);
+
+  // Supabase !inner join은 TS에서 배열 타입을 반환하지만 실제로는 단일 객체
+  const author = Array.isArray(recipe.users) ? recipe.users[0] : recipe.users;
 
   // JSON-LD structured data
   const jsonLd = {
@@ -119,7 +114,7 @@ export default async function RecipeDetailPage({ params }: Props) {
     name: title,
     description,
     image: recipe.hero_image_url,
-    author: { "@type": "Person", name: recipe.users?.display_name ?? "Unknown" },
+    author: { "@type": "Person", name: author?.display_name ?? "Unknown" },
     prepTime: recipe.prep_time_minutes ? `PT${recipe.prep_time_minutes}M` : undefined,
     cookTime: recipe.cook_time_minutes ? `PT${recipe.cook_time_minutes}M` : undefined,
     recipeYield: recipe.servings ? `${recipe.servings} servings` : undefined,
@@ -180,8 +175,7 @@ export default async function RecipeDetailPage({ params }: Props) {
           {/* Author + 수정/삭제/리믹스 버튼 */}
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {t("by")}{" "}
-              <span className="font-medium text-foreground">{recipe.users.display_name}</span>
+              {t("by")} <span className="font-medium text-foreground">{author?.display_name}</span>
             </p>
             <div className="flex flex-wrap items-center gap-2">
               {user ? (
@@ -223,17 +217,15 @@ export default async function RecipeDetailPage({ params }: Props) {
                 className="font-medium text-foreground underline-offset-4 hover:underline"
               >
                 &ldquo;
-                {parentRecipe.title[locale] ||
-                  parentRecipe.title["en"] ||
-                  Object.values(parentRecipe.title)[0] ||
-                  ""}
+                {getLocalizedText(parentRecipe.title, locale)}
                 &rdquo;
               </Link>
               <span>
                 {t("by")}{" "}
-                {Array.isArray(parentRecipe.users)
-                  ? parentRecipe.users[0]?.display_name
-                  : (parentRecipe.users as { display_name: string }).display_name}
+                {
+                  (Array.isArray(parentRecipe.users) ? parentRecipe.users[0] : parentRecipe.users)
+                    .display_name
+                }
               </span>
             </div>
           )}
@@ -346,11 +338,9 @@ export default async function RecipeDetailPage({ params }: Props) {
                   hero_image_url: string | null;
                   users: { display_name: string } | { display_name: string }[];
                 }) => {
-                  const remixTitle =
-                    remix.title[locale] || remix.title["en"] || Object.values(remix.title)[0] || "";
-                  const authorName = Array.isArray(remix.users)
-                    ? remix.users[0]?.display_name
-                    : remix.users.display_name;
+                  const remixTitle = getLocalizedText(remix.title, locale);
+                  const remixAuthor = Array.isArray(remix.users) ? remix.users[0] : remix.users;
+                  const authorName = remixAuthor.display_name;
                   return (
                     <Link key={remix.recipe_id} href={`/${locale}/recipe/${remix.slug}`}>
                       <Card className="overflow-hidden transition-shadow hover:shadow-md">

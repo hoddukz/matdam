@@ -20,7 +20,7 @@ export function Footer() {
 
           {/* Navigation */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Navigate</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t("navigate")}</h3>
             <ul className="mt-3 space-y-2">
               <li>
                 <Link
@@ -43,7 +43,7 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="text-sm font-semibold text-foreground">Legal</h3>
+            <h3 className="text-sm font-semibold text-foreground">{t("legal")}</h3>
             <ul className="mt-3 space-y-2">
               <li>
                 <Link

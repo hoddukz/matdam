@@ -6,7 +6,8 @@
 import { useLocale, useTranslations } from "next-intl";
 import { UnitToggle } from "@/components/recipe/unit-toggle";
 import { useUnitPreference } from "@/stores/unit-preference";
-import { convertVolume, convertWeight } from "@matdam/utils";
+import { formatAmount } from "@/lib/recipe/unit-display";
+import { getLocalizedText } from "@/lib/recipe/localized-text";
 
 interface IngredientData {
   amount: number | null;
@@ -24,72 +25,10 @@ interface RecipeDetailClientProps {
   ingredients: IngredientData[];
 }
 
-const metricToImperial: Record<string, string> = {
-  ml: "fl_oz",
-  l: "fl_oz",
-  g: "oz",
-  kg: "lb",
-};
-
-const imperialToMetric: Record<string, string> = {
-  fl_oz: "ml",
-  oz: "g",
-  lb: "kg",
-};
-
-const volumeUnits = new Set(["tsp", "tbsp", "cup", "ml", "l", "fl_oz"]);
-const weightUnits = new Set(["g", "kg", "oz", "lb"]);
-
-const unitDisplayMap: Record<string, string> = {
-  l: "L",
-  ml: "mL",
-  fl_oz: "fl oz",
-};
-
-function convertAmount(amount: number, fromUnit: string, toUnit: string): number | null {
-  if (volumeUnits.has(fromUnit) && volumeUnits.has(toUnit)) {
-    return convertVolume(amount, fromUnit, toUnit);
-  }
-  if (weightUnits.has(fromUnit) && weightUnits.has(toUnit)) {
-    return convertWeight(amount, fromUnit, toUnit);
-  }
-  return null;
-}
-
 export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
   const t = useTranslations("recipeDetail");
   const locale = useLocale();
   const { system } = useUnitPreference();
-
-  function displayAmount(ing: IngredientData): string {
-    if (ing.amount == null || ing.unit == null) {
-      return ing.qualifier || "";
-    }
-
-    let displayAmt = ing.amount;
-    let displayUnit = ing.unit;
-
-    if (system === "imperial" && metricToImperial[ing.unit]) {
-      const target = metricToImperial[ing.unit];
-      const converted = convertAmount(ing.amount, ing.unit, target);
-      if (converted != null) {
-        displayAmt = converted;
-        displayUnit = target;
-      }
-    } else if (system === "metric" && imperialToMetric[ing.unit]) {
-      const target = imperialToMetric[ing.unit];
-      const converted = convertAmount(ing.amount, ing.unit, target);
-      if (converted != null) {
-        displayAmt = converted;
-        displayUnit = target;
-      }
-    }
-
-    const rounded =
-      displayAmt < 1 ? parseFloat(displayAmt.toFixed(2)) : parseFloat(displayAmt.toFixed(1));
-    const label = unitDisplayMap[displayUnit] || displayUnit;
-    return `${rounded} ${label}`;
-  }
 
   return (
     <div className="space-y-4">
@@ -100,7 +39,7 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
       <ul className="space-y-2">
         {ingredients.map((ing, i) => {
           const name = ing.ingredients
-            ? ing.ingredients.names[locale] || ing.ingredients.names["en"] || ""
+            ? getLocalizedText(ing.ingredients?.names, locale)
             : ing.custom_name || "";
           return (
             <li
@@ -109,7 +48,7 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
             >
               <span className="min-w-0 truncate font-medium">{name}</span>
               <span className="text-sm text-muted-foreground">
-                {displayAmount(ing)}
+                {formatAmount(ing.amount, ing.unit, ing.qualifier, system)}
                 {ing.note && <span className="ml-1 italic">({ing.note})</span>}
               </span>
             </li>

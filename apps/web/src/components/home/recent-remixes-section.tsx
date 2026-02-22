@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { GitFork } from "lucide-react";
+import { getLocalizedText } from "@/lib/recipe/localized-text";
+import { DIFFICULTY_VARIANTS } from "@/lib/recipe/constants";
 
 type RemixRecipe = {
   recipe_id: string;
@@ -38,12 +40,6 @@ type RecentRemixesSectionProps = {
   };
 };
 
-const DIFFICULTY_VARIANTS: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  beginner: "secondary",
-  intermediate: "default",
-  master: "destructive",
-};
-
 export function RecentRemixesSection({
   locale,
   remixes,
@@ -68,8 +64,7 @@ export function RecentRemixesSection({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
         {remixes.map((recipe) => {
-          const title =
-            recipe.title[locale] ?? recipe.title["en"] ?? Object.values(recipe.title)[0] ?? "";
+          const title = getLocalizedText(recipe.title, locale);
           const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
           const badgeVariant = DIFFICULTY_VARIANTS[recipe.difficulty_level ?? ""] ?? "outline";
           const parentTitle = parentTitleMap[recipe.parent_recipe_id] ?? "";
