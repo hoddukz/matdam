@@ -19,6 +19,9 @@ export const CUISINE_LABEL_KEYS: Record<string, string> = {
   chinese: "cuisineChinese",
   thai: "cuisineThai",
   western: "cuisineWestern",
+  southeast_asian: "cuisineSoutheastAsian",
+  indian: "cuisineIndian",
+  mexican: "cuisineMexican",
 };
 
 /** importance 값 → i18n 키 매핑 */
@@ -35,11 +38,11 @@ export const IMPORTANCE_ORDER: Record<string, number> = {
   advanced: 2,
 };
 
-/** 식이 플래그 → 표시 텍스트 */
-export const DIETARY_FLAG_LABELS: Record<string, string> = {
-  vegan: "Vegan",
-  vegetarian: "Vegetarian",
-  gluten_free: "Gluten-Free",
-  dairy_free: "Dairy-Free",
-  nut_free: "Nut-Free",
+/** 식이 플래그 → i18n 키 매핑 */
+export const DIETARY_FLAG_LABEL_KEYS: Record<string, string> = {
+  vegan: "dietaryVegan",
+  vegetarian: "dietaryVegetarian",
+  gluten_free: "dietaryGlutenFree",
+  dairy_free: "dietaryDairyFree",
+  nut_free: "dietaryNutFree",
 };

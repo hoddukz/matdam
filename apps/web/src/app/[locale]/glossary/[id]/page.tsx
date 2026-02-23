@@ -7,7 +7,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
-import { CATEGORY_LABEL_KEYS, DIETARY_FLAG_LABELS } from "@/lib/recipe/glossary-constants";
+import { CATEGORY_LABEL_KEYS, DIETARY_FLAG_LABEL_KEYS } from "@/lib/recipe/glossary-constants";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,7 +139,7 @@ export default async function GlossaryDetailPage({ params }: Props) {
           </Badge>
           {ing.dietary_flags.map((flag) => (
             <Badge key={flag} variant="outline">
-              {DIETARY_FLAG_LABELS[flag] ?? flag}
+              {DIETARY_FLAG_LABEL_KEYS[flag] ? t(DIETARY_FLAG_LABEL_KEYS[flag]) : flag}
             </Badge>
           ))}
         </div>

@@ -8,6 +8,8 @@ import { routing } from "@/i18n/routing";
 import { GNB } from "@/components/layout/gnb";
 import { Footer } from "@/components/layout/footer";
 import { PostHogProvider } from "@/lib/posthog/provider";
+import { PostHogPageView } from "@/lib/posthog/page-view";
+import { Suspense } from "react";
 import "../globals.css";
 
 type Props = {
@@ -28,6 +30,9 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html lang={locale}>
       <body className="flex min-h-screen flex-col">
         <PostHogProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
           <NextIntlClientProvider messages={messages}>
             <GNB />
             <main className="flex-1">{children}</main>

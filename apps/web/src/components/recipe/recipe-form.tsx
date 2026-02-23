@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useRef, useMemo, useState } from "react";
+import { useRef, useMemo, useState, useEffect } from "react";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,7 @@ import { createClient } from "@/lib/supabase/client";
 import { uploadRecipeImage } from "@/lib/supabase/storage";
 import { createRecipeFormSchema, type RecipeFormValues } from "@/lib/validators/recipe";
 import { ImageIcon, X } from "lucide-react";
+import posthog from "posthog-js";
 
 function generateSlug(title: string): string {
   const base = title
@@ -75,6 +76,15 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const publishRef = useRef(true);
+
+  // Blob URL leak 방지: unmount 시 revoke
+  useEffect(() => {
+    return () => {
+      if (heroPreview?.startsWith("blob:")) {
+        URL.revokeObjectURL(heroPreview);
+      }
+    };
+  }, [heroPreview]);
 
   const {
     register,
@@ -218,6 +228,14 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       await supabase.from("recipes").delete().eq("recipe_id", recipeId);
       throw innerErr;
     }
+
+    const eventName = remix?.parentRecipeId ? "recipe_remixed" : "recipe_created";
+    posthog.capture(eventName, {
+      recipe_id: recipeId,
+      slug,
+      published,
+      ...(remix?.parentRecipeId && { parent_recipe_id: remix.parentRecipeId }),
+    });
 
     if (published) {
       router.push(`/${locale}/recipe/${slug}`);

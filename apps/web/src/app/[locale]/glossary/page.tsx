@@ -12,7 +12,7 @@ import { GlossarySearch } from "@/components/glossary/glossary-search";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 import {
   CATEGORY_LABEL_KEYS,
-  DIETARY_FLAG_LABELS,
+  DIETARY_FLAG_LABEL_KEYS,
   CUISINE_LABEL_KEYS,
 } from "@/lib/recipe/glossary-constants";
 
@@ -223,7 +223,7 @@ export default async function GlossaryPage({ params, searchParams }: Props) {
                     </Badge>
                     {ingredient.dietary_flags.map((flag) => (
                       <Badge key={flag} variant="outline" className="text-xs">
-                        {DIETARY_FLAG_LABELS[flag] ?? flag}
+                        {DIETARY_FLAG_LABEL_KEYS[flag] ? t(DIETARY_FLAG_LABEL_KEYS[flag]) : flag}
                       </Badge>
                     ))}
                   </CardContent>

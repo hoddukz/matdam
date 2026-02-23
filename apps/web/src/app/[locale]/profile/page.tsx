@@ -244,8 +244,8 @@ export default async function ProfilePage({ params, searchParams }: Props) {
         <Avatar className="h-16 w-16">
           {profile?.avatar_url && <AvatarImage src={profile.avatar_url} />}
           <AvatarFallback className="bg-matdam-gold text-xl text-white">
-            {profile?.display_name?.charAt(0)?.toUpperCase() ??
-              user.email?.charAt(0)?.toUpperCase() ??
+            {profile?.display_name?.charAt(0)?.toUpperCase() ||
+              user.email?.charAt(0)?.toUpperCase() ||
               "U"}
           </AvatarFallback>
         </Avatar>

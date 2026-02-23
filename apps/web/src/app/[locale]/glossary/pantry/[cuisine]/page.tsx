@@ -8,13 +8,11 @@ import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 import {
   CUISINE_LABEL_KEYS,
   CATEGORY_LABEL_KEYS,
-  DIETARY_FLAG_LABELS,
+  DIETARY_FLAG_LABEL_KEYS,
   IMPORTANCE_LABEL_KEYS,
 } from "@/lib/recipe/glossary-constants";
 
@@ -94,20 +92,13 @@ export default async function PantryPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
-      {/* 뒤로가기 */}
-      <Button variant="ghost" size="sm" className="mb-6 gap-1" asChild>
-        <Link href={`/${locale}/glossary?cuisine=${cuisine}`}>
-          <ArrowLeft className="h-4 w-4" />
-          {t("backToGlossary")}
-        </Link>
-      </Button>
-
+      {/* 브레드크럼 */}
       {/* 헤더 */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">
           {t("pantryTitle", { cuisine: cuisineName })}
         </h1>
-        <p className="mt-2 text-muted-foreground">
+        <p className="mt-1 text-muted-foreground">
           {t("pantryDescription", { cuisine: cuisineName })}
         </p>
       </div>
@@ -181,7 +172,9 @@ export default async function PantryPage({ params }: Props) {
                                     </Badge>
                                     {ingredient.dietary_flags.map((flag) => (
                                       <Badge key={flag} variant="outline" className="text-xs">
-                                        {DIETARY_FLAG_LABELS[flag] ?? flag}
+                                        {DIETARY_FLAG_LABEL_KEYS[flag]
+                                          ? t(DIETARY_FLAG_LABEL_KEYS[flag])
+                                          : flag}
                                       </Badge>
                                     ))}
                                   </CardContent>

@@ -3,10 +3,47 @@
 
 export type UserTier = "beginner" | "intermediate" | "master";
 
+export type DietType = "omnivore" | "vegetarian" | "vegan" | "pescatarian";
+
+export type ProteinPreference = "beef" | "pork" | "chicken" | "seafood" | "tofu_legumes";
+
+export type DietaryRestriction =
+  | "gluten_free"
+  | "dairy_free"
+  | "nut_free"
+  | "halal"
+  | "egg_free"
+  | "shellfish_free";
+
+export type CuisinePreference =
+  | "korean"
+  | "japanese"
+  | "chinese"
+  | "thai"
+  | "western"
+  | "southeast_asian"
+  | "indian"
+  | "mexican";
+
+export type TasteKey = "sweet" | "salty" | "spicy" | "sour" | "umami";
+
+export interface TastePreferences {
+  sweet: number; // 1~5
+  salty: number;
+  spicy: number;
+  sour: number;
+  umami: number;
+}
+
 export interface UserPreferences {
-  dietary: string[]; // ["vegan", "halal", "gluten_free", ...]
-  skill_level: import("./recipe").DifficultyLevel;
-  preferred_unit: "metric" | "imperial";
+  onboarding_complete?: boolean;
+  skill_level?: import("./recipe").DifficultyLevel;
+  cuisines?: CuisinePreference[];
+  diet_type?: DietType;
+  protein_preferences?: ProteinPreference[];
+  dietary_restrictions?: DietaryRestriction[];
+  taste_preferences?: TastePreferences;
+  preferred_unit?: "metric" | "imperial";
 }
 
 export interface UserProfile {

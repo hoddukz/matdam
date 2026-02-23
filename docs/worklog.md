@@ -21,7 +21,7 @@
 
 ### 코드리뷰 잔여 Suggestion 항목 (나중에)
 
-- [ ] `edit/page.tsx`, `profile/page.tsx`에서 `<title>` → `generateMetadata` 패턴 통일
+- [x] `edit/page.tsx`, `profile/page.tsx`에서 `<title>` → `generateMetadata` 패턴 통일 — 이미 구현 확인 완료
 - [ ] temp step 이미지 (`temp-{timestamp}/`) — 레시피 생성 후 실제 recipeId 경로로 이동 또는 정리 로직 추가
 
 ### 장기 로드맵 — 셰프 채널 + 커뮤니티
@@ -43,7 +43,110 @@
 
 ---
 
-## 2026-02-23 (일)
+## 2026-02-23 (일) — 저녁
+
+### 온보딩 플로우 확장 — 멀티스텝 사용자 프로필 수집
+
+기존 닉네임만 수집하던 온보딩을 4단계 멀티스텝 폼으로 확장. 사용자 취향 데이터를 수집하여 향후 레시피 추천/필터링에 활용 가능하도록 구현.
+
+**4단계 온보딩 구성:**
+
+1. 닉네임 + 요리 실력 (beginner/intermediate/master)
+2. 관심 요리 문화권 (8개 옵션, 다중 선택)
+3. 식이 성향 (식이 유형 단일 선택 + 선호 단백질 다중 + 식이 제한 다중)
+4. 맛 선호도 스케일 (sweet/salty/spicy/sour/umami 각 1~5 Slider)
+
+**신규 파일 생성 (1개):**
+
+- `apps/web/src/components/ui/slider.tsx` — shadcn/ui Slider 컴포넌트
+
+**기존 파일 수정 (9개):**
+
+- `packages/types/src/user.ts` — UserPreferences 타입 확장 (DietType, ProteinPreference, DietaryRestriction, CuisinePreference, TasteKey, TastePreferences 추가)
+- `packages/types/src/index.ts` — 신규 타입 export 추가
+- `glossary-constants.ts` — CUISINE_LABEL_KEYS에 chinese, thai, southeast_asian, indian, mexican 추가
+- `onboarding-form.tsx` — 4단계 멀티스텝 폼으로 전면 개편 (스텝 인디케이터, 뒤로가기, 건너뛰기, 카드 선택 UI, Slider)
+- `onboarding/page.tsx` — 기존 preferences를 OnboardingForm에 전달, max-w-sm → max-w-md
+- `settings/page.tsx` — preferences 데이터도 조회하여 SettingsForm에 전달
+- `settings-form.tsx` — 온보딩에서 수집한 모든 항목(실력/문화권/식이/맛) 편집 가능하도록 확장
+- `messages/en.json` — onboarding 50+키, settings 40+키, glossary 3키 추가
+- `messages/ko.json` — 동일 한국어 번역 추가
+
+**데이터 저장:**
+
+- `users.preferences` JSONB 컬럼에 단일 update (DB 마이그레이션 불필요)
+- onboarding_complete, skill_level, cuisines, diet_type, protein_preferences, dietary_restrictions, taste_preferences
+
+### 코드리뷰 일괄 수정 (7건)
+
+**BUG 수정 (3건):**
+
+- 닉네임 유효성 에러 메시지 한국어 하드코딩 → i18n `displayNameError` 키 사용 (onboarding-form, settings-form)
+- GNB 아바타 fallback `??` → `||` (빈 문자열 처리)
+- Profile 아바타 fallback `??` → `||` (동일)
+
+**LEAK 수정 (1건):**
+
+- `recipe-form.tsx` — blob URL unmount 시 `revokeObjectURL` useEffect cleanup 추가
+
+**DRY 리팩터 (1건):**
+
+- 온보딩/설정 공유 상수 파일 추출 (`lib/user/preference-constants.ts`)
+  - 옵션 배열 7개, i18n 맵 7개, emoji 맵, SELECTED_STYLE, toggleItem, DEFAULT_TASTES
+  - onboarding-form.tsx / settings-form.tsx에서 중복 ~100줄 제거
+
+**STYLE 수정 (2건):**
+
+- 문화권 이모지 8단계 중첩 삼항 → `CUISINE_EMOJI_MAP` Record로 교체
+- 스텝 인디케이터 className 중복 `w-8` 외부 추출
+
+**RESOLVED 확인 (1건):**
+
+- `edit/page.tsx`, `profile/page.tsx` — generateMetadata 이미 구현 완료 확인 → 워크로그 체크
+
+---
+
+## 2026-02-23 (일) — 오후
+
+### 런칭 필수 3개 구현: Settings + Privacy/Terms + PostHog
+
+**Phase 1: Settings 페이지**
+
+신규 파일 생성 (2개):
+
+- `apps/web/src/app/[locale]/settings/page.tsx` — 설정 페이지 (Server Component, auth guard, generateMetadata)
+- `apps/web/src/app/[locale]/settings/_components/settings-form.tsx` — Display Name 수정 폼 (Client Component, 2~30자 유효성, 성공 시 토스트)
+
+기존 파일 수정 (1개):
+
+- `gnb.tsx` — 모바일 메뉴에 settings 링크 추가
+
+**Phase 2: Privacy Policy + Terms of Service**
+
+신규 파일 생성 (2개):
+
+- `apps/web/src/app/[locale]/privacy/page.tsx` — 개인정보처리방침 (Google OAuth 요건: 수집 정보, 사용 목적, 제3자 제공, 보관/삭제, 연락처)
+- `apps/web/src/app/[locale]/terms/page.tsx` — 이용약관 (서비스 설명, 계정, 콘텐츠 저작권, 금지 행위, 면책 조항)
+
+**Phase 3: PostHog 이벤트 캡처**
+
+신규 파일 생성 (1개):
+
+- `apps/web/src/lib/posthog/page-view.tsx` — usePathname/useSearchParams 변경 감지 자동 페이지뷰 추적
+
+기존 파일 수정 (3개):
+
+- `layout.tsx` — `<PostHogPageView />` 추가 (Suspense 래핑)
+- `recipe-form.tsx` — `recipe_created` / `recipe_remixed` 이벤트 캡처 (handleCreate 성공 후)
+- `onboarding-form.tsx` — `signup_completed` 이벤트 캡처 (온보딩 완료 후)
+
+**번역키 추가:**
+
+- `messages/en.json` + `messages/ko.json` — settings(6개), privacyPolicy(13개), termsOfService(17개) 네임스페이스 추가
+
+---
+
+## 2026-02-23 (일) — 오전
 
 ### handleUpdate 비원자적 트랜잭션 수정
 
@@ -230,6 +333,11 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-23 — 코드리뷰 일괄 수정 7건 (BUG 3 + LEAK 1 + DRY 1 + STYLE 2) + generateMetadata 확인
+- [x] 2026-02-23 — 온보딩 4단계 멀티스텝 폼 구현 (닉네임+실력 / 문화권 / 식이 성향 / 맛 선호도) + Settings 페이지 확장
+- [x] 2026-02-23 — PostHog 이벤트 캡처 3개 (recipe_created, recipe_remixed, signup_completed) + 자동 페이지뷰 추적
+- [x] 2026-02-23 — Privacy Policy + Terms of Service 페이지 신규 생성 (한/영 번역)
+- [x] 2026-02-23 — Settings 페이지 신규 생성 (Display Name 수정 + GNB 모바일 메뉴 링크 추가)
 - [x] 2026-02-23 — `handleUpdate` 비원자적 DELETE→INSERT를 RPC 단일 트랜잭션으로 수정
 - [x] 2026-02-23 — `step-editor.tsx` key={index} → key={step.\_id} + crypto.randomUUID() 이미 해결 확인
 - [x] 2026-02-22 — Cuisine Pantry 기능 추가 (DB 마이그레이션 + Glossary cuisine 필터 + Pantry 가이드 페이지 + i18n)
