@@ -16,3 +16,5 @@ export type {
   TasteKey,
   TastePreferences,
 } from "./user";
+
+export type { RecipeVote, CookLog, CookReview, TasteProfile, Comment, CommentVote } from "./social";

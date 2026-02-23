@@ -14,7 +14,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeIngredientList } from "@/components/recipe/recipe-detail-client";
 import { DeleteRecipeButton } from "@/components/recipe/delete-recipe-button";
 import { BookmarkButton } from "@/components/recipe/bookmark-button";
+import { RecipeVoteButton } from "@/components/recipe/recipe-vote-button";
+import { RecipeSocialClient } from "@/components/recipe/recipe-social-client";
+import { TasteProfileDisplay } from "@/components/recipe/taste-profile-display";
 import { Clock, Users, ChefHat, Lightbulb, Pencil, GitFork } from "lucide-react";
+import type { TasteProfile } from "@matdam/types";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -25,7 +29,7 @@ const getRecipe = cache(async (slug: string) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("recipes")
-    .select("*, users!inner(display_name, avatar_url)")
+    .select("*, users!recipes_author_id_fkey(display_name, avatar_url)")
     .eq("slug", slug)
     .eq("published", true)
     .single();
@@ -70,13 +74,17 @@ export default async function RecipeDetailPage({ params }: Props) {
 
   const isAuthor = user?.id === recipe.author_id;
 
-  // 2+3. Get steps, ingredients, remix data, and bookmark status in parallel
+  // 2+3. Get steps, ingredients, remix data, bookmark, votes, cook_log in parallel
   const [
     { data: steps },
     { data: recipeIngredients },
     { data: parentRecipe },
     { data: remixes },
     { data: bookmarkRow },
+    { data: myVoteRow },
+    { data: myCookLog },
+    { data: myCookReview },
+    { count: cookCount },
   ] = await Promise.all([
     supabase.from("recipe_steps").select("*").eq("recipe_id", recipe.recipe_id).order("step_order"),
     supabase
@@ -88,7 +96,7 @@ export default async function RecipeDetailPage({ params }: Props) {
     recipe.parent_recipe_id
       ? supabase
           .from("recipes")
-          .select("slug, title, users!inner(display_name)")
+          .select("slug, title, users!recipes_author_id_fkey(display_name)")
           .eq("recipe_id", recipe.parent_recipe_id)
           .eq("published", true)
           .single()
@@ -97,7 +105,7 @@ export default async function RecipeDetailPage({ params }: Props) {
     // 이 레시피의 리믹스 목록
     supabase
       .from("recipes")
-      .select("recipe_id, slug, title, hero_image_url, users!inner(display_name)")
+      .select("recipe_id, slug, title, hero_image_url, users!recipes_author_id_fkey(display_name)")
       .eq("parent_recipe_id", recipe.recipe_id)
       .eq("published", true)
       .order("created_at", { ascending: false }),
@@ -110,9 +118,58 @@ export default async function RecipeDetailPage({ params }: Props) {
           .eq("recipe_id", recipe.recipe_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
+    // 내 투표 조회
+    user
+      ? supabase
+          .from("recipe_votes")
+          .select("vote")
+          .eq("user_id", user.id)
+          .eq("recipe_id", recipe.recipe_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    // 내 cook_log 조회
+    user
+      ? supabase
+          .from("cook_logs")
+          .select("cook_log_id")
+          .eq("user_id", user.id)
+          .eq("recipe_id", recipe.recipe_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    // 내 cook_review 조회
+    user
+      ? supabase
+          .from("cook_reviews")
+          .select("*")
+          .eq(
+            "cook_log_id",
+            // subquery 불가 → 이후 처리
+            "00000000-0000-0000-0000-000000000000"
+          )
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+    // cook_log 총 수
+    supabase
+      .from("cook_logs")
+      .select("*", { count: "exact", head: true })
+      .eq("recipe_id", recipe.recipe_id),
   ]);
 
+  // cook_review는 cook_log_id가 필요하므로 별도 조회
+  let existingReview = myCookReview;
+  if (myCookLog?.cook_log_id) {
+    const { data } = await supabase
+      .from("cook_reviews")
+      .select("*")
+      .eq("cook_log_id", myCookLog.cook_log_id)
+      .maybeSingle();
+    existingReview = data;
+  }
+
   const isBookmarked = bookmarkRow !== null;
+  const myVote = (myVoteRow?.vote as 1 | -1) ?? null;
+  const myCookLogId = myCookLog?.cook_log_id ?? null;
+  const tasteProfile = recipe.taste_profile as TasteProfile | null;
   const title = getLocalizedText(recipe.title, locale);
   const description = getLocalizedText(recipe.description, locale);
 
@@ -184,12 +241,19 @@ export default async function RecipeDetailPage({ params }: Props) {
           <h1 className="mb-3 text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
           {description && <p className="mb-4 text-muted-foreground">{description}</p>}
 
-          {/* Author + 수정/삭제/리믹스 버튼 */}
+          {/* Author + 수정/삭제/리믹스/투표 버튼 */}
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
               {t("by")} <span className="font-medium text-foreground">{author?.display_name}</span>
             </p>
             <div className="flex flex-wrap items-center gap-2">
+              <RecipeVoteButton
+                recipeId={recipe.recipe_id}
+                initialVote={myVote}
+                initialUpvotes={recipe.upvote_count ?? 0}
+                initialDownvotes={recipe.downvote_count ?? 0}
+                isLoggedIn={!!user}
+              />
               <BookmarkButton
                 recipeId={recipe.recipe_id}
                 initialBookmarked={isBookmarked}
@@ -341,6 +405,18 @@ export default async function RecipeDetailPage({ params }: Props) {
             )}
           </section>
         )}
+
+        {/* Social: 맛 프로필 + 만들어봤어요 + 리뷰 + 코멘트 */}
+        <section className="mt-8 space-y-6">
+          <TasteProfileDisplay profile={tasteProfile} cookCount={cookCount ?? 0} />
+          <RecipeSocialClient
+            recipeId={recipe.recipe_id}
+            initialCookLogId={myCookLogId}
+            existingReview={existingReview}
+            isLoggedIn={!!user}
+            currentUserId={user?.id ?? null}
+          />
+        </section>
 
         {/* Remixes of this recipe */}
         {remixes && remixes.length > 0 && (

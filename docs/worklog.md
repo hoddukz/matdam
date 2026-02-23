@@ -18,6 +18,12 @@
 - [x] Supabase에 마이그레이션 007 + 008 적용 완료
 - [x] Pantry 페이지 실제 동작 확인 (`/glossary/pantry/korean`) — 정상
 - [ ] Glossary cuisine 필터 동작 확인 (`/glossary?cuisine=korean`)
+- [x] Supabase에 마이그레이션 010 적용 (`010_recipe_social.sql`)
+- [ ] 레시피 상세 페이지 소셜 기능 동작 확인 (투표/만들어봤어요/리뷰/코멘트)
+
+### 시드데이터/i18n 확장
+
+- [ ] 재료 시드데이터 확장 — 커스텀 재료(`ingredient_id: null`)로 입력된 항목(예: "cheddar cheese")이 한국어 로케일에서도 영어로 표시됨. 주요 재료에 대한 시드데이터 추가 또는 커스텀 재료 다국어 입력 지원 필요
 
 ### 코드리뷰 잔여 Suggestion 항목 (나중에)
 
@@ -40,6 +46,66 @@
 - [ ] 대기 컴포넌트 활성화 시: `chef-of-the-week-section.tsx` — "View Profile" 링크를 해당 셰프 프로필로 연결
 - [ ] 대기 컴포넌트 활성화 시: `essential-ingredients-section.tsx` — glossary 페이지 구현 후 링크 연결
 - [ ] 대기 컴포넌트 활성화 시: `kdrama-cravings-section.tsx` — KDramaItem type에 `id` 필드 추가 (React key 안정성)
+
+---
+
+## 2026-02-23 (일) — 밤
+
+### 레시피 소셜 기능 Phase 1~4 구현
+
+작업명세서 `docs/work_order/recipe-social-and-recommendation.md` 기반.
+
+**Phase 1 — DB 마이그레이션 (`010_recipe_social.sql`)**
+
+- `recipe_votes` (추천/비추천) + 카운트 동기화 트리거
+- `cook_logs` (만들어봤어요)
+- `cook_reviews` (심플 3 + 디테일 6 평가항목)
+- `comments` (만들어본 사람만 작성) + `comment_votes`
+- `recipes` 테이블에 `taste_profile`, `upvote_count`, `downvote_count` 추가
+- 맛 프로필 자동 갱신 트리거 + 코멘트 투표 카운트 트리거
+- 모든 테이블 RLS 정책 설정
+
+**Phase 2 — 레시피 추천/비추천**
+
+- `recipe-vote-button.tsx` — 👍/👎 낙관적 UI, UPSERT/DELETE 전환
+- 레시피 상세 페이지 Author 행에 투표 버튼 배치
+
+**Phase 3 — 만들어봤어요 + 맛 평가**
+
+- `cook-log-button.tsx` — "만들어봤어요" 버튼, cook_log 생성
+- `cook-review-form.tsx` — 2단계 평가 (심플 3개 기본 + 디테일 6개 토글)
+- `taste-profile-display.tsx` — 평균 점수 바 차트 시각화
+- `recipe-social-client.tsx` — cook_log/리뷰/코멘트 상태 연동 래퍼
+
+**Phase 4 — 코멘트 시스템**
+
+- `comment-section.tsx` — 목록 (추천순 Top 3 고정 + 나머지 최신순, 정렬 전환)
+- `comment-form.tsx` — 작성 (cook_log 필수)
+- `comment-card.tsx` — 표시 + 추천/비추천 투표 + 삭제
+
+**TypeScript 타입**
+
+- `packages/types/src/social.ts` — RecipeVote, CookLog, CookReview, TasteProfile, Comment, CommentVote
+
+**번역키**
+
+- en.json / ko.json `recipeDetail` 네임스페이스에 40+ 키 추가
+
+**레시피 상세 페이지 통합**
+
+- 서버 사이드에서 투표/cook_log/리뷰 데이터 병렬 조회
+- 투표 버튼을 헤더에, 맛 프로필 + 소셜 섹션을 Steps 아래에 배치
+
+**tsc 통과 확인 완료**
+
+**버그 수정 — PostgREST FK 모호성 해소**
+
+- 마이그레이션 010 적용 후 `recipe_votes` 테이블이 `recipes↔users` 간 다중 FK 경로를 생성하여 PostgREST PGRST201 에러 발생
+- 홈/탐색/레시피 상세 페이지에서 레시피가 전혀 표시되지 않는 문제 (레시피 상세 404)
+- 수정: `users!inner(...)` → `users!recipes_author_id_fkey(...)` 명시적 FK 지정 (7곳)
+  - `recipe/[slug]/page.tsx` (3곳), `page.tsx` 홈 (2곳), `explore/page.tsx` (1곳), `comment-section.tsx` (1곳 `users!comments_user_id_fkey`)
+
+✅ DB 마이그레이션 (`010_recipe_social.sql`) Supabase 적용 완료
 
 ---
 
@@ -333,6 +399,7 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-23 — 레시피 소셜 기능 Phase 1~4 구현 + 마이그레이션 010 적용 + PostgREST FK 모호성 버그 수정
 - [x] 2026-02-23 — 코드리뷰 일괄 수정 7건 (BUG 3 + LEAK 1 + DRY 1 + STYLE 2) + generateMetadata 확인
 - [x] 2026-02-23 — 온보딩 4단계 멀티스텝 폼 구현 (닉네임+실력 / 문화권 / 식이 성향 / 맛 선호도) + Settings 페이지 확장
 - [x] 2026-02-23 — PostHog 이벤트 캡처 3개 (recipe_created, recipe_remixed, signup_completed) + 자동 페이지뷰 추적

@@ -64,7 +64,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
   let query = supabase
     .from("recipes")
     .select(
-      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, users!inner(display_name, avatar_url)"
+      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, users!recipes_author_id_fkey(display_name, avatar_url)"
     )
     .eq("published", true)
     .order("created_at", { ascending: false })
