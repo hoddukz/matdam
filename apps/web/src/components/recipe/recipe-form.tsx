@@ -266,16 +266,41 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       throw new Error(recipeError.message);
     }
 
-    // 기존 steps/ingredients 전부 DELETE → 새로 INSERT (diff보다 단순)
-    const [stepsDelete, ingredientsDelete] = await Promise.all([
-      supabase.from("recipe_steps").delete().eq("recipe_id", recipeId),
-      supabase.from("recipe_ingredients").delete().eq("recipe_id", recipeId),
-    ]);
+    // 단일 트랜잭션 RPC로 DELETE→INSERT 원자적 처리
+    const ingredientStepMap = new Map<number, number>();
+    data.steps.forEach((step, stepIdx) => {
+      for (const ingIdx of step.ingredient_indices) {
+        if (!ingredientStepMap.has(ingIdx)) {
+          ingredientStepMap.set(ingIdx, stepIdx + 1);
+        }
+      }
+    });
 
-    if (stepsDelete.error) throw new Error(stepsDelete.error.message);
-    if (ingredientsDelete.error) throw new Error(ingredientsDelete.error.message);
+    const stepsPayload = data.steps.map((step, i) => ({
+      step_order: i + 1,
+      description: step.description,
+      timer_seconds: step.timer_seconds ?? null,
+      image_url: step.image_url ?? null,
+      tip: step.tip ?? null,
+    }));
 
-    await insertStepsAndIngredients(data, recipeId);
+    const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
+      ingredient_id: ing.ingredient_id || null,
+      custom_name: ing.ingredient_id ? null : ing.name,
+      amount: ing.amount ?? null,
+      unit: ing.unit ?? null,
+      qualifier: ing.qualifier ?? null,
+      note: ing.note ?? null,
+      step_number: ingredientStepMap.get(i) ?? null,
+      display_order: i + 1,
+    }));
+
+    const { error: upsertError } = await supabase.rpc("upsert_recipe_details", {
+      p_recipe_id: recipeId,
+      p_steps: stepsPayload,
+      p_ingredients: ingredientsPayload,
+    });
+    if (upsertError) throw new Error(upsertError.message);
 
     // 캐시 우회를 위해 하드 네비게이션
     if (published) {

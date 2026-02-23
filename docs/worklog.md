@@ -15,14 +15,23 @@
 
 ### 확인 필요 항목
 
-(없음 — 2026-02-20 전체 확인 완료)
+- [x] Supabase에 마이그레이션 007 + 008 적용 완료
+- [x] Pantry 페이지 실제 동작 확인 (`/glossary/pantry/korean`) — 정상
+- [ ] Glossary cuisine 필터 동작 확인 (`/glossary?cuisine=korean`)
 
 ### 코드리뷰 잔여 Suggestion 항목 (나중에)
 
 - [ ] `edit/page.tsx`, `profile/page.tsx`에서 `<title>` → `generateMetadata` 패턴 통일
-- [ ] `step-editor.tsx` — `key={index}` → stable ID로 변경 (step 삭제 시 React reconciliation 이슈)
 - [ ] temp step 이미지 (`temp-{timestamp}/`) — 레시피 생성 후 실제 recipeId 경로로 이동 또는 정리 로직 추가
-- [ ] `handleUpdate` — DELETE→INSERT 비원자적 작업에 대한 롤백/복구 전략 (현재는 에러만 표시)
+
+### 장기 로드맵 — 셰프 채널 + 커뮤니티
+
+유튜브 채널 모델 참고: 각 셰프/고티어 유저가 자기만의 공간을 갖는 구조
+
+- [ ] **셰프 채널 (개인 페이지)** — 내 레시피 관리(기존) + 추천 식재료 큐레이션 + 추천 구매처 링크 + 팔로우/팔로워
+- [ ] **권한 티어 시스템** — 일반(레시피+리믹스) / 고티어(재료 데이터 편집+큐레이션) / 셰프(인증 배지+전용 채널)
+- [ ] **커뮤니티 기능** — 레시피 댓글/리뷰, 셰프에게 질문, 리믹스 체인 활용
+- [ ] **재료 데이터 웹 편집** — 고티어/셰프가 웹에서 직접 식재료 정보(cuisines, importance 등) 편집
 
 ### 홈 페이지 코드리뷰 잔여 항목 (나중에)
 
@@ -31,6 +40,59 @@
 - [ ] 대기 컴포넌트 활성화 시: `chef-of-the-week-section.tsx` — "View Profile" 링크를 해당 셰프 프로필로 연결
 - [ ] 대기 컴포넌트 활성화 시: `essential-ingredients-section.tsx` — glossary 페이지 구현 후 링크 연결
 - [ ] 대기 컴포넌트 활성화 시: `kdrama-cravings-section.tsx` — KDramaItem type에 `id` 필드 추가 (React key 안정성)
+
+---
+
+## 2026-02-23 (일)
+
+### handleUpdate 비원자적 트랜잭션 수정
+
+레시피 수정 시 steps/ingredients DELETE→INSERT가 3개 별도 쿼리로 실행되어 중간 실패 시 데이터 유실 위험이 있던 문제를 PostgreSQL RPC 함수로 단일 트랜잭션 처리하도록 수정.
+
+**신규 파일 생성 (1개):**
+
+- `supabase/migrations/008_upsert_recipe_details.sql` — `upsert_recipe_details` RPC 함수 (DELETE+INSERT 단일 트랜잭션)
+
+**기존 파일 수정 (1개):**
+
+- `recipe-form.tsx` — `handleUpdate` 내 3개 별도 쿼리(DELETE×2 + insertStepsAndIngredients)를 `supabase.rpc("upsert_recipe_details")` 단일 호출로 교체
+
+---
+
+## 2026-02-22 (토)
+
+### Cuisine Pantry — 문화권별 필수 재료 가이드 기능 추가
+
+**신규 파일 생성 (2개):**
+
+- `supabase/migrations/007_cuisine_pantry.sql` — cuisines(TEXT[]) + importance(TEXT) 컬럼, GIN 인덱스, 기존 30개 재료 한식 시드 업데이트 (must_have 10 / recommended 10 / advanced 10)
+- `apps/web/src/app/[locale]/glossary/pantry/[cuisine]/page.tsx` — Pantry 가이드 페이지 (중요도별 3섹션 그룹핑 + 카테고리별 소그룹)
+
+**기존 파일 수정 (5개):**
+
+- `glossary-constants.ts` — CUISINE_LABEL_KEYS, IMPORTANCE_LABEL_KEYS, IMPORTANCE_ORDER 상수 추가
+- `glossary/page.tsx` — cuisine 필터 Badge 행 추가, 쿼리 필터 적용, "Guide →" 링크
+- `glossary-search.tsx` — cuisine 파라미터 보존 로직 추가
+- `messages/en.json` + `messages/ko.json` — glossary 네임스페이스에 cuisine/pantry i18n 키 12개 추가
+
+**코드리뷰 반영 (3건):**
+
+1. RPC `search_ingredients`가 cuisines 미반환 → id 목록 2차 쿼리 필터 방식으로 수정
+2. Pantry 페이지 미사용 `IMPORTANCE_ORDER` import 제거
+3. Pantry 페이지 불필요한 삼항 연산자 단순화
+
+### GNB 국자 로고 추가
+
+- v2 디자인 기반 국자 로고 아이콘 GNB에 적용
+- Material Symbols `soup_kitchen` SVG 아이콘 사용
+- matdam-gold 배경 둥근 사각형 + 어두운 아이콘
+
+### Git 커밋 이력
+
+```
+e201b9d GNB 로고 SVG를 Material Symbols soup_kitchen 아이콘으로 교체
+70fe2f6 문화권별 필수 재료 가이드(Cuisine Pantry) 기능 추가 + GNB 국자 로고
+```
 
 ---
 
@@ -168,6 +230,10 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-23 — `handleUpdate` 비원자적 DELETE→INSERT를 RPC 단일 트랜잭션으로 수정
+- [x] 2026-02-23 — `step-editor.tsx` key={index} → key={step.\_id} + crypto.randomUUID() 이미 해결 확인
+- [x] 2026-02-22 — Cuisine Pantry 기능 추가 (DB 마이그레이션 + Glossary cuisine 필터 + Pantry 가이드 페이지 + i18n)
+- [x] 2026-02-22 — GNB 국자 로고 아이콘 추가 (Material Symbols soup_kitchen)
 - [x] 2026-02-20 — 홈/랜딩 페이지 개선 (히어로 + 최신 레시피 + 리믹스 + 대기 컴포넌트 3개) + 코드리뷰 4건 반영
 - [x] 2026-02-20 — 단위 표시 개선 (요리용 변환 계수 + L/mL 표기 + 소수점 정리)
 - [x] 2026-02-20 — 카테고리 뱃지 제거
