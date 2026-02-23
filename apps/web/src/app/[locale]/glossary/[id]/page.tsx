@@ -10,8 +10,6 @@ import { getLocalizedText } from "@/lib/recipe/localized-text";
 import { CATEGORY_LABEL_KEYS, DIETARY_FLAG_LABEL_KEYS } from "@/lib/recipe/glossary-constants";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
@@ -111,14 +109,6 @@ export default async function GlossaryDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
-      {/* 뒤로가기 */}
-      <Button variant="ghost" size="sm" className="mb-6 gap-1" asChild>
-        <Link href={`/${locale}/glossary`}>
-          <ArrowLeft className="h-4 w-4" />
-          {t("backToGlossary")}
-        </Link>
-      </Button>
-
       {/* 이미지 */}
       {ing.image_url && (
         <div className="mb-6 overflow-hidden rounded-xl">
