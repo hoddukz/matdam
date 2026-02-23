@@ -247,13 +247,6 @@ export default async function RecipeDetailPage({ params }: Props) {
               {t("by")} <span className="font-medium text-foreground">{author?.display_name}</span>
             </p>
             <div className="flex flex-wrap items-center gap-2">
-              <RecipeVoteButton
-                recipeId={recipe.recipe_id}
-                initialVote={myVote}
-                initialUpvotes={recipe.upvote_count ?? 0}
-                initialDownvotes={recipe.downvote_count ?? 0}
-                isLoggedIn={!!user}
-              />
               <BookmarkButton
                 recipeId={recipe.recipe_id}
                 initialBookmarked={isBookmarked}
@@ -344,6 +337,13 @@ export default async function RecipeDetailPage({ params }: Props) {
               </span>
             )}
           </div>
+
+          {/* 맛 프로필 스코어카드 */}
+          {tasteProfile && (cookCount ?? 0) > 0 && (
+            <div className="mt-4">
+              <TasteProfileDisplay profile={tasteProfile} cookCount={cookCount ?? 0} />
+            </div>
+          )}
         </header>
 
         {/* Ingredients - client component for unit toggle */}
@@ -406,9 +406,16 @@ export default async function RecipeDetailPage({ params }: Props) {
           </section>
         )}
 
-        {/* Social: 맛 프로필 + 만들어봤어요 + 리뷰 + 코멘트 */}
+        {/* Social: 추천/비추천 + 만들어봤어요 + 리뷰 + 코멘트 */}
         <section className="mt-8 space-y-6">
-          <TasteProfileDisplay profile={tasteProfile} cookCount={cookCount ?? 0} />
+          <RecipeVoteButton
+            recipeId={recipe.recipe_id}
+            initialVote={myVote}
+            initialUpvotes={recipe.upvote_count ?? 0}
+            initialDownvotes={recipe.downvote_count ?? 0}
+            isLoggedIn={!!user}
+            size="lg"
+          />
           <RecipeSocialClient
             recipeId={recipe.recipe_id}
             initialCookLogId={myCookLogId}

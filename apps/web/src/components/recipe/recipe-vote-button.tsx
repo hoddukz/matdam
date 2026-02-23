@@ -16,6 +16,7 @@ interface RecipeVoteButtonProps {
   initialUpvotes: number;
   initialDownvotes: number;
   isLoggedIn: boolean;
+  size?: "sm" | "lg";
 }
 
 export function RecipeVoteButton({
@@ -24,6 +25,7 @@ export function RecipeVoteButton({
   initialUpvotes,
   initialDownvotes,
   isLoggedIn,
+  size = "sm",
 }: RecipeVoteButtonProps) {
   const locale = useLocale();
   const router = useRouter();
@@ -89,26 +91,30 @@ export function RecipeVoteButton({
     }
   }
 
+  const isLg = size === "lg";
+  const iconClass = isLg ? "h-5 w-5" : "h-4 w-4";
+  const btnSize = isLg ? "default" : "sm";
+
   return (
-    <div className="flex items-center gap-1">
+    <div className={`flex items-center ${isLg ? "justify-center gap-3" : "gap-1"}`}>
       <Button
         variant="outline"
-        size="sm"
-        className={`gap-1 ${myVote === 1 ? "border-matdam-gold bg-matdam-gold/10 text-matdam-gold" : ""}`}
+        size={btnSize}
+        className={`gap-2 ${isLg ? "px-6 py-2 text-base" : ""} ${myVote === 1 ? "border-matdam-gold bg-matdam-gold/10 text-matdam-gold" : ""}`}
         onClick={() => handleVote(1)}
         disabled={pending}
       >
-        <ThumbsUp className="h-4 w-4" />
+        <ThumbsUp className={iconClass} />
         {upvotes > 0 && <span>{upvotes}</span>}
       </Button>
       <Button
         variant="outline"
-        size="sm"
-        className={`gap-1 ${myVote === -1 ? "border-destructive bg-destructive/10 text-destructive" : ""}`}
+        size={btnSize}
+        className={`gap-2 ${isLg ? "px-6 py-2 text-base" : ""} ${myVote === -1 ? "border-destructive bg-destructive/10 text-destructive" : ""}`}
         onClick={() => handleVote(-1)}
         disabled={pending}
       >
-        <ThumbsDown className="h-4 w-4" />
+        <ThumbsDown className={iconClass} />
         {downvotes > 0 && <span>{downvotes}</span>}
       </Button>
     </div>

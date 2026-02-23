@@ -146,9 +146,7 @@ export function CookReviewForm({ cookLogId, existingReview, onSaved }: CookRevie
   }
 
   return (
-    <div className="space-y-4 rounded-lg border p-4">
-      <h3 className="text-sm font-semibold">{t("reviewTitle")}</h3>
-
+    <div className="space-y-4 rounded-lg rounded-t-none border border-t-0 p-4">
       {/* 심플 3개 */}
       <div className="space-y-4">{SIMPLE_FIELDS.map(renderSlider)}</div>
 

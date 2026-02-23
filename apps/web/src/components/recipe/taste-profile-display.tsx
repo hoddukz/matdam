@@ -4,6 +4,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { Star } from "lucide-react";
 import type { TasteProfile } from "@matdam/types";
 
 interface TasteProfileDisplayProps {
@@ -79,51 +80,39 @@ export function TasteProfileDisplay({ profile, cookCount }: TasteProfileDisplayP
     );
   }
 
-  function renderBar(field: DisplayField) {
-    const value = profile![field.key] as number | null;
-    if (value === null) return null;
-
-    const percentage = ((value - 1) / 4) * 100;
-
-    return (
-      <div key={field.key} className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span>{t(field.labelKey as Parameters<typeof t>[0])}</span>
-          <span className="font-medium">{value}</span>
-        </div>
-        <div className="h-2 rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-matdam-gold transition-all"
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-        <div className="flex justify-between text-[10px] text-muted-foreground">
-          <span>{t(field.lowKey as Parameters<typeof t>[0])}</span>
-          <span>{t(field.highKey as Parameters<typeof t>[0])}</span>
-        </div>
-      </div>
-    );
-  }
-
-  const hasDetailData = DETAIL_DISPLAY.some((f) => (profile[f.key] as number | null) !== null);
+  const allFields = [...SIMPLE_DISPLAY, ...DETAIL_DISPLAY].filter(
+    (f) => (profile[f.key] as number | null) !== null
+  );
 
   return (
-    <div className="space-y-4 rounded-lg border p-4">
-      <div className="flex items-center justify-between">
+    <div className="rounded-lg border bg-muted/30 px-4 py-3">
+      <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-semibold">{t("tasteProfileTitle")}</h3>
         <span className="text-xs text-muted-foreground">
           {t("cookCount", { count: cookCount })}
         </span>
       </div>
-
-      <div className="space-y-3">{SIMPLE_DISPLAY.map(renderBar)}</div>
-
-      {hasDetailData && (
-        <>
-          <hr />
-          <div className="space-y-3">{DETAIL_DISPLAY.map(renderBar)}</div>
-        </>
-      )}
+      <div className="flex justify-around">
+        {allFields.map((field) => {
+          const value = profile![field.key] as number;
+          return (
+            <div key={field.key} className="flex flex-col items-center gap-1">
+              <span className="text-sm text-muted-foreground">
+                {t(field.labelKey as Parameters<typeof t>[0])}
+              </span>
+              <span className="text-xl font-bold text-matdam-gold">{value}</span>
+              <div className="flex gap-0.5">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    className={`h-3 w-3 ${i <= value ? "fill-matdam-gold text-matdam-gold" : "text-muted-foreground/30"}`}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
