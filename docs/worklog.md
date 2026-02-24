@@ -20,21 +20,15 @@
 - [x] Glossary cuisine 필터 동작 확인 (`/glossary?cuisine=korean`) — 정상
 - [x] Supabase에 마이그레이션 010 적용 (`010_recipe_social.sql`)
 - [x] 레시피 상세 페이지 소셜 기능 동작 확인 (투표/만들어봤어요/리뷰 DB 저장 확인 완료, 코멘트 UI 확인 완료)
-- [ ] Supabase에 마이그레이션 011 적용 (`011_expanded_ingredient_seeds.sql`) + 검색에서 새 재료 노출 확인
-
-### 소셜 기능 Phase 5 — 추천 시스템 (미구현)
-
-- [ ] 맛 프로필 기반 추천 (taste_profile 유사도)
-- [ ] 유사 사용자 기반 추천 (preferences 매칭)
-- [ ] 인기 레시피 필터 (upvote_count 기반 정렬/섹션)
+- [x] Supabase에 마이그레이션 011 적용 (`011_expanded_ingredient_seeds.sql`) + 검색에서 새 재료 노출 확인
 
 ### 평가 스케일 방향 검토 (결정 필요)
 
 - [ ] "난이도 체감" 스케일 방향 문제 — 현재 1=쉬움, 5=어려움이라 다른 항목(맛/재도전)과 반대 방향. 맛 프로필 점수를 종합 레시피 점수로 활용할 경우 난이도만 역방향이라 계산이 애매해짐. "쉬운 정도"(1=어려움, 5=쉬움)로 바꿔 전부 높을수록 긍정으로 통일할지 검토
 
-### 댓글 기능 확장
+### 추천 시스템 개선 제안
 
-- [ ] 대댓글(답글) 기능 — 현재 레시피에 대한 댓글만 가능, 추후 댓글에 답글 달 수 있도록 확장 (parent_comment_id 등)
+- [ ] **사용자 리뷰 기반 추천 강화** — 현재 추천은 온보딩/설정에서 입력한 `taste_preferences`만 사용. 사용자가 실제로 높은 점수를 매긴 레시피들의 taste_profile 평균을 구해서 매칭하면 더 정확한 개인화 추천 가능. 예: 사용자가 taste_overall 4~5점 준 레시피들의 taste_sweet/salty/spicy/sour 평균 → 이 값을 preferences 대신 (또는 가중 합산) 추천 기준으로 사용
 
 ### 시드데이터/i18n 확장
 

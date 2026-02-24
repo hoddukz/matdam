@@ -40,35 +40,6 @@ const SIMPLE_DISPLAY: DisplayField[] = [
   },
 ];
 
-const DETAIL_DISPLAY: DisplayField[] = [
-  {
-    key: "taste_sweet",
-    labelKey: "reviewSweet",
-    lowKey: "reviewSweetLow",
-    highKey: "reviewSweetHigh",
-  },
-  {
-    key: "taste_salty",
-    labelKey: "reviewSalty",
-    lowKey: "reviewSaltyLow",
-    highKey: "reviewSaltyHigh",
-  },
-  {
-    key: "taste_spicy",
-    labelKey: "reviewSpicy",
-    lowKey: "reviewSpicyLow",
-    highKey: "reviewSpicyHigh",
-  },
-  { key: "taste_sour", labelKey: "reviewSour", lowKey: "reviewSourLow", highKey: "reviewSourHigh" },
-  {
-    key: "felt_accessibility",
-    labelKey: "reviewAccessibility",
-    lowKey: "reviewAccessibilityLow",
-    highKey: "reviewAccessibilityHigh",
-  },
-  { key: "felt_time", labelKey: "reviewTime", lowKey: "reviewTimeLow", highKey: "reviewTimeHigh" },
-];
-
 export function TasteProfileDisplay({ profile, cookCount }: TasteProfileDisplayProps) {
   const t = useTranslations("recipeDetail");
 
@@ -80,9 +51,7 @@ export function TasteProfileDisplay({ profile, cookCount }: TasteProfileDisplayP
     );
   }
 
-  const allFields = [...SIMPLE_DISPLAY, ...DETAIL_DISPLAY].filter(
-    (f) => (profile[f.key] as number | null) !== null
-  );
+  const allFields = SIMPLE_DISPLAY.filter((f) => (profile[f.key] as number | null) !== null);
 
   return (
     <div className="rounded-lg border bg-muted/30 px-4 py-3">

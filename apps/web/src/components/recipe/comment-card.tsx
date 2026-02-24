@@ -8,25 +8,37 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, Trash2 } from "lucide-react";
+import { ThumbsUp, ThumbsDown, Trash2, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { CommentForm } from "./comment-form";
+
+type CommentUser = { display_name: string; avatar_url: string | null };
+
+export type CommentData = {
+  comment_id: string;
+  cook_log_id: string;
+  recipe_id: string;
+  user_id: string;
+  body: string;
+  image_url: string | null;
+  upvote_count: number;
+  downvote_count: number;
+  parent_comment_id: string | null;
+  created_at: string;
+  users: CommentUser | CommentUser[];
+};
 
 interface CommentCardProps {
-  comment: {
-    comment_id: string;
-    user_id: string;
-    body: string;
-    image_url: string | null;
-    upvote_count: number;
-    downvote_count: number;
-    created_at: string;
-    users:
-      | { display_name: string; avatar_url: string | null }
-      | { display_name: string; avatar_url: string | null }[];
-  };
+  comment: CommentData;
   myVote: 1 | -1 | null;
   isLoggedIn: boolean;
   isOwner: boolean;
+  isReply?: boolean;
+  cookLogId: string | null;
+  replies?: CommentData[];
+  myVotes?: Record<string, 1 | -1>;
+  currentUserId: string | null;
   onDeleted?: () => void;
+  onReplyAdded?: () => void;
 }
 
 export function CommentCard({
@@ -34,7 +46,13 @@ export function CommentCard({
   myVote: initialMyVote,
   isLoggedIn,
   isOwner,
+  isReply = false,
+  cookLogId,
+  replies = [],
+  myVotes = {},
+  currentUserId,
   onDeleted,
+  onReplyAdded,
 }: CommentCardProps) {
   const t = useTranslations("recipeDetail");
   const locale = useLocale();
@@ -46,6 +64,8 @@ export function CommentCard({
   const [downvotes, setDownvotes] = useState(comment.downvote_count);
   const [pending, setPending] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [showReplies, setShowReplies] = useState(true);
 
   const author = Array.isArray(comment.users) ? comment.users[0] : comment.users;
   const timeAgo = getTimeAgo(comment.created_at, locale);
@@ -117,62 +137,141 @@ export function CommentCard({
   }
 
   return (
-    <div className="rounded-lg border bg-muted/30 p-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-medium">
-            {author.display_name.charAt(0).toUpperCase()}
+    <div>
+      <div
+        className={`rounded-lg border bg-muted/30 p-4 ${isReply ? "ml-8 border-l-2 border-l-muted-foreground/20" : ""}`}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div
+              className={`flex items-center justify-center rounded-full bg-muted text-xs font-medium ${isReply ? "h-6 w-6" : "h-7 w-7"}`}
+            >
+              {author.display_name.charAt(0).toUpperCase()}
+            </div>
+            <span className={`font-medium ${isReply ? "text-xs" : "text-sm"}`}>
+              {author.display_name}
+            </span>
+            <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>
-          <span className="text-sm font-medium">{author.display_name}</span>
-          <span className="text-xs text-muted-foreground">{timeAgo}</span>
+          {isOwner && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
-        {isOwner && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-            onClick={handleDelete}
-            disabled={deleting}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+
+        {/* Body + Vote 같은 줄 */}
+        <div className="mt-2 flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className={`whitespace-pre-line leading-relaxed ${isReply ? "text-xs" : "text-sm"}`}>
+              {comment.body}
+            </p>
+            {/* Image */}
+            {comment.image_url && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img
+                src={comment.image_url}
+                alt=""
+                className="mt-2 max-h-48 rounded-lg object-cover"
+              />
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-7 gap-1 px-2 ${myVote === 1 ? "text-matdam-gold" : "text-muted-foreground"}`}
+              onClick={() => handleVote(1)}
+              disabled={pending}
+            >
+              <ThumbsUp className="h-3.5 w-3.5" />
+              {upvotes > 0 && <span className="text-xs">{upvotes}</span>}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`h-7 gap-1 px-2 ${myVote === -1 ? "text-destructive" : "text-muted-foreground"}`}
+              onClick={() => handleVote(-1)}
+              disabled={pending}
+            >
+              <ThumbsDown className="h-3.5 w-3.5" />
+              {downvotes > 0 && <span className="text-xs">{downvotes}</span>}
+            </Button>
+          </div>
+        </div>
+
+        {/* 답글 버튼 — 최상위 댓글만 (2단계 제한) */}
+        {!isReply && cookLogId && (
+          <div className="mt-2 flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 gap-1 px-2 text-xs text-muted-foreground"
+              onClick={() => setShowReplyForm(!showReplyForm)}
+            >
+              <MessageSquare className="h-3 w-3" />
+              {t("reply")}
+            </Button>
+            {replies.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 gap-1 px-2 text-xs text-muted-foreground"
+                onClick={() => setShowReplies(!showReplies)}
+              >
+                {showReplies ? (
+                  <ChevronUp className="h-3 w-3" />
+                ) : (
+                  <ChevronDown className="h-3 w-3" />
+                )}
+                {showReplies ? t("hideReplies") : t("showReplies") + ` (${replies.length})`}
+              </Button>
+            )}
+          </div>
         )}
       </div>
 
-      {/* Body + Vote 같은 줄 */}
-      <div className="mt-2 flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <p className="whitespace-pre-line text-sm leading-relaxed">{comment.body}</p>
-          {/* Image */}
-          {comment.image_url && (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={comment.image_url} alt="" className="mt-2 max-h-48 rounded-lg object-cover" />
-          )}
+      {/* 인라인 답글 폼 */}
+      {!isReply && showReplyForm && cookLogId && (
+        <div className="ml-8 mt-2">
+          <CommentForm
+            recipeId={comment.recipe_id}
+            cookLogId={cookLogId}
+            parentCommentId={comment.comment_id}
+            onCommentAdded={() => {
+              setShowReplyForm(false);
+              onReplyAdded?.();
+            }}
+          />
         </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`h-7 gap-1 px-2 ${myVote === 1 ? "text-matdam-gold" : "text-muted-foreground"}`}
-            onClick={() => handleVote(1)}
-            disabled={pending}
-          >
-            <ThumbsUp className="h-3.5 w-3.5" />
-            {upvotes > 0 && <span className="text-xs">{upvotes}</span>}
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`h-7 gap-1 px-2 ${myVote === -1 ? "text-destructive" : "text-muted-foreground"}`}
-            onClick={() => handleVote(-1)}
-            disabled={pending}
-          >
-            <ThumbsDown className="h-3.5 w-3.5" />
-            {downvotes > 0 && <span className="text-xs">{downvotes}</span>}
-          </Button>
+      )}
+
+      {/* 답글 목록 */}
+      {!isReply && showReplies && replies.length > 0 && (
+        <div className="mt-2 space-y-2">
+          {replies.map((reply) => (
+            <CommentCard
+              key={reply.comment_id}
+              comment={reply}
+              myVote={myVotes[reply.comment_id] ?? null}
+              isLoggedIn={isLoggedIn}
+              isOwner={currentUserId === reply.user_id}
+              isReply
+              cookLogId={cookLogId}
+              currentUserId={currentUserId}
+              onDeleted={onReplyAdded}
+              onReplyAdded={onReplyAdded}
+            />
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }

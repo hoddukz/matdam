@@ -12,15 +12,23 @@ import { Send } from "lucide-react";
 interface CommentFormProps {
   recipeId: string;
   cookLogId: string;
+  parentCommentId?: string;
   onCommentAdded?: () => void;
 }
 
-export function CommentForm({ recipeId, cookLogId, onCommentAdded }: CommentFormProps) {
+export function CommentForm({
+  recipeId,
+  cookLogId,
+  parentCommentId,
+  onCommentAdded,
+}: CommentFormProps) {
   const t = useTranslations("recipeDetail");
   const supabaseRef = useRef(createClient());
 
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const isReply = !!parentCommentId;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -37,12 +45,18 @@ export function CommentForm({ recipeId, cookLogId, onCommentAdded }: CommentForm
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const { error } = await supabase.from("comments").insert({
+      const insertData: Record<string, string> = {
         cook_log_id: cookLogId,
         recipe_id: recipeId,
         user_id: user.id,
         body: trimmed,
-      });
+      };
+
+      if (parentCommentId) {
+        insertData.parent_comment_id = parentCommentId;
+      }
+
+      const { error } = await supabase.from("comments").insert(insertData);
 
       if (error) throw error;
 
@@ -60,9 +74,9 @@ export function CommentForm({ recipeId, cookLogId, onCommentAdded }: CommentForm
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder={t("commentPlaceholder")}
+        placeholder={isReply ? t("replyPlaceholder") : t("commentPlaceholder")}
         maxLength={2000}
-        rows={2}
+        rows={isReply ? 1 : 2}
         className="flex-1 resize-none rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       />
       <Button

@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 import { HeroSection } from "@/components/home/hero-section";
 import { LatestRecipesSection } from "@/components/home/latest-recipes-section";
 import { RecentRemixesSection } from "@/components/home/recent-remixes-section";
+import { PopularRecipesSection } from "@/components/home/popular-recipes-section";
+import { RecommendedRecipesSection } from "@/components/home/recommended-recipes-section";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 
 type Props = {
@@ -32,26 +34,114 @@ export default async function HomePage({ params }: Props) {
   const t = await getTranslations({ locale, namespace: "home" });
   const supabase = await createClient();
 
-  // 최신 레시피 + 최신 리믹스 병렬 조회
-  const [{ data: latestRecipes }, { data: remixRecipes }] = await Promise.all([
-    supabase
-      .from("recipes")
-      .select(
-        "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, users!recipes_author_id_fkey(display_name, avatar_url)"
-      )
-      .eq("published", true)
-      .order("created_at", { ascending: false })
-      .limit(6),
-    supabase
-      .from("recipes")
-      .select(
-        "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, users!recipes_author_id_fkey(display_name, avatar_url)"
-      )
-      .eq("published", true)
-      .not("parent_recipe_id", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(6),
-  ]);
+  // 현재 사용자 확인
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // 최신 레시피 + 최신 리믹스 + 인기 레시피 병렬 조회
+  const [{ data: latestRecipes }, { data: remixRecipes }, { data: popularRpc }] = await Promise.all(
+    [
+      supabase
+        .from("recipes")
+        .select(
+          "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, users!recipes_author_id_fkey(display_name, avatar_url)"
+        )
+        .eq("published", true)
+        .order("created_at", { ascending: false })
+        .limit(6),
+      supabase
+        .from("recipes")
+        .select(
+          "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, users!recipes_author_id_fkey(display_name, avatar_url)"
+        )
+        .eq("published", true)
+        .not("parent_recipe_id", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(6),
+      supabase.rpc("get_popular_recipes", { p_limit: 6 }),
+    ]
+  );
+
+  // 맞춤 추천 — 로그인 사용자만
+  let recommendedRecipes: typeof popularRpc = null;
+  if (user) {
+    const { data } = await supabase.rpc("get_recommended_recipes", {
+      p_user_id: user.id,
+      p_limit: 6,
+    });
+    recommendedRecipes = data;
+  }
+
+  // 인기 레시피 RPC 결과 → 컴포넌트용 변환
+  const popularRecipes = (popularRpc ?? []).map(
+    (r: {
+      recipe_id: string;
+      slug: string;
+      title: Record<string, string>;
+      description: Record<string, string> | null;
+      hero_image_url: string | null;
+      difficulty_level: string | null;
+      prep_time_minutes: number | null;
+      cook_time_minutes: number | null;
+      servings: number | null;
+      upvote_count: number;
+      created_at: string;
+      author_display_name: string | null;
+      author_avatar_url: string | null;
+    }) => ({
+      recipe_id: r.recipe_id,
+      slug: r.slug,
+      title: r.title,
+      description: r.description,
+      hero_image_url: r.hero_image_url,
+      difficulty_level: r.difficulty_level,
+      prep_time_minutes: r.prep_time_minutes,
+      cook_time_minutes: r.cook_time_minutes,
+      servings: r.servings,
+      upvote_count: r.upvote_count,
+      created_at: r.created_at,
+      users: {
+        display_name: r.author_display_name,
+        avatar_url: r.author_avatar_url,
+      },
+    })
+  );
+
+  // 맞춤 추천 RPC 결과 → 컴포넌트용 변환
+  const recommended = (recommendedRecipes ?? []).map(
+    (r: {
+      recipe_id: string;
+      slug: string;
+      title: Record<string, string>;
+      description: Record<string, string> | null;
+      hero_image_url: string | null;
+      difficulty_level: string | null;
+      prep_time_minutes: number | null;
+      cook_time_minutes: number | null;
+      servings: number | null;
+      upvote_count: number;
+      created_at: string;
+      author_display_name: string | null;
+      author_avatar_url: string | null;
+    }) => ({
+      recipe_id: r.recipe_id,
+      slug: r.slug,
+      title: r.title,
+      description: r.description,
+      hero_image_url: r.hero_image_url,
+      difficulty_level: r.difficulty_level,
+      prep_time_minutes: r.prep_time_minutes,
+      cook_time_minutes: r.cook_time_minutes,
+      servings: r.servings,
+      upvote_count: r.upvote_count,
+      created_at: r.created_at,
+      users: {
+        display_name: r.author_display_name,
+        avatar_url: r.author_avatar_url,
+      },
+    })
+  );
 
   // 리믹스 부모 제목 일괄 조회
   const parentIds = (remixRecipes ?? [])
@@ -83,6 +173,38 @@ export default async function HomePage({ params }: Props) {
           createRecipe: t("createRecipe"),
         }}
       />
+
+      <PopularRecipesSection
+        locale={locale}
+        recipes={popularRecipes}
+        t={{
+          popularTitle: t("popularTitle"),
+          viewAll: t("viewAll"),
+          by: t("by"),
+          minutes: t("minutes"),
+          servings: t("servings"),
+          difficultyBeginner: t("difficultyBeginner"),
+          difficultyIntermediate: t("difficultyIntermediate"),
+          difficultyMaster: t("difficultyMaster"),
+        }}
+      />
+
+      {recommended.length > 0 && (
+        <RecommendedRecipesSection
+          locale={locale}
+          recipes={recommended}
+          t={{
+            recommendedTitle: t("recommendedTitle"),
+            recommendedSubtitle: t("recommendedSubtitle"),
+            by: t("by"),
+            minutes: t("minutes"),
+            servings: t("servings"),
+            difficultyBeginner: t("difficultyBeginner"),
+            difficultyIntermediate: t("difficultyIntermediate"),
+            difficultyMaster: t("difficultyMaster"),
+          }}
+        />
+      )}
 
       <LatestRecipesSection
         locale={locale}

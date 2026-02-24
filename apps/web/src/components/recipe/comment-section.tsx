@@ -3,28 +3,13 @@
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { CommentCard } from "./comment-card";
+import { CommentCard, type CommentData } from "./comment-card";
 import { CommentForm } from "./comment-form";
 import { ArrowUpDown } from "lucide-react";
-
-type CommentRow = {
-  comment_id: string;
-  cook_log_id: string;
-  recipe_id: string;
-  user_id: string;
-  body: string;
-  image_url: string | null;
-  upvote_count: number;
-  downvote_count: number;
-  created_at: string;
-  users:
-    | { display_name: string; avatar_url: string | null }
-    | { display_name: string; avatar_url: string | null }[];
-};
 
 type SortMode = "top" | "newest";
 
@@ -44,7 +29,7 @@ export function CommentSection({
   const t = useTranslations("recipeDetail");
   const supabaseRef = useRef(createClient());
 
-  const [comments, setComments] = useState<CommentRow[]>([]);
+  const [comments, setComments] = useState<CommentData[]>([]);
   const [myVotes, setMyVotes] = useState<Record<string, 1 | -1>>({});
   const [sortMode, setSortMode] = useState<SortMode>("top");
   const [loading, setLoading] = useState(true);
@@ -59,7 +44,7 @@ export function CommentSection({
       .order("created_at", { ascending: false });
 
     if (commentData) {
-      setComments(commentData as CommentRow[]);
+      setComments(commentData as CommentData[]);
     }
 
     // 내 투표 조회
@@ -87,19 +72,50 @@ export function CommentSection({
     fetchComments();
   }, [fetchComments]);
 
-  // 정렬
-  const sortedComments = [...comments].sort((a, b) => {
-    if (sortMode === "top") {
-      const scoreA = a.upvote_count - a.downvote_count;
-      const scoreB = b.upvote_count - b.downvote_count;
-      if (scoreB !== scoreA) return scoreB - scoreA;
+  // 트리 구조 빌드
+  const { topLevel, repliesMap } = useMemo(() => {
+    const top: CommentData[] = [];
+    const replies: Record<string, CommentData[]> = {};
+
+    for (const c of comments) {
+      if (c.parent_comment_id === null) {
+        top.push(c);
+      } else {
+        if (!replies[c.parent_comment_id]) {
+          replies[c.parent_comment_id] = [];
+        }
+        replies[c.parent_comment_id].push(c);
+      }
     }
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+
+    // 답글은 created_at ASC 고정
+    for (const key of Object.keys(replies)) {
+      replies[key].sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+      );
+    }
+
+    return { topLevel: top, repliesMap: replies };
+  }, [comments]);
+
+  // 최상위 댓글 정렬
+  const sortedTopLevel = useMemo(() => {
+    return [...topLevel].sort((a, b) => {
+      if (sortMode === "top") {
+        const scoreA = a.upvote_count - a.downvote_count;
+        const scoreB = b.upvote_count - b.downvote_count;
+        if (scoreB !== scoreA) return scoreB - scoreA;
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [topLevel, sortMode]);
 
   // Top 3 고정 + 나머지
-  const top3 = sortMode === "top" ? sortedComments.slice(0, 3) : [];
-  const rest = sortMode === "top" ? sortedComments.slice(3) : sortedComments;
+  const top3 = sortMode === "top" ? sortedTopLevel.slice(0, 3) : [];
+  const rest = sortMode === "top" ? sortedTopLevel.slice(3) : sortedTopLevel;
+
+  // 전체 최상위 댓글 수 (답글 제외)
+  const topLevelCount = topLevel.length;
 
   if (loading) {
     return (
@@ -110,18 +126,32 @@ export function CommentSection({
     );
   }
 
+  const renderComment = (c: CommentData) => (
+    <CommentCard
+      key={c.comment_id}
+      comment={c}
+      myVote={myVotes[c.comment_id] ?? null}
+      isLoggedIn={isLoggedIn}
+      isOwner={currentUserId === c.user_id}
+      cookLogId={cookLogId}
+      replies={repliesMap[c.comment_id] ?? []}
+      myVotes={myVotes}
+      currentUserId={currentUserId}
+      onDeleted={fetchComments}
+      onReplyAdded={fetchComments}
+    />
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
           {t("commentsTitle")}
-          {comments.length > 0 && (
-            <span className="ml-2 text-sm font-normal text-muted-foreground">
-              {comments.length}
-            </span>
+          {topLevelCount > 0 && (
+            <span className="ml-2 text-sm font-normal text-muted-foreground">{topLevelCount}</span>
           )}
         </h3>
-        {comments.length > 1 && (
+        {topLevelCount > 1 && (
           <Button
             variant="ghost"
             size="sm"
@@ -142,39 +172,17 @@ export function CommentSection({
       ) : null}
 
       {/* Top 3 */}
-      {top3.length > 0 && (
-        <div className="space-y-3">
-          {top3.map((c) => (
-            <CommentCard
-              key={c.comment_id}
-              comment={c}
-              myVote={myVotes[c.comment_id] ?? null}
-              isLoggedIn={isLoggedIn}
-              isOwner={currentUserId === c.user_id}
-              onDeleted={fetchComments}
-            />
-          ))}
-        </div>
-      )}
+      {top3.length > 0 && <div className="space-y-3">{top3.map(renderComment)}</div>}
 
       {/* 나머지 */}
       {rest.length > 0 && (
         <div className="space-y-3">
           {sortMode === "top" && top3.length > 0 && <hr className="my-2" />}
-          {rest.map((c) => (
-            <CommentCard
-              key={c.comment_id}
-              comment={c}
-              myVote={myVotes[c.comment_id] ?? null}
-              isLoggedIn={isLoggedIn}
-              isOwner={currentUserId === c.user_id}
-              onDeleted={fetchComments}
-            />
-          ))}
+          {rest.map(renderComment)}
         </div>
       )}
 
-      {comments.length === 0 && <p className="text-sm text-muted-foreground">{t("noComments")}</p>}
+      {topLevelCount === 0 && <p className="text-sm text-muted-foreground">{t("noComments")}</p>}
     </div>
   );
 }

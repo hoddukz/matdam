@@ -27,7 +27,11 @@
     "kdramaTagline": "SEEN ON SCREEN",
     "kdramaDescription": "Recreate the iconic dishes that made you hungry while watching.",
     "essentialIngredients": "Essential Ingredients",
-    "exploreFullGlossary": "Explore Full Glossary"
+    "exploreFullGlossary": "Explore Full Glossary",
+    "popularTitle": "Popular Recipes",
+    "popularSubtitle": "Most loved by the community",
+    "recommendedTitle": "Recommended for You",
+    "recommendedSubtitle": "Based on your taste preferences"
   },
   "nav": {
     "explore": "Explore",
@@ -238,7 +242,29 @@
     "sortTop": "Top",
     "sortNewest": "Newest",
     "noComments": "No comments yet.",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "startCooking": "Start Cooking",
+    "reply": "Reply",
+    "replyPlaceholder": "Write a reply...",
+    "replyCount": "{count} replies",
+    "hideReplies": "Hide replies",
+    "showReplies": "Show replies"
+  },
+  "cookingMode": {
+    "stepOf": "Step {current}/{total}",
+    "ingredientsNeeded": "Ingredients for this step",
+    "tip": "Tip",
+    "activeTimers": "Active Timers",
+    "startTimer": "Start Timer",
+    "timerDone": "Done!",
+    "adjustTime": "Set Time",
+    "apply": "Apply",
+    "previous": "Previous",
+    "next": "Next",
+    "finish": "Finish",
+    "viewFullRecipe": "Full Recipe",
+    "close": "Close",
+    "goBack": "Back to Step {step}"
   },
   "explore": {
     "title": "Explore Recipes",
@@ -252,7 +278,9 @@
     "minutes": "min",
     "by": "by",
     "remixOf": "Remix of \"{title}\"",
-    "searchPlaceholder": "Search recipes..."
+    "searchPlaceholder": "Search recipes...",
+    "sortNewest": "Newest",
+    "sortPopular": "Popular"
   },
   "ingredient": {
     "searchPlaceholder": "Search ingredients...",

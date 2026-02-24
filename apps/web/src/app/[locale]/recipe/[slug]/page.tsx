@@ -17,7 +17,7 @@ import { BookmarkButton } from "@/components/recipe/bookmark-button";
 import { RecipeVoteButton } from "@/components/recipe/recipe-vote-button";
 import { RecipeSocialClient } from "@/components/recipe/recipe-social-client";
 import { TasteProfileDisplay } from "@/components/recipe/taste-profile-display";
-import { Clock, Users, ChefHat, Lightbulb, Pencil, GitFork } from "lucide-react";
+import { Clock, Users, ChefHat, Lightbulb, Pencil, GitFork, CookingPot } from "lucide-react";
 import type { TasteProfile } from "@matdam/types";
 
 type Props = {
@@ -356,7 +356,15 @@ export default async function RecipeDetailPage({ params }: Props) {
         {/* Steps */}
         {steps && steps.length > 0 && (
           <section className="space-y-4">
-            <h2 className="text-lg font-semibold">{t("steps")}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold">{t("steps")}</h2>
+              <Button size="sm" className="gap-1" asChild>
+                <Link href={`/${locale}/recipe/${slug}/cook`}>
+                  <CookingPot className="h-4 w-4" />
+                  {t("startCooking")}
+                </Link>
+              </Button>
+            </div>
             {steps.map(
               (step: {
                 id: string;
