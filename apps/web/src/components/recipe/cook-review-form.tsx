@@ -29,7 +29,15 @@ type ReviewField =
   | "felt_accessibility"
   | "felt_time";
 
-const SIMPLE_FIELDS: ReviewField[] = ["taste_overall", "felt_difficulty", "would_make_again"];
+const SLIDER_SIMPLE_FIELDS: ReviewField[] = ["taste_overall", "would_make_again"];
+
+const DIFFICULTY_OPTIONS = [
+  { value: 1, labelKey: "difficultyVeryHard" },
+  { value: 2, labelKey: "difficultyHard" },
+  { value: 3, labelKey: "difficultyNormal" },
+  { value: 4, labelKey: "difficultyEasy" },
+  { value: 5, labelKey: "difficultyVeryEasy" },
+] as const;
 const DETAIL_FIELDS: ReviewField[] = [
   "taste_sweet",
   "taste_salty",
@@ -100,7 +108,11 @@ export function CookReviewForm({ cookLogId, existingReview, onSaved }: CookRevie
       const supabase = supabaseRef.current;
 
       const payload: Record<string, unknown> = { cook_log_id: cookLogId };
-      for (const field of [...SIMPLE_FIELDS, ...DETAIL_FIELDS]) {
+      for (const field of [
+        ...SLIDER_SIMPLE_FIELDS,
+        "felt_difficulty" as ReviewField,
+        ...DETAIL_FIELDS,
+      ]) {
         payload[field] = values[field];
       }
 
@@ -147,8 +159,39 @@ export function CookReviewForm({ cookLogId, existingReview, onSaved }: CookRevie
 
   return (
     <div className="space-y-4 rounded-lg rounded-t-none border border-t-0 p-4">
-      {/* 심플 3개 */}
-      <div className="space-y-4">{SIMPLE_FIELDS.map(renderSlider)}</div>
+      {/* 심플: 슬라이더 2개 + 난이도 버튼 그룹 */}
+      <div className="space-y-4">
+        {renderSlider("taste_overall")}
+
+        {/* 난이도 — 버튼 그룹 */}
+        <div className="space-y-2">
+          <Label className="text-sm">{t("reviewDifficulty")}</Label>
+          <div className="flex gap-1.5">
+            {DIFFICULTY_OPTIONS.map((opt) => {
+              const isSelected = values.felt_difficulty === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => {
+                    setValues((prev) => ({ ...prev, felt_difficulty: opt.value }));
+                    setSaved(false);
+                  }}
+                  className={`flex-1 rounded-md border px-1.5 py-2 text-xs font-medium transition-colors ${
+                    isSelected
+                      ? "border-matdam-gold bg-matdam-gold/10 text-matdam-gold"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  {t(opt.labelKey as Parameters<typeof t>[0])}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {renderSlider("would_make_again")}
+      </div>
 
       {/* 디테일 토글 */}
       <button
