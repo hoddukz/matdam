@@ -27,17 +27,35 @@ const SIMPLE_DISPLAY: DisplayField[] = [
     highKey: "reviewTasteOverallHigh",
   },
   {
-    key: "felt_difficulty",
-    labelKey: "reviewDifficulty",
-    lowKey: "reviewDifficultyLow",
-    highKey: "reviewDifficultyHigh",
-  },
-  {
     key: "would_make_again",
-    labelKey: "reviewMakeAgain",
+    labelKey: "reviewMakeAgainShort",
     lowKey: "reviewMakeAgainLow",
     highKey: "reviewMakeAgainHigh",
   },
+  {
+    key: "felt_difficulty",
+    labelKey: "reviewDifficultyShort",
+    lowKey: "reviewDifficultyLow",
+    highKey: "reviewDifficultyHigh",
+  },
+];
+
+const DIFFICULTY_LABEL_KEYS = [
+  "", // 0 unused
+  "difficultyVeryHard",
+  "difficultyHard",
+  "difficultyNormal",
+  "difficultyEasy",
+  "difficultyVeryEasy",
+];
+
+const DIFFICULTY_EMOJI = [
+  "",
+  "\uD83E\uDD75",
+  "\uD83D\uDE13",
+  "\uD83D\uDE10",
+  "\uD83D\uDE0A",
+  "\uD83D\uDE0E",
 ];
 
 export function TasteProfileDisplay({ profile, cookCount }: TasteProfileDisplayProps) {
@@ -64,20 +82,40 @@ export function TasteProfileDisplay({ profile, cookCount }: TasteProfileDisplayP
       <div className="flex justify-around">
         {allFields.map((field) => {
           const value = profile![field.key] as number;
+          const isDifficulty = field.key === "felt_difficulty";
+          const rounded = Math.round(value);
+
           return (
             <div key={field.key} className="flex flex-col items-center gap-1">
               <span className="text-sm text-muted-foreground">
                 {t(field.labelKey as Parameters<typeof t>[0])}
               </span>
-              <span className="text-xl font-bold text-matdam-gold">{value}</span>
-              <div className="flex gap-0.5">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    className={`h-3 w-3 ${i <= value ? "fill-matdam-gold text-matdam-gold" : "text-muted-foreground/30"}`}
-                  />
-                ))}
-              </div>
+              {isDifficulty ? (
+                <>
+                  <span className="text-2xl">
+                    {DIFFICULTY_EMOJI[Math.min(Math.max(rounded, 1), 5)]}
+                  </span>
+                  <span className="text-xs font-medium text-matdam-gold">
+                    {t(
+                      DIFFICULTY_LABEL_KEYS[Math.min(Math.max(rounded, 1), 5)] as Parameters<
+                        typeof t
+                      >[0]
+                    )}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-xl font-bold text-matdam-gold">{value}</span>
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star
+                        key={i}
+                        className={`h-3 w-3 ${i <= value ? "fill-matdam-gold text-matdam-gold" : "text-muted-foreground/30"}`}
+                      />
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           );
         })}

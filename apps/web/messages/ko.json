@@ -212,6 +212,8 @@
     "reviewTasteOverallLow": "별로",
     "reviewTasteOverallHigh": "맛있어요",
     "reviewDifficulty": "난이도 체감",
+    "reviewDifficultyShort": "난이도",
+    "reviewMakeAgainShort": "또 만들래요",
     "reviewDifficultyLow": "매우 쉬움",
     "reviewDifficultyHigh": "매우 어려움",
     "difficultyVeryHard": "매우 어려움",
