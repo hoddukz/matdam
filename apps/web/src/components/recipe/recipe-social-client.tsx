@@ -28,7 +28,6 @@ export function RecipeSocialClient({
 }: RecipeSocialClientProps) {
   const t = useTranslations("recipeDetail");
   const [cookLogId, setCookLogId] = useState<string | null>(initialCookLogId);
-  const [reviewKey, setReviewKey] = useState(0);
   const [showReview, setShowReview] = useState(false);
 
   function handleCookLogCreated(id: string) {
@@ -63,14 +62,7 @@ export function RecipeSocialClient({
               <ChevronDown className="h-4 w-4 text-muted-foreground" />
             )}
           </button>
-          {showReview && (
-            <CookReviewForm
-              key={reviewKey}
-              cookLogId={cookLogId}
-              existingReview={existingReview}
-              onSaved={() => setReviewKey((k) => k + 1)}
-            />
-          )}
+          {showReview && <CookReviewForm cookLogId={cookLogId} existingReview={existingReview} />}
         </div>
       )}
 

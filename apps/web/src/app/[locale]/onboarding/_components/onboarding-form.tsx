@@ -35,7 +35,7 @@ import type {
   TastePreferences,
   UserPreferences,
 } from "@matdam/types";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import posthog from "posthog-js";
@@ -50,6 +50,7 @@ interface OnboardingFormProps {
 export function OnboardingForm({ defaultDisplayName, existingPreferences }: OnboardingFormProps) {
   const supabaseRef = useRef(createClient());
   const t = useTranslations("onboarding");
+  const locale = useLocale();
   const router = useRouter();
 
   const [step, setStep] = useState(1);
@@ -146,7 +147,8 @@ export function OnboardingForm({ defaultDisplayName, existingPreferences }: Onbo
     }
 
     posthog.capture("signup_completed", { user_id: user.id });
-    router.push("/");
+    setSubmitting(false);
+    router.push(`/${locale}`);
   }
 
   return (

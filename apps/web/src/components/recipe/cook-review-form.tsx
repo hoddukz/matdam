@@ -82,6 +82,7 @@ export function CookReviewForm({ cookLogId, existingReview, onSaved }: CookRevie
   const [showDetail, setShowDetail] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [values, setValues] = useState<Record<ReviewField, number | null>>({
     taste_overall: existingReview?.taste_overall ?? null,
@@ -103,6 +104,7 @@ export function CookReviewForm({ cookLogId, existingReview, onSaved }: CookRevie
   async function handleSubmit() {
     setSubmitting(true);
     setSaved(false);
+    setError(null);
 
     try {
       const supabase = supabaseRef.current;
@@ -124,8 +126,9 @@ export function CookReviewForm({ cookLogId, existingReview, onSaved }: CookRevie
 
       setSaved(true);
       onSaved?.();
-    } catch {
-      // 에러 무시
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      setError(err?.message || "Error");
     } finally {
       setSubmitting(false);
     }
@@ -205,15 +208,18 @@ export function CookReviewForm({ cookLogId, existingReview, onSaved }: CookRevie
 
       {showDetail && <div className="space-y-4">{DETAIL_FIELDS.map(renderSlider)}</div>}
 
-      <div className="flex items-center gap-3">
-        <Button size="sm" onClick={handleSubmit} disabled={submitting}>
-          {submitting
-            ? t("reviewSubmitting")
-            : existingReview
-              ? t("reviewUpdate")
-              : t("reviewSubmit")}
-        </Button>
-        {saved && <span className="text-sm text-green-600">{t("reviewSaved")}</span>}
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-3">
+          <Button size="sm" onClick={handleSubmit} disabled={submitting}>
+            {submitting
+              ? t("reviewSubmitting")
+              : existingReview
+                ? t("reviewUpdate")
+                : t("reviewSubmit")}
+          </Button>
+          {saved && <span className="text-sm text-green-600">{t("reviewSaved")}</span>}
+        </div>
+        {error && <p className="text-xs text-destructive">{error}</p>}
       </div>
     </div>
   );

@@ -105,12 +105,12 @@ export function TasteProfileDisplay({ profile, cookCount }: TasteProfileDisplayP
                 </>
               ) : (
                 <>
-                  <span className="text-xl font-bold text-matdam-gold">{value}</span>
+                  <span className="text-xl font-bold text-matdam-gold">{rounded}</span>
                   <div className="flex gap-0.5">
                     {[1, 2, 3, 4, 5].map((i) => (
                       <Star
                         key={i}
-                        className={`h-3 w-3 ${i <= value ? "fill-matdam-gold text-matdam-gold" : "text-muted-foreground/30"}`}
+                        className={`h-3 w-3 ${i <= rounded ? "fill-matdam-gold text-matdam-gold" : "text-muted-foreground/30"}`}
                       />
                     ))}
                   </div>

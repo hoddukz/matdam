@@ -11,6 +11,7 @@ export interface RecipeStep {
   ingredients_used: string[]; // ingredient IDs used in this step
   timer_seconds: number | null;
   image_url: string | null;
+  tip?: string | null;
 }
 
 export interface Recipe {

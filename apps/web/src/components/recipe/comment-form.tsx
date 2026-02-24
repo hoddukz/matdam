@@ -27,6 +27,7 @@ export function CommentForm({
 
   const [body, setBody] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const isReply = !!parentCommentId;
 
@@ -37,6 +38,7 @@ export function CommentForm({
     if (!trimmed || trimmed.length > 2000) return;
 
     setSubmitting(true);
+    setError(null);
 
     try {
       const supabase = supabaseRef.current;
@@ -62,30 +64,34 @@ export function CommentForm({
 
       setBody("");
       onCommentAdded?.();
-    } catch {
-      // 에러 무시
+    } catch (e: unknown) {
+      const err = e as { message?: string };
+      setError(err?.message || "Error");
     } finally {
       setSubmitting(false);
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 items-stretch">
-      <textarea
-        value={body}
-        onChange={(e) => setBody(e.target.value)}
-        placeholder={isReply ? t("replyPlaceholder") : t("commentPlaceholder")}
-        maxLength={2000}
-        rows={isReply ? 1 : 2}
-        className="flex-1 resize-none rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-      />
-      <Button
-        type="submit"
-        className="h-auto w-10 shrink-0 rounded-lg"
-        disabled={submitting || !body.trim()}
-      >
-        <Send className="h-4 w-4" />
-      </Button>
-    </form>
+    <div className="flex flex-col gap-1">
+      <form onSubmit={handleSubmit} className="flex gap-2 items-stretch">
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder={isReply ? t("replyPlaceholder") : t("commentPlaceholder")}
+          maxLength={2000}
+          rows={isReply ? 1 : 2}
+          className="flex-1 resize-none rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        />
+        <Button
+          type="submit"
+          className="h-auto w-10 shrink-0 rounded-lg"
+          disabled={submitting || !body.trim()}
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </form>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
   );
 }

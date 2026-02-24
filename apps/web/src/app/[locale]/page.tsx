@@ -40,36 +40,44 @@ export default async function HomePage({ params }: Props) {
   } = await supabase.auth.getUser();
 
   // 최신 레시피 + 최신 리믹스 + 인기 레시피 병렬 조회
-  const [{ data: latestRecipes }, { data: remixRecipes }, { data: popularRpc }] = await Promise.all(
-    [
-      supabase
-        .from("recipes")
-        .select(
-          "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, users!recipes_author_id_fkey(display_name, avatar_url)"
-        )
-        .eq("published", true)
-        .order("created_at", { ascending: false })
-        .limit(6),
-      supabase
-        .from("recipes")
-        .select(
-          "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, users!recipes_author_id_fkey(display_name, avatar_url)"
-        )
-        .eq("published", true)
-        .not("parent_recipe_id", "is", null)
-        .order("created_at", { ascending: false })
-        .limit(6),
-      supabase.rpc("get_popular_recipes", { p_limit: 6 }),
-    ]
-  );
+  const [
+    { data: latestRecipes, error: latestErr },
+    { data: remixRecipes, error: remixErr },
+    { data: popularRpc, error: popularErr },
+  ] = await Promise.all([
+    supabase
+      .from("recipes")
+      .select(
+        "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, users!recipes_author_id_fkey(display_name, avatar_url)"
+      )
+      .eq("published", true)
+      .order("created_at", { ascending: false })
+      .limit(6),
+    supabase
+      .from("recipes")
+      .select(
+        "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, users!recipes_author_id_fkey(display_name, avatar_url)"
+      )
+      .eq("published", true)
+      .not("parent_recipe_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(6),
+    supabase.rpc("get_popular_recipes", { p_limit: 6 }),
+  ]);
+
+  if (latestErr) console.error("Failed to fetch latest recipes:", latestErr.message);
+  if (remixErr) console.error("Failed to fetch remix recipes:", remixErr.message);
+  if (popularErr) console.error("Failed to fetch popular recipes:", popularErr.message);
 
   // 맞춤 추천 — 로그인 사용자만
   let recommendedRecipes: typeof popularRpc = null;
   if (user) {
-    const { data } = await supabase.rpc("get_recommended_recipes", {
+    const { data, error: recommendedErr } = await supabase.rpc("get_recommended_recipes", {
       p_user_id: user.id,
       p_limit: 6,
     });
+    if (recommendedErr)
+      console.error("Failed to fetch recommended recipes:", recommendedErr.message);
     recommendedRecipes = data;
   }
 
@@ -101,6 +109,7 @@ export default async function HomePage({ params }: Props) {
       servings: r.servings,
       upvote_count: r.upvote_count,
       created_at: r.created_at,
+      parent_recipe_id: null,
       users: {
         display_name: r.author_display_name,
         avatar_url: r.author_avatar_url,
@@ -136,6 +145,7 @@ export default async function HomePage({ params }: Props) {
       servings: r.servings,
       upvote_count: r.upvote_count,
       created_at: r.created_at,
+      parent_recipe_id: null,
       users: {
         display_name: r.author_display_name,
         avatar_url: r.author_avatar_url,
@@ -183,9 +193,6 @@ export default async function HomePage({ params }: Props) {
           by: t("by"),
           minutes: t("minutes"),
           servings: t("servings"),
-          difficultyBeginner: t("difficultyBeginner"),
-          difficultyIntermediate: t("difficultyIntermediate"),
-          difficultyMaster: t("difficultyMaster"),
         }}
       />
 
@@ -199,9 +206,6 @@ export default async function HomePage({ params }: Props) {
             by: t("by"),
             minutes: t("minutes"),
             servings: t("servings"),
-            difficultyBeginner: t("difficultyBeginner"),
-            difficultyIntermediate: t("difficultyIntermediate"),
-            difficultyMaster: t("difficultyMaster"),
           }}
         />
       )}
@@ -210,6 +214,8 @@ export default async function HomePage({ params }: Props) {
         locale={locale}
         recipes={(latestRecipes ?? []).map((r) => ({
           ...r,
+          upvote_count: 0,
+          parent_recipe_id: null,
           users: Array.isArray(r.users) ? r.users[0] : r.users,
         }))}
         t={{
@@ -218,9 +224,6 @@ export default async function HomePage({ params }: Props) {
           by: t("by"),
           minutes: t("minutes"),
           servings: t("servings"),
-          difficultyBeginner: t("difficultyBeginner"),
-          difficultyIntermediate: t("difficultyIntermediate"),
-          difficultyMaster: t("difficultyMaster"),
         }}
       />
 
@@ -228,6 +231,7 @@ export default async function HomePage({ params }: Props) {
         locale={locale}
         remixes={(remixRecipes ?? []).map((r) => ({
           ...r,
+          upvote_count: 0,
           users: Array.isArray(r.users) ? r.users[0] : r.users,
         }))}
         parentTitleMap={parentTitleMap}
@@ -238,9 +242,6 @@ export default async function HomePage({ params }: Props) {
           by: t("by"),
           minutes: t("minutes"),
           servings: t("servings"),
-          difficultyBeginner: t("difficultyBeginner"),
-          difficultyIntermediate: t("difficultyIntermediate"),
-          difficultyMaster: t("difficultyMaster"),
         }}
       />
     </>

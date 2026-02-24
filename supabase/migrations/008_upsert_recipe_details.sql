@@ -17,6 +17,14 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
+  -- 소유권 검증: 호출자가 해당 레시피의 author인지 확인
+  IF NOT EXISTS (
+    SELECT 1 FROM public.recipes
+    WHERE recipe_id = p_recipe_id AND author_id = auth.uid()
+  ) THEN
+    RAISE EXCEPTION 'permission denied';
+  END IF;
+
   -- 1. 기존 steps/ingredients 삭제
   DELETE FROM public.recipe_steps WHERE recipe_id = p_recipe_id;
   DELETE FROM public.recipe_ingredients WHERE recipe_id = p_recipe_id;

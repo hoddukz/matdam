@@ -25,10 +25,6 @@ export function GNB() {
 
   useEffect(() => {
     const supabase = supabaseRef.current;
-    supabase.auth.getUser().then(({ data: { user: u } }) => {
-      setUser(u);
-    });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -161,6 +157,13 @@ export function GNB() {
                   onClick={() => setMobileOpen(false)}
                 >
                   {t("profile")}
+                </Link>
+                <Link
+                  href="/profile?tab=bookmarks"
+                  className="text-sm font-medium"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {t("bookmarks")}
                 </Link>
                 <Link
                   href="/settings"

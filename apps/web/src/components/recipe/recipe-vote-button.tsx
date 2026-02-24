@@ -42,6 +42,7 @@ export function RecipeVoteButton({
       return;
     }
     if (pending) return;
+    setPending(true);
 
     const prevVote = myVote;
     const prevUp = upvotes;
@@ -54,7 +55,6 @@ export function RecipeVoteButton({
     setMyVote(newVote);
     setUpvotes(prevUp + (newVote === 1 ? 1 : 0) - (prevVote === 1 ? 1 : 0));
     setDownvotes(prevDown + (newVote === -1 ? 1 : 0) - (prevVote === -1 ? 1 : 0));
-    setPending(true);
 
     try {
       const supabase = supabaseRef.current;

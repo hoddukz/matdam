@@ -8,7 +8,12 @@ const BUCKET = "recipe-images";
 const MAX_SIZE_MB = 2;
 const MAX_WIDTH = 1920;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
-const ALLOWED_EXTS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
 
 export async function uploadRecipeImage(
   file: File,
@@ -35,8 +40,7 @@ export async function uploadRecipeImage(
     useWebWorker: true,
   });
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  if (!ALLOWED_EXTS.has(ext)) return null;
+  const ext = MIME_TO_EXT[file.type] ?? "jpg";
   const fileName = `${recipeId}/${prefix}_${Date.now()}.${ext}`;
 
   const supabase = createClient();

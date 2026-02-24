@@ -30,6 +30,7 @@ export function CookLogButton({
 
   const [cookLogId, setCookLogId] = useState<string | null>(initialCookLogId);
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const hasCooked = cookLogId !== null;
 
@@ -41,6 +42,7 @@ export function CookLogButton({
     if (pending || hasCooked) return;
 
     setPending(true);
+    setError(null);
 
     try {
       const supabase = supabaseRef.current;
@@ -59,32 +61,38 @@ export function CookLogButton({
 
       setCookLogId(data.cook_log_id);
       onCookLogCreated?.(data.cook_log_id);
-    } catch {
-      // 중복 등 에러 무시
+    } catch (e: unknown) {
+      const err = e as { code?: string; message?: string };
+      if (err?.code !== "23505") {
+        setError(err?.message || "Error");
+      }
     } finally {
       setPending(false);
     }
   }
 
   return (
-    <Button
-      variant={hasCooked ? "secondary" : "outline"}
-      size="sm"
-      className={`gap-1.5 ${hasCooked ? "border-green-500/50 text-green-600" : ""}`}
-      onClick={handleClick}
-      disabled={pending || hasCooked}
-    >
-      {hasCooked ? (
-        <>
-          <Check className="h-4 w-4" />
-          {t("cooked")}
-        </>
-      ) : (
-        <>
-          <CookingPot className="h-4 w-4" />
-          {pending ? t("cookingLog") : t("markCooked")}
-        </>
-      )}
-    </Button>
+    <div className="flex flex-col gap-1">
+      <Button
+        variant={hasCooked ? "secondary" : "outline"}
+        size="sm"
+        className={`gap-1.5 ${hasCooked ? "border-green-500/50 text-green-600" : ""}`}
+        onClick={handleClick}
+        disabled={pending || hasCooked}
+      >
+        {hasCooked ? (
+          <>
+            <Check className="h-4 w-4" />
+            {t("cooked")}
+          </>
+        ) : (
+          <>
+            <CookingPot className="h-4 w-4" />
+            {pending ? t("cookingLog") : t("markCooked")}
+          </>
+        )}
+      </Button>
+      {error && <p className="text-xs text-destructive">{error}</p>}
+    </div>
   );
 }

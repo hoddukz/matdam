@@ -6,14 +6,15 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { OnboardingForm } from "./_components/onboarding-form";
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(`/${locale}/login`);
   }
 
   const { data: profile } = await supabase
@@ -24,7 +25,7 @@ export default async function OnboardingPage() {
 
   // 이미 온보딩 완료한 유저는 홈으로 리다이렉트
   if (profile?.preferences?.onboarding_complete === true) {
-    redirect("/");
+    redirect(`/${locale}`);
   }
 
   const t = await getTranslations("onboarding");

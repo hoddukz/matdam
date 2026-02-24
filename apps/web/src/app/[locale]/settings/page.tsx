@@ -11,14 +11,15 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(`/${locale}/login`);
   }
 
   const { data: profile } = await supabase

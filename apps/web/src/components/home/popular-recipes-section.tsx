@@ -3,38 +3,20 @@
 
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ThumbsUp } from "lucide-react";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
-import { DIFFICULTY_VARIANTS } from "@/lib/recipe/constants";
-
-type Recipe = {
-  recipe_id: string;
-  slug: string;
-  title: Record<string, string>;
-  description: Record<string, string> | null;
-  hero_image_url: string | null;
-  difficulty_level: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-  servings: number | null;
-  upvote_count: number;
-  created_at: string;
-  users: { display_name: string | null; avatar_url: string | null };
-};
+import { DifficultyBadge } from "@/components/recipe/difficulty-badge";
+import type { RecipeCardData } from "@/lib/recipe/types";
 
 type PopularRecipesSectionProps = {
   locale: string;
-  recipes: Recipe[];
+  recipes: RecipeCardData[];
   t: {
     popularTitle: string;
     viewAll: string;
     by: string;
     minutes: string;
     servings: string;
-    difficultyBeginner: string;
-    difficultyIntermediate: string;
-    difficultyMaster: string;
   };
 };
 
@@ -59,7 +41,6 @@ export function PopularRecipesSection({ locale, recipes, t }: PopularRecipesSect
         {recipes.map((recipe) => {
           const title = getLocalizedText(recipe.title, locale);
           const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
-          const badgeVariant = DIFFICULTY_VARIANTS[recipe.difficulty_level ?? ""] ?? "outline";
 
           return (
             <Link key={recipe.recipe_id} href={`/${locale}/recipe/${recipe.slug}`}>
@@ -88,17 +69,7 @@ export function PopularRecipesSection({ locale, recipes, t }: PopularRecipesSect
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="line-clamp-2 text-base leading-snug">{title}</CardTitle>
-                    {recipe.difficulty_level && (
-                      <Badge variant={badgeVariant} className="shrink-0">
-                        {recipe.difficulty_level === "beginner"
-                          ? t.difficultyBeginner
-                          : recipe.difficulty_level === "intermediate"
-                            ? t.difficultyIntermediate
-                            : recipe.difficulty_level === "master"
-                              ? t.difficultyMaster
-                              : recipe.difficulty_level}
-                      </Badge>
-                    )}
+                    <DifficultyBadge level={recipe.difficulty_level} />
                   </div>
                 </CardHeader>
                 <CardContent className="pb-2">

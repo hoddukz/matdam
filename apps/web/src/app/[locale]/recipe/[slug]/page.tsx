@@ -83,7 +83,6 @@ export default async function RecipeDetailPage({ params }: Props) {
     { data: bookmarkRow },
     { data: myVoteRow },
     { data: myCookLog },
-    { data: myCookReview },
     { count: cookCount },
   ] = await Promise.all([
     supabase.from("recipe_steps").select("*").eq("recipe_id", recipe.recipe_id).order("step_order"),
@@ -136,18 +135,6 @@ export default async function RecipeDetailPage({ params }: Props) {
           .eq("recipe_id", recipe.recipe_id)
           .maybeSingle()
       : Promise.resolve({ data: null }),
-    // 내 cook_review 조회
-    user
-      ? supabase
-          .from("cook_reviews")
-          .select("*")
-          .eq(
-            "cook_log_id",
-            // subquery 불가 → 이후 처리
-            "00000000-0000-0000-0000-000000000000"
-          )
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
     // cook_log 총 수
     supabase
       .from("cook_logs")
@@ -156,7 +143,7 @@ export default async function RecipeDetailPage({ params }: Props) {
   ]);
 
   // cook_review는 cook_log_id가 필요하므로 별도 조회
-  let existingReview = myCookReview;
+  let existingReview = null;
   if (myCookLog?.cook_log_id) {
     const { data } = await supabase
       .from("cook_reviews")
@@ -187,8 +174,6 @@ export default async function RecipeDetailPage({ params }: Props) {
     prepTime: recipe.prep_time_minutes ? `PT${recipe.prep_time_minutes}M` : undefined,
     cookTime: recipe.cook_time_minutes ? `PT${recipe.cook_time_minutes}M` : undefined,
     recipeYield: recipe.servings ? `${recipe.servings} servings` : undefined,
-    recipeCategory: "Korean",
-    recipeCuisine: "Korean",
     recipeIngredient: (recipeIngredients ?? []).map(
       (ri: {
         amount: number | null;
@@ -296,10 +281,8 @@ export default async function RecipeDetailPage({ params }: Props) {
               </Link>
               <span>
                 {t("by")}{" "}
-                {
-                  (Array.isArray(parentRecipe.users) ? parentRecipe.users[0] : parentRecipe.users)
-                    .display_name
-                }
+                {(Array.isArray(parentRecipe.users) ? parentRecipe.users[0] : parentRecipe.users)
+                  ?.display_name ?? "—"}
               </span>
             </div>
           )}

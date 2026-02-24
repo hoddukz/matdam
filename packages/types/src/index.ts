@@ -7,7 +7,6 @@ export type { Recipe, RecipeStep, DifficultyLevel } from "./recipe";
 
 export type {
   UserProfile,
-  UserTier,
   UserPreferences,
   DietType,
   ProteinPreference,

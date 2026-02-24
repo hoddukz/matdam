@@ -67,7 +67,7 @@ export function CommentCard({
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showReplies, setShowReplies] = useState(true);
 
-  const author = Array.isArray(comment.users) ? comment.users[0] : comment.users;
+  const author = (Array.isArray(comment.users) ? comment.users[0] : comment.users) ?? null;
   const timeAgo = getTimeAgo(comment.created_at, locale);
 
   async function handleVote(vote: 1 | -1) {
@@ -76,6 +76,7 @@ export function CommentCard({
       return;
     }
     if (pending) return;
+    setPending(true);
 
     const prevVote = myVote;
     const prevUp = upvotes;
@@ -85,7 +86,6 @@ export function CommentCard({
     setMyVote(newVote);
     setUpvotes(prevUp + (newVote === 1 ? 1 : 0) - (prevVote === 1 ? 1 : 0));
     setDownvotes(prevDown + (newVote === -1 ? 1 : 0) - (prevVote === -1 ? 1 : 0));
-    setPending(true);
 
     try {
       const supabase = supabaseRef.current;
@@ -147,10 +147,10 @@ export function CommentCard({
             <div
               className={`flex items-center justify-center rounded-full bg-muted text-xs font-medium ${isReply ? "h-6 w-6" : "h-7 w-7"}`}
             >
-              {author.display_name.charAt(0).toUpperCase()}
+              {author?.display_name?.charAt(0)?.toUpperCase() ?? "?"}
             </div>
             <span className={`font-medium ${isReply ? "text-xs" : "text-sm"}`}>
-              {author.display_name}
+              {author?.display_name ?? "—"}
             </span>
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>

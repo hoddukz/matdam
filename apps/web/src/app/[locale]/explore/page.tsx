@@ -10,8 +10,9 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Badge } from "@/components/ui/badge";
 import { GitFork } from "lucide-react";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
-import { DIFFICULTY_VARIANTS, DIFFICULTY_LABEL_KEYS } from "@/lib/recipe/constants";
+import { DifficultyBadge } from "@/components/recipe/difficulty-badge";
 import { ExploreSearch } from "@/components/explore/explore-search";
+import type { RecipeCardData } from "@/lib/recipe/types";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -31,22 +32,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
   };
 }
-
-type Recipe = {
-  recipe_id: string;
-  slug: string;
-  title: Record<string, string>;
-  description: Record<string, string> | null;
-  hero_image_url: string | null;
-  difficulty_level: string | null;
-  prep_time_minutes: number | null;
-  cook_time_minutes: number | null;
-  servings: number | null;
-  created_at: string;
-  parent_recipe_id: string | null;
-  upvote_count: number;
-  users: { display_name: string | null; avatar_url: string | null };
-};
 
 const VALID_DIFFICULTIES = ["beginner", "intermediate", "master"] as const;
 type Difficulty = (typeof VALID_DIFFICULTIES)[number];
@@ -91,7 +76,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
 
   if (q) {
     // PostgREST 필터 구문 문자 + LIKE 와일드카드 이스케이프
-    const escaped = q.replace(/[%_\\]/g, (ch) => `\\${ch}`).replace(/[.,()]/g, "");
+    const escaped = q.replace(/[%_\\]/g, (ch) => `\\${ch}`).replace(/[.,()'"]/g, "");
     query = query.or(`title->>'en'.ilike.%${escaped}%,title->>'ko'.ilike.%${escaped}%`);
   }
 
@@ -191,10 +176,9 @@ export default async function ExplorePage({ params, searchParams }: Props) {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {(recipes as unknown as Recipe[]).map((recipe) => {
+          {(recipes as unknown as RecipeCardData[]).map((recipe) => {
             const title = getLocalizedText(recipe.title, locale);
             const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
-            const badgeVariant = DIFFICULTY_VARIANTS[recipe.difficulty_level ?? ""] ?? "outline";
             return (
               <Link key={recipe.recipe_id} href={`/${locale}/recipe/${recipe.slug}`}>
                 <Card className="group h-full overflow-hidden transition-shadow hover:shadow-md">
@@ -215,13 +199,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="line-clamp-2 text-base leading-snug">{title}</CardTitle>
-                      {recipe.difficulty_level && (
-                        <Badge variant={badgeVariant} className="shrink-0">
-                          {DIFFICULTY_LABEL_KEYS[recipe.difficulty_level]
-                            ? t(DIFFICULTY_LABEL_KEYS[recipe.difficulty_level])
-                            : recipe.difficulty_level}
-                        </Badge>
-                      )}
+                      <DifficultyBadge level={recipe.difficulty_level} />
                     </div>
                   </CardHeader>
                   <CardContent className="pb-2">

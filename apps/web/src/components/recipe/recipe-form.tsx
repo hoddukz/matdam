@@ -37,7 +37,7 @@ function generateSlug(title: string): string {
     .replace(/^-|-$/g, "");
 
   const suffix = crypto.randomUUID().slice(0, 8);
-  return `${base}-${suffix}`;
+  return base ? `${base}-${suffix}` : suffix;
 }
 
 export type RecipeFormMode = "create" | "edit" | "remix";
@@ -50,6 +50,7 @@ export interface RecipeFormInitialData extends RecipeFormValues {
   rawDescription: Record<string, string> | null;
   parentRecipeId?: string;
   rootRecipeId?: string;
+  published?: boolean;
   mode: RecipeFormMode;
 }
 
@@ -75,7 +76,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const publishRef = useRef(true);
+  const publishRef = useRef(initialData?.published ?? true);
 
   // Blob URL leak 방지: unmount 시 revoke
   useEffect(() => {

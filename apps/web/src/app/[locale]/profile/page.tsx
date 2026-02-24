@@ -49,7 +49,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(`/${locale}/login`);
   }
 
   const t = await getTranslations({ locale, namespace: "profile" });

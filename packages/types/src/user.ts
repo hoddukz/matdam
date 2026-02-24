@@ -1,8 +1,6 @@
 // Tag: core
 // Path: /Users/hodduk/Documents/git/mat_dam/packages/types/src/user.ts
 
-export type UserTier = "beginner" | "intermediate" | "master";
-
 export type DietType = "omnivore" | "vegetarian" | "vegan" | "pescatarian";
 
 export type ProteinPreference = "beef" | "pork" | "chicken" | "seafood" | "tofu_legumes";
@@ -50,7 +48,7 @@ export interface UserProfile {
   user_id: string;
   display_name: string;
   country: string | null;
-  tier: UserTier;
+  tier: import("./recipe").DifficultyLevel;
   trust_score: number;
   preferences: UserPreferences;
   created_at: string;
