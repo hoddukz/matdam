@@ -32,16 +32,16 @@
 
 **P0 — 런칭 차단 항목**
 
-- [ ] ★ Sentry 에러 수집 연동 (프로덕션 에러 추적 불가)
-- [ ] ★ GitHub Actions CI (lint + type-check PR 자동 실행)
+- [x] ★ Sentry 에러 수집 연동 — 이미 구현 확인 (instrumentation.ts + instrumentation-client.ts + global-error.tsx + next.config.ts)
+- [x] ★ GitHub Actions CI — 이미 구현 확인 (.github/workflows/ci.yml: lint + type-check + test)
 
 **P1 — V1 핵심 기능 (사용자 경험 직결)**
 
-- [ ] Dietary Filter (Vegan/Halal/Gluten-free 라벨 + 탐색 필터) — 외국인 타겟 핵심
-- [ ] Shopping List (다중 레시피 재료 합산) — V1 킬러 기능
-- [ ] 레시피 내 재료 클릭 → Glossary 연결 — Step 7 미완성
-- [ ] PWA manifest + 홈 화면 추가 — 앱처럼 사용
-- [ ] Wake Lock API (쿠킹 모드 화면 안 꺼지게)
+- [x] Dietary Filter (Vegan/Halal/Gluten-free 라벨 + 탐색 필터) — 레시피 폼 태그 선택 + 탐색 필터 + 상세 뱃지
+- [x] Shopping List (다중 레시피 재료 합산) — 북마크 기반 재료 합산 체크리스트 + GNB 링크
+- [x] 레시피 내 재료 클릭 → Glossary 연결 — ingredient_id 있으면 /glossary/{id} 링크
+- [x] PWA manifest + 홈 화면 추가 — manifest.json + SVG 아이콘 + 메타 태그
+- [x] Wake Lock API (쿠킹 모드 화면 안 꺼지게) — visibilitychange 재획득 포함
 
 **P2 — UX 고도화**
 
@@ -180,6 +180,44 @@
 - [ ] 대기 컴포넌트 활성화 시: `chef-of-the-week-section.tsx` — "View Profile" 링크를 해당 셰프 프로필로 연결
 - [ ] 대기 컴포넌트 활성화 시: `essential-ingredients-section.tsx` — glossary 페이지 구현 후 링크 연결
 - [ ] 대기 컴포넌트 활성화 시: `kdrama-cravings-section.tsx` — KDramaItem type에 `id` 필드 추가 (React key 안정성)
+
+---
+
+## 2026-02-25 (화)
+
+### P1 핵심 기능 5개 일괄 구현
+
+**P1-1: Dietary Filter (식이 라벨 + 탐색 필터)**
+
+- `recipe-form.tsx` — 식이 태그 7개 (vegan/vegetarian/pescatarian/gluten_free/dairy_free/nut_free/halal) 토글 배지 UI 추가
+- `explore/page.tsx` — dietary 필터 배지 행 추가 + `overlaps()` 배열 필터
+- `recipe/[slug]/page.tsx` — Meta badges 영역에 dietary 뱃지 표시
+- `edit/page.tsx` — initialData에 dietaryTags 전달
+- `types.ts` — RecipeCardData에 dietary_tags 추가
+- en.json / ko.json — recipe/explore/recipeDetail 네임스페이스에 번역 키 추가
+
+**P1-2: Shopping List (다중 레시피 재료 합산)**
+
+- `shopping-list/page.tsx` — 신규 서버 컴포넌트 (북마크 레시피 재료 조회 + ingredient_id/unit 기준 합산)
+- `shopping-list-client.tsx` — 신규 클라이언트 컴포넌트 (레시피 토글 선택 + 체크리스트 + 카테고리 그룹핑)
+- `checkbox.tsx` — 신규 UI 컴포넌트
+- `gnb.tsx` — 데스크톱/모바일 메뉴에 Shopping List 링크 추가
+
+**P1-3: 재료 → Glossary 연결**
+
+- `recipe-detail-client.tsx` — ingredient_id 있는 재료를 `/glossary/{id}` 링크로 변환 (matdam-gold 색상)
+
+**P1-4: PWA manifest + 홈 화면 추가**
+
+- `public/manifest.json` — PWA manifest (standalone, SVG 아이콘)
+- `public/icons/icon.svg` — 금색 원 + 맛 글자 SVG 아이콘
+- `layout.tsx` — Next.js Metadata API로 manifest/themeColor/appleWebApp 메타 태그 추가
+
+**P1-5: Wake Lock API**
+
+- `cooking-mode.tsx` — useEffect로 Wake Lock 요청/해제 (visibilitychange 재획득 포함)
+
+**tsc 통과 확인 완료**
 
 ---
 
@@ -651,6 +689,7 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-25 — P1 핵심 기능 5개 (Dietary Filter + Shopping List + 재료→Glossary 링크 + PWA manifest + Wake Lock API)
 - [x] 2026-02-24 — 성능 최적화 (loading.tsx 4개, next/image 전환 13곳, ISR, Promise.all 병렬화, DifficultyBadge 서버 컴포넌트화)
 - [x] 2026-02-24 — 코드 검토 26건 수정 (Critical 7 + Warn 12 + Suggestion 7)
 - [x] 2026-02-24 — 난이도 이모지 + 라벨 개선 (2줄 레이아웃, 필드 순서/라벨 변경)

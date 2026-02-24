@@ -10,7 +10,24 @@ import { Footer } from "@/components/layout/footer";
 import { PostHogProvider } from "@/lib/posthog/provider";
 import { PostHogPageView } from "@/lib/posthog/page-view";
 import { Suspense } from "react";
+import type { Metadata, Viewport } from "next";
 import "../globals.css";
+
+export const metadata: Metadata = {
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "맛담",
+  },
+  icons: {
+    apple: "/icons/icon.svg",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#D4A853",
+};
 
 type Props = {
   children: React.ReactNode;

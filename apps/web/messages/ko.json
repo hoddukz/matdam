@@ -40,6 +40,7 @@
     "signIn": "로그인",
     "profile": "프로필",
     "bookmarks": "북마크",
+    "shoppingList": "쇼핑 리스트",
     "settings": "설정",
     "signOut": "로그아웃"
   },
@@ -161,7 +162,18 @@
     "updating": "수정 중...",
     "remixTitle": "레시피 리믹스",
     "publishRemix": "리믹스 게시",
-    "publishingRemix": "게시 중..."
+    "publishingRemix": "게시 중...",
+    "dietaryTagsLabel": "식이 라벨",
+    "dietaryVegan": "비건",
+    "dietaryVegetarian": "채식",
+    "dietaryPescatarian": "페스코",
+    "dietaryGlutenFree": "글루텐 프리",
+    "dietaryDairyFree": "유제품 무첨가",
+    "dietaryNutFree": "견과류 무첨가",
+    "dietaryHalal": "할랄",
+    "dietaryLowCalorie": "저칼로리",
+    "dietaryDiabeticFriendly": "당뇨 친화",
+    "dietaryLowSodium": "저염식"
   },
   "validation": {
     "titleMin": "제목을 3자 이상 입력해주세요",
@@ -255,7 +267,17 @@
     "replyPlaceholder": "답글을 작성하세요...",
     "replyCount": "답글 {count}개",
     "hideReplies": "답글 숨기기",
-    "showReplies": "답글 보기"
+    "showReplies": "답글 보기",
+    "dietary_vegan": "비건",
+    "dietary_vegetarian": "채식",
+    "dietary_pescatarian": "페스코",
+    "dietary_gluten_free": "글루텐 프리",
+    "dietary_dairy_free": "유제품 무첨가",
+    "dietary_nut_free": "견과류 무첨가",
+    "dietary_halal": "할랄",
+    "dietary_low_calorie": "저칼로리",
+    "dietary_diabetic_friendly": "당뇨 친화",
+    "dietary_low_sodium": "저염식"
   },
   "cookingMode": {
     "stepOf": "{current}/{total} 단계",
@@ -287,7 +309,20 @@
     "remixOf": "\"{title}\"의 리믹스",
     "searchPlaceholder": "레시피 검색...",
     "sortNewest": "최신순",
-    "sortPopular": "인기순"
+    "sortPopular": "인기순",
+    "difficultyFilter": "난이도",
+    "dietaryFilter": "식단",
+    "clearFilters": "전체 해제",
+    "filterDietaryVegan": "비건",
+    "filterDietaryVegetarian": "채식",
+    "filterDietaryPescatarian": "페스코",
+    "filterDietaryGlutenFree": "글루텐 프리",
+    "filterDietaryDairyFree": "유제품 무첨가",
+    "filterDietaryNutFree": "견과류 무첨가",
+    "filterDietaryHalal": "할랄",
+    "filterDietaryLowCalorie": "저칼로리",
+    "filterDietaryDiabeticFriendly": "당뇨 친화",
+    "filterDietaryLowSodium": "저염식"
   },
   "ingredient": {
     "searchPlaceholder": "재료 검색...",
@@ -440,6 +475,18 @@
     "changesContent": "당사는 언제든지 본 약관을 업데이트할 수 있습니다. 변경 후 서비스를 계속 이용하면 새로운 약관에 동의하는 것으로 간주됩니다.",
     "contactTitle": "연락처",
     "contactContent": "본 이용약관에 관한 문의: matdam.app@gmail.com"
+  },
+  "shoppingList": {
+    "title": "쇼핑 리스트",
+    "description": "북마크한 레시피의 재료를 한곳에",
+    "noBookmarks": "아직 북마크한 레시피가 없습니다. 레시피를 북마크하면 쇼핑 리스트가 만들어집니다!",
+    "exploreCta": "레시피 탐색",
+    "recipesLabel": "포함할 레시피",
+    "selectAll": "전체 선택",
+    "clearChecked": "체크 해제",
+    "itemCount": "{count}개 재료",
+    "fromRecipes": "출처: {recipes}",
+    "uncategorized": "기타"
   },
   "footer": {
     "tagline": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요.",

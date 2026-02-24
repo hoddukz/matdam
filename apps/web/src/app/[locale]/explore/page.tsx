@@ -14,11 +14,13 @@ import { getLocalizedText } from "@/lib/recipe/localized-text";
 import { DifficultyBadge } from "@/components/recipe/difficulty-badge";
 import { DIFFICULTY_LABEL_KEYS } from "@/lib/recipe/constants";
 import { ExploreSearch } from "@/components/explore/explore-search";
+import { DietaryFilterPopover } from "@/components/explore/dietary-filter-popover";
+import { DifficultyFilterPopover } from "@/components/explore/difficulty-filter-popover";
 import type { RecipeCardData } from "@/lib/recipe/types";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ difficulty?: string; q?: string; sort?: string }>;
+  searchParams: Promise<{ difficulty?: string; q?: string; sort?: string; dietary?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -38,19 +40,45 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 const VALID_DIFFICULTIES = ["beginner", "intermediate", "master"] as const;
 type Difficulty = (typeof VALID_DIFFICULTIES)[number];
 
+const VALID_DIETARY_TAGS = [
+  "vegan",
+  "vegetarian",
+  "pescatarian",
+  "gluten_free",
+  "dairy_free",
+  "nut_free",
+  "halal",
+  "low_calorie",
+  "diabetic_friendly",
+  "low_sodium",
+] as const;
+type DietaryTag = (typeof VALID_DIETARY_TAGS)[number];
+
 const VALID_SORTS = ["newest", "popular"] as const;
 type SortOption = (typeof VALID_SORTS)[number];
 
 export default async function ExplorePage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { difficulty: rawDifficulty, q: rawQ, sort: rawSort } = await searchParams;
-  const difficulty = VALID_DIFFICULTIES.includes(rawDifficulty as Difficulty)
-    ? (rawDifficulty as Difficulty)
-    : undefined;
+  const {
+    difficulty: rawDifficulty,
+    q: rawQ,
+    sort: rawSort,
+    dietary: rawDietary,
+  } = await searchParams;
+  const difficulty = rawDifficulty
+    ? (rawDifficulty
+        .split(",")
+        .filter((v) => VALID_DIFFICULTIES.includes(v as Difficulty)) as Difficulty[])
+    : [];
   const q = rawQ?.trim() || undefined;
   const sort: SortOption = VALID_SORTS.includes(rawSort as SortOption)
     ? (rawSort as SortOption)
     : "newest";
+  const dietary = rawDietary
+    ? (rawDietary
+        .split(",")
+        .filter((v) => VALID_DIETARY_TAGS.includes(v as DietaryTag)) as DietaryTag[])
+    : [];
   const t = await getTranslations({ locale, namespace: "explore" });
 
   const supabase = await createClient();
@@ -58,7 +86,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
   let query = supabase
     .from("recipes")
     .select(
-      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, upvote_count, users!recipes_author_id_fkey(display_name, avatar_url)"
+      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, upvote_count, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url)"
     )
     .eq("published", true)
     .limit(20);
@@ -72,8 +100,12 @@ export default async function ExplorePage({ params, searchParams }: Props) {
     query = query.order("created_at", { ascending: false });
   }
 
-  if (difficulty) {
-    query = query.eq("difficulty_level", difficulty);
+  if (difficulty.length > 0) {
+    query = query.in("difficulty_level", difficulty);
+  }
+
+  if (dietary.length > 0) {
+    query = query.overlaps("dietary_tags", dietary);
   }
 
   if (q) {
@@ -101,13 +133,6 @@ export default async function ExplorePage({ params, searchParams }: Props) {
     });
   }
 
-  const difficultyFilters = [
-    { value: undefined, label: t("filterAll") },
-    { value: "beginner", label: t("filterBeginner") },
-    { value: "intermediate", label: t("filterIntermediate") },
-    { value: "master", label: t("filterMaster") },
-  ];
-
   const sortOptions = [
     { value: "newest", label: t("sortNewest") },
     { value: "popular", label: t("sortPopular") },
@@ -128,47 +153,38 @@ export default async function ExplorePage({ params, searchParams }: Props) {
       </div>
 
       {/* 필터 + 정렬 */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
-          {difficultyFilters.map((filter) => {
-            const params = new URLSearchParams();
-            if (filter.value) params.set("difficulty", filter.value);
-            if (q) params.set("q", q);
-            if (sort !== "newest") params.set("sort", sort);
-            const href = `?${params.toString()}`;
-            const isActive = difficulty === filter.value || (!difficulty && !filter.value);
-            return (
-              <Link key={filter.value ?? "all"} href={href}>
-                <Badge
-                  variant={isActive ? "default" : "outline"}
-                  className="cursor-pointer px-3 py-1 text-sm"
-                >
-                  {filter.label}
-                </Badge>
-              </Link>
-            );
-          })}
-        </div>
+      <div className="mb-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Suspense fallback={null}>
+              <DifficultyFilterPopover />
+            </Suspense>
+            <Suspense fallback={null}>
+              <DietaryFilterPopover />
+            </Suspense>
+          </div>
 
-        <div className="flex gap-2">
-          {sortOptions.map((option) => {
-            const params = new URLSearchParams();
-            if (difficulty) params.set("difficulty", difficulty);
-            if (q) params.set("q", q);
-            if (option.value !== "newest") params.set("sort", option.value);
-            const href = `?${params.toString()}`;
-            const isActive = sort === option.value;
-            return (
-              <Link key={option.value} href={href}>
-                <Badge
-                  variant={isActive ? "default" : "outline"}
-                  className="cursor-pointer px-3 py-1 text-sm"
-                >
-                  {option.label}
-                </Badge>
-              </Link>
-            );
-          })}
+          <div className="flex gap-2">
+            {sortOptions.map((option) => {
+              const params = new URLSearchParams();
+              if (difficulty.length > 0) params.set("difficulty", difficulty.join(","));
+              if (q) params.set("q", q);
+              if (option.value !== "newest") params.set("sort", option.value);
+              if (dietary.length > 0) params.set("dietary", dietary.join(","));
+              const href = `?${params.toString()}`;
+              const isActive = sort === option.value;
+              return (
+                <Link key={option.value} href={href}>
+                  <Badge
+                    variant={isActive ? "default" : "outline"}
+                    className="cursor-pointer px-3 py-1 text-sm"
+                  >
+                    {option.label}
+                  </Badge>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       </div>
 

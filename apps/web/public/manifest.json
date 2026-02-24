@@ -1,0 +1,17 @@
+{
+  "name": "맛담 MatDam",
+  "short_name": "맛담",
+  "description": "Your Korean Cooking Companion",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#D4A853",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

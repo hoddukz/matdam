@@ -25,6 +25,7 @@ import { UnitToggle } from "@/components/recipe/unit-toggle";
 import { createClient } from "@/lib/supabase/client";
 import { uploadRecipeImage, relocateTempStepImages } from "@/lib/supabase/storage";
 import { createRecipeFormSchema, type RecipeFormValues } from "@/lib/validators/recipe";
+import { SELECTED_STYLE, toggleItem } from "@/lib/user/preference-constants";
 import { ImageIcon, X } from "lucide-react";
 import posthog from "posthog-js";
 
@@ -52,6 +53,7 @@ export interface RecipeFormInitialData extends RecipeFormValues {
   rootRecipeId?: string;
   published?: boolean;
   mode: RecipeFormMode;
+  dietaryTags?: string[];
 }
 
 interface RecipeFormProps {
@@ -75,6 +77,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   const [heroPreview, setHeroPreview] = useState<string | null>(initialData?.heroImageUrl ?? null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [dietaryTags, setDietaryTags] = useState<string[]>(initialData?.dietaryTags ?? []);
 
   const publishRef = useRef(initialData?.published ?? true);
 
@@ -200,7 +203,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
         cook_time_minutes: data.cook_time_minutes ?? null,
         hero_image_url: null,
         published,
-        dietary_tags: [],
+        dietary_tags: dietaryTags,
         parent_recipe_id: remix?.parentRecipeId ?? null,
         root_recipe_id: remix?.rootRecipeId ?? null,
       })
@@ -293,6 +296,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
         cook_time_minutes: data.cook_time_minutes ?? null,
         hero_image_url: heroImageUrl,
         published,
+        dietary_tags: dietaryTags,
       })
       .eq("recipe_id", recipeId)
       .eq("author_id", userId);
@@ -474,6 +478,51 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
             </Select>
           )}
         />
+      </div>
+
+      {/* Dietary Tags */}
+      <div className="space-y-2">
+        <Label>{t("dietaryTagsLabel")}</Label>
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              "vegan",
+              "vegetarian",
+              "pescatarian",
+              "gluten_free",
+              "dairy_free",
+              "nut_free",
+              "halal",
+              "low_calorie",
+              "diabetic_friendly",
+              "low_sodium",
+            ] as const
+          ).map((tag) => {
+            const isActive = dietaryTags.includes(tag);
+            const labelMap: Record<string, string> = {
+              vegan: t("dietaryVegan"),
+              vegetarian: t("dietaryVegetarian"),
+              pescatarian: t("dietaryPescatarian"),
+              gluten_free: t("dietaryGlutenFree"),
+              dairy_free: t("dietaryDairyFree"),
+              nut_free: t("dietaryNutFree"),
+              halal: t("dietaryHalal"),
+              low_calorie: t("dietaryLowCalorie"),
+              diabetic_friendly: t("dietaryDiabeticFriendly"),
+              low_sodium: t("dietaryLowSodium"),
+            };
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setDietaryTags(toggleItem(dietaryTags, tag))}
+                className={`rounded-full border px-3 py-1 text-sm transition-colors ${isActive ? SELECTED_STYLE : "border-input bg-background hover:bg-muted"}`}
+              >
+                {labelMap[tag]}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Servings / Prep / Cook */}

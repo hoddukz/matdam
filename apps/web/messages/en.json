@@ -40,6 +40,7 @@
     "signIn": "Sign In",
     "profile": "Profile",
     "bookmarks": "Bookmarks",
+    "shoppingList": "Shopping List",
     "settings": "Settings",
     "signOut": "Sign Out"
   },
@@ -161,7 +162,18 @@
     "updating": "Updating...",
     "remixTitle": "Remix Recipe",
     "publishRemix": "Publish Remix",
-    "publishingRemix": "Publishing..."
+    "publishingRemix": "Publishing...",
+    "dietaryTagsLabel": "Dietary Labels",
+    "dietaryVegan": "Vegan",
+    "dietaryVegetarian": "Vegetarian",
+    "dietaryPescatarian": "Pescatarian",
+    "dietaryGlutenFree": "Gluten-Free",
+    "dietaryDairyFree": "Dairy-Free",
+    "dietaryNutFree": "Nut-Free",
+    "dietaryHalal": "Halal",
+    "dietaryLowCalorie": "Low-Calorie",
+    "dietaryDiabeticFriendly": "Diabetic-Friendly",
+    "dietaryLowSodium": "Low-Sodium"
   },
   "validation": {
     "titleMin": "Title must be at least 3 characters",
@@ -255,7 +267,17 @@
     "replyPlaceholder": "Write a reply...",
     "replyCount": "{count} replies",
     "hideReplies": "Hide replies",
-    "showReplies": "Show replies"
+    "showReplies": "Show replies",
+    "dietary_vegan": "Vegan",
+    "dietary_vegetarian": "Vegetarian",
+    "dietary_pescatarian": "Pescatarian",
+    "dietary_gluten_free": "Gluten-Free",
+    "dietary_dairy_free": "Dairy-Free",
+    "dietary_nut_free": "Nut-Free",
+    "dietary_halal": "Halal",
+    "dietary_low_calorie": "Low-Calorie",
+    "dietary_diabetic_friendly": "Diabetic-Friendly",
+    "dietary_low_sodium": "Low-Sodium"
   },
   "cookingMode": {
     "stepOf": "Step {current}/{total}",
@@ -287,7 +309,20 @@
     "remixOf": "Remix of \"{title}\"",
     "searchPlaceholder": "Search recipes...",
     "sortNewest": "Newest",
-    "sortPopular": "Popular"
+    "sortPopular": "Popular",
+    "difficultyFilter": "Level",
+    "dietaryFilter": "Dietary",
+    "clearFilters": "Clear All",
+    "filterDietaryVegan": "Vegan",
+    "filterDietaryVegetarian": "Vegetarian",
+    "filterDietaryPescatarian": "Pescatarian",
+    "filterDietaryGlutenFree": "Gluten-Free",
+    "filterDietaryDairyFree": "Dairy-Free",
+    "filterDietaryNutFree": "Nut-Free",
+    "filterDietaryHalal": "Halal",
+    "filterDietaryLowCalorie": "Low-Calorie",
+    "filterDietaryDiabeticFriendly": "Diabetic-Friendly",
+    "filterDietaryLowSodium": "Low-Sodium"
   },
   "ingredient": {
     "searchPlaceholder": "Search ingredients...",
@@ -440,6 +475,18 @@
     "changesContent": "We may update these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.",
     "contactTitle": "Contact",
     "contactContent": "If you have questions about these Terms, please contact us at: matdam.app@gmail.com"
+  },
+  "shoppingList": {
+    "title": "Shopping List",
+    "description": "Your combined ingredients from bookmarked recipes",
+    "noBookmarks": "No bookmarked recipes yet. Bookmark recipes to build your shopping list!",
+    "exploreCta": "Explore Recipes",
+    "recipesLabel": "Recipes to include",
+    "selectAll": "Select All",
+    "clearChecked": "Clear Checked",
+    "itemCount": "{count} items",
+    "fromRecipes": "from: {recipes}",
+    "uncategorized": "Other"
   },
   "footer": {
     "tagline": "Discover, remix, and share Korean recipes with the world.",

@@ -71,6 +71,7 @@ export default async function EditRecipePage({ params }: Props) {
     cook_time_minutes: recipe.cook_time_minutes ?? undefined,
     ingredients: formIngredients,
     steps: formSteps.length > 0 ? formSteps : [makeStep()],
+    dietaryTags: recipe.dietary_tags ?? [],
   };
 
   return (

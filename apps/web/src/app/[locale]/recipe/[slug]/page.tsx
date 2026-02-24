@@ -300,6 +300,13 @@ export default async function RecipeDetailPage({ params }: Props) {
                 {recipe.difficulty_level}
               </Badge>
             )}
+            {recipe.dietary_tags &&
+              recipe.dietary_tags.length > 0 &&
+              recipe.dietary_tags.map((tag: string) => (
+                <Badge key={tag} variant="secondary" className="gap-1 text-xs">
+                  {t(`dietary_${tag}` as Parameters<typeof t>[0])}
+                </Badge>
+              ))}
             {recipe.servings && (
               <span className="flex items-center gap-1">
                 <Users className="h-4 w-4" />

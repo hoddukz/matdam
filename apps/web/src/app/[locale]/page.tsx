@@ -114,6 +114,7 @@ export default async function HomePage({ params }: Props) {
       upvote_count: r.upvote_count,
       created_at: r.created_at,
       parent_recipe_id: null,
+      dietary_tags: null,
       users: {
         display_name: r.author_display_name,
         avatar_url: r.author_avatar_url,
@@ -150,6 +151,7 @@ export default async function HomePage({ params }: Props) {
       upvote_count: r.upvote_count,
       created_at: r.created_at,
       parent_recipe_id: null,
+      dietary_tags: null,
       users: {
         display_name: r.author_display_name,
         avatar_url: r.author_avatar_url,
@@ -228,6 +230,7 @@ export default async function HomePage({ params }: Props) {
           ...r,
           upvote_count: 0,
           parent_recipe_id: null,
+          dietary_tags: null,
           users: Array.isArray(r.users) ? r.users[0] : r.users,
         }))}
         t={{
@@ -248,6 +251,7 @@ export default async function HomePage({ params }: Props) {
         remixes={(remixRecipes ?? []).map((r) => ({
           ...r,
           upvote_count: 0,
+          dietary_tags: null,
           users: Array.isArray(r.users) ? r.users[0] : r.users,
         }))}
         parentTitleMap={parentTitleMap}

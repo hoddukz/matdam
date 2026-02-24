@@ -23,6 +23,8 @@ export function ExploreSearch() {
     const difficulty = searchParams.get("difficulty");
     if (difficulty) params.set("difficulty", difficulty);
     if (q) params.set("q", q);
+    const dietary = searchParams.get("dietary");
+    if (dietary) params.set("dietary", dietary);
 
     router.push(`?${params.toString()}`);
   }

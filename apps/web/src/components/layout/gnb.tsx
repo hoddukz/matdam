@@ -101,6 +101,9 @@ export function GNB() {
                   <Link href="/profile?tab=bookmarks">{t("bookmarks")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link href="/shopping-list">{t("shoppingList")}</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link href="/settings">{t("settings")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>{t("signOut")}</DropdownMenuItem>
@@ -164,6 +167,13 @@ export function GNB() {
                   onClick={() => setMobileOpen(false)}
                 >
                   {t("bookmarks")}
+                </Link>
+                <Link
+                  href="/shopping-list"
+                  className="text-sm font-medium"
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {t("shoppingList")}
                 </Link>
                 <Link
                   href="/settings"
