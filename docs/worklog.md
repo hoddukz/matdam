@@ -20,6 +20,7 @@
 - [x] Glossary cuisine 필터 동작 확인 (`/glossary?cuisine=korean`) — 정상
 - [x] Supabase에 마이그레이션 010 적용 (`010_recipe_social.sql`)
 - [x] 레시피 상세 페이지 소셜 기능 동작 확인 (투표/만들어봤어요/리뷰 DB 저장 확인 완료, 코멘트 UI 확인 완료)
+- [ ] Supabase에 마이그레이션 011 적용 (`011_expanded_ingredient_seeds.sql`) + 검색에서 새 재료 노출 확인
 
 ### 소셜 기능 Phase 5 — 추천 시스템 (미구현)
 
@@ -27,18 +28,22 @@
 - [ ] 유사 사용자 기반 추천 (preferences 매칭)
 - [ ] 인기 레시피 필터 (upvote_count 기반 정렬/섹션)
 
+### 평가 스케일 방향 검토 (결정 필요)
+
+- [ ] "난이도 체감" 스케일 방향 문제 — 현재 1=쉬움, 5=어려움이라 다른 항목(맛/재도전)과 반대 방향. 맛 프로필 점수를 종합 레시피 점수로 활용할 경우 난이도만 역방향이라 계산이 애매해짐. "쉬운 정도"(1=어려움, 5=쉬움)로 바꿔 전부 높을수록 긍정으로 통일할지 검토
+
 ### 댓글 기능 확장
 
 - [ ] 대댓글(답글) 기능 — 현재 레시피에 대한 댓글만 가능, 추후 댓글에 답글 달 수 있도록 확장 (parent_comment_id 등)
 
 ### 시드데이터/i18n 확장
 
-- [ ] 재료 시드데이터 확장 — 커스텀 재료(`ingredient_id: null`)로 입력된 항목(예: "cheddar cheese")이 한국어 로케일에서도 영어로 표시됨. 주요 재료에 대한 시드데이터 추가 또는 커스텀 재료 다국어 입력 지원 필요
+- [x] 재료 시드데이터 확장 — `011_expanded_ingredient_seeds.sql`로 41개 재료 추가 완료 (Western 18 + Japanese 7 + Baking 10 + Common 6)
 
 ### 코드리뷰 잔여 Suggestion 항목 (나중에)
 
 - [x] `edit/page.tsx`, `profile/page.tsx`에서 `<title>` → `generateMetadata` 패턴 통일 — 이미 구현 확인 완료
-- [ ] temp step 이미지 (`temp-{timestamp}/`) — 레시피 생성 후 실제 recipeId 경로로 이동 또는 정리 로직 추가
+- [x] temp step 이미지 — `relocateTempStepImages` 구현 완료 (생성 시 자동 relocation + 삭제 시 temp 경로 포함 정리)
 
 ### 장기 로드맵 — 셰프 채널 + 커뮤니티
 
@@ -56,6 +61,76 @@
 - [ ] 대기 컴포넌트 활성화 시: `chef-of-the-week-section.tsx` — "View Profile" 링크를 해당 셰프 프로필로 연결
 - [ ] 대기 컴포넌트 활성화 시: `essential-ingredients-section.tsx` — glossary 페이지 구현 후 링크 연결
 - [ ] 대기 컴포넌트 활성화 시: `kdrama-cravings-section.tsx` — KDramaItem type에 `id` 필드 추가 (React key 안정성)
+
+---
+
+## 2026-02-24 (월)
+
+### 재료 시드데이터 확장 + Temp 이미지 경로 정리
+
+**Task A — 재료 시드데이터 확장**
+
+- `supabase/migrations/011_expanded_ingredient_seeds.sql` 신규 생성 (41개 재료)
+  - Western 18개: cheddar, cream_cheese, milk, bacon, ground_beef, chicken_breast, shrimp, salmon, mushroom, bell_pepper, tomato, broccoli, lettuce, cucumber, garlic_powder, paprika, sour_cream, celery
+  - Japanese 7개: tofu_silken, shiitake, enoki, edamame, pickled_ginger, tempura_flour, sushi_vinegar
+  - Baking 10개: baking_powder, baking_soda, vanilla_extract, cocoa_powder, brown_sugar, honey, powdered_sugar, yeast, bread_flour, cornstarch
+  - Common 6개: vegetable_oil, soy_milk, cinnamon, mayonnaise, ketchup, red_pepper_flakes
+- 009 패턴 동일, ON CONFLICT DO NOTHING 멱등성 보장
+- 기존 002/009 시드와 ID 충돌 없음 확인
+
+**Task B — Temp Step 이미지 경로 정리**
+
+- `storage.ts` — `relocateTempStepImages()` 함수 추가 (temp→{recipeId}/ 경로 copy→delete) + `extractStoragePath()` 유틸 추가
+- `recipe-form.tsx` — StepEditor에 `recipeId` prop 전달 (edit 모드에서 실제 UUID 사용) + handleCreate에 relocation 호출
+- `delete-recipe-button.tsx` — DB 삭제 전 step image_url에서 temp 경로 수집 → {recipeId}/ + temp 경로 합쳐서 storage.remove()
+
+**코드리뷰 반영 (9건)**
+
+- W1: `storage.ts` copyError 시 `console.warn` 추가
+- W2: `storage.ts` temp 파일 remove 실패 시 `console.warn` 추가
+- W3: `recipe-form.tsx` 비트랜잭션 윈도우 주석 추가
+- W4: `delete-recipe-button.tsx` race condition 주석 추가 + `let` → `const`
+- W5: `delete-recipe-button.tsx` AlertDialogCancel에 `disabled={isDeleting}` 추가
+- S1: `011_*.sql` `rice_wine_vinegar` → `sushi_vinegar` ID 변경 (en name과 일치)
+- S2: `storage.ts` `extractStoragePath` JSDoc 추가
+- S3: `delete-recipe-button.tsx` deleteError를 Header → Footer로 이동
+- S4: `vegetable_oil` 카테고리 `sauce_paste` 유지 (기존 패턴 일관성)
+
+**tsc 통과 확인 완료**
+
+---
+
+## 2026-02-23 (일) — 심야
+
+### 요리모드 (Cooking Mode) 구현
+
+작업명세서 `docs/work_order/cooking-mode.md` 기반.
+
+레시피 상세 페이지에서 실제 요리 시 사용하는 스텝별 풀스크린 뷰. 태블릿(가로) 우선 설계, 모바일 세로 대응.
+
+**신규 파일 생성 (3개):**
+
+- `apps/web/src/app/[locale]/recipe/[slug]/cook/page.tsx` — 서버 컴포넌트, 레시피+스텝+재료 조회 후 CookingMode 전달, step_number로 재료 그룹핑
+- `apps/web/src/components/recipe/cooking-mode.tsx` — 메인 클라이언트 컴포넌트, 스텝 네비게이션 + 프로그레스 바 + 좌우 분할(md+)/단일 컬럼(모바일) 레이아웃
+- `apps/web/src/components/recipe/cooking-timer.tsx` — 다중 타이머 컴포넌트, 시작/일시정지/리셋 + 카운트다운 + 완료 시 시각적 알림
+
+**기존 파일 수정 (3개):**
+
+- `recipe/[slug]/page.tsx` — Steps 섹션 헤더에 "요리 시작" 버튼 추가 (`CookingPot` 아이콘)
+- `messages/en.json` — `cookingMode` 네임스페이스 13개 키 + `recipeDetail.startCooking` 추가
+- `messages/ko.json` — 동일 한국어 번역 추가
+
+**핵심 기능:**
+
+- 스텝 이전/다음 네비게이션 (큰 터치 타겟 h-12)
+- 프로그레스 바 (matdam-gold)
+- 스텝별 재료 필터 (step_number 기반)
+- 다중 타이머 동시 실행 (스텝 이동 시에도 유지)
+- 태블릿 좌우 분할 / 모바일 단일 컬럼 반응형
+- 비로그인 사용 가능 (읽기 전용)
+- 마지막 스텝에서 "완료" 버튼 → 레시피 상세로 복귀
+
+**tsc 통과 확인 완료**
 
 ---
 
@@ -409,6 +484,9 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-24 — 재료 시드데이터 확장 41개 (Western 18 + Japanese 7 + Baking 10 + Common 6) + 코드리뷰 반영
+- [x] 2026-02-24 — Temp step 이미지 경로 정리 (relocateTempStepImages + 삭제 시 temp 경로 수집/정리)
+- [x] 2026-02-23 — 요리모드 (Cooking Mode) 구현 — 스텝별 풀스크린 뷰 + 다중 타이머 + 반응형 레이아웃
 - [x] 2026-02-23 — 레시피 소셜 기능 Phase 1~4 구현 + 마이그레이션 010 적용 + PostgREST FK 모호성 버그 수정
 - [x] 2026-02-23 — 코드리뷰 일괄 수정 7건 (BUG 3 + LEAK 1 + DRY 1 + STYLE 2) + generateMetadata 확인
 - [x] 2026-02-23 — 온보딩 4단계 멀티스텝 폼 구현 (닉네임+실력 / 문화권 / 식이 성향 / 맛 선호도) + Settings 페이지 확장

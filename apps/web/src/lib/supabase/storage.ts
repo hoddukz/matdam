@@ -56,3 +56,57 @@ export async function uploadRecipeImage(
 
   return publicUrl;
 }
+
+const TEMP_PATH_RE = /temp-\d+\//;
+const STORAGE_PATH_RE = /\/recipe-images\/(.+)$/;
+
+export async function relocateTempStepImages(
+  steps: { image_url: string | null }[],
+  recipeId: string
+): Promise<{ stepIndex: number; newUrl: string }[]> {
+  const supabase = createClient();
+  const results: { stepIndex: number; newUrl: string }[] = [];
+
+  for (let i = 0; i < steps.length; i++) {
+    const url = steps[i].image_url;
+    if (!url || !TEMP_PATH_RE.test(url)) continue;
+
+    const pathMatch = url.match(STORAGE_PATH_RE);
+    if (!pathMatch) continue;
+
+    const oldPath = pathMatch[1];
+    const fileName = oldPath.split("/").pop()!;
+    const newPath = `${recipeId}/${fileName}`;
+
+    const { error: copyError } = await supabase.storage.from(BUCKET).copy(oldPath, newPath);
+    if (copyError) {
+      console.warn("Step image copy failed:", copyError);
+      continue;
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(BUCKET).getPublicUrl(newPath);
+
+    results.push({ stepIndex: i, newUrl: publicUrl });
+
+    // best-effort delete of old temp file
+    await supabase.storage
+      .from(BUCKET)
+      .remove([oldPath])
+      .catch((e) => console.warn("Temp file cleanup failed:", e));
+  }
+
+  return results;
+}
+
+/**
+ * Supabase storage public URL에서 버킷 내부 경로를 추출한다.
+ * e.g. "https://xxx.supabase.co/storage/v1/object/public/recipe-images/abc/step.jpg"
+ *   → "abc/step.jpg"
+ * 매칭 실패 시 null 반환.
+ */
+export function extractStoragePath(url: string): string | null {
+  const match = url.match(STORAGE_PATH_RE);
+  return match ? match[1] : null;
+}

@@ -18,6 +18,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { createClient } from "@/lib/supabase/client";
+import { extractStoragePath } from "@/lib/supabase/storage";
 import { Trash2 } from "lucide-react";
 
 interface DeleteRecipeButtonProps {
@@ -37,16 +38,39 @@ export function DeleteRecipeButton({ recipeId, iconOnly }: DeleteRecipeButtonPro
     setIsDeleting(true);
     setDeleteError(null);
     try {
-      // DB 먼저 삭제 (CASCADE로 steps/ingredients 자동 삭제)
+      // DB 삭제 전 step image_url 수집 (temp 경로 포함)
+      // NOTE: 생성 직후 relocation 미완료 상태에서 삭제 시 일부 temp 파일 누락 가능 (극히 드문 케이스)
+      const extraImagePaths: string[] = [];
+      try {
+        const { data: steps } = await supabase
+          .from("recipe_steps")
+          .select("image_url")
+          .eq("recipe_id", recipeId);
+        if (steps) {
+          for (const step of steps) {
+            if (step.image_url) {
+              const p = extractStoragePath(step.image_url);
+              if (p && !p.startsWith(`${recipeId}/`)) {
+                extraImagePaths.push(p);
+              }
+            }
+          }
+        }
+      } catch {
+        // 수집 실패 시 삭제 진행
+      }
+
+      // DB 삭제 (CASCADE로 steps/ingredients 자동 삭제)
       const { error } = await supabase.from("recipes").delete().eq("recipe_id", recipeId);
       if (error) throw error;
 
-      // DB 삭제 성공 후 storage 이미지 정리 (실패해도 무시)
+      // storage 이미지 정리 — {recipeId}/ 디렉토리 + 수집한 temp 경로
       try {
         const { data: files } = await supabase.storage.from("recipe-images").list(recipeId);
-        if (files && files.length > 0) {
-          const paths = files.map((f) => `${recipeId}/${f.name}`);
-          await supabase.storage.from("recipe-images").remove(paths);
+        const regularPaths = files?.map((f) => `${recipeId}/${f.name}`) ?? [];
+        const allPaths = [...regularPaths, ...extraImagePaths];
+        if (allPaths.length > 0) {
+          await supabase.storage.from("recipe-images").remove(allPaths);
         }
       } catch {
         // storage 정리 실패는 무시 (고아 이미지는 치명적이지 않음)
@@ -85,10 +109,10 @@ export function DeleteRecipeButton({ recipeId, iconOnly }: DeleteRecipeButtonPro
         <AlertDialogHeader>
           <AlertDialogTitle>{t("deleteConfirm")}</AlertDialogTitle>
           <AlertDialogDescription>{t("deleteDescription")}</AlertDialogDescription>
-          {deleteError && <p className="mt-2 text-sm text-destructive">{deleteError}</p>}
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{t("deleteCancel")}</AlertDialogCancel>
+          {deleteError && <p className="w-full text-sm text-destructive">{deleteError}</p>}
+          <AlertDialogCancel disabled={isDeleting}>{t("deleteCancel")}</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeleting}

@@ -23,7 +23,7 @@ import { IngredientInput, type IngredientEntry } from "@/components/recipe/ingre
 import { StepEditor, makeStep, type StepEntry } from "@/components/recipe/step-editor";
 import { UnitToggle } from "@/components/recipe/unit-toggle";
 import { createClient } from "@/lib/supabase/client";
-import { uploadRecipeImage } from "@/lib/supabase/storage";
+import { uploadRecipeImage, relocateTempStepImages } from "@/lib/supabase/storage";
 import { createRecipeFormSchema, type RecipeFormValues } from "@/lib/validators/recipe";
 import { ImageIcon, X } from "lucide-react";
 import posthog from "posthog-js";
@@ -224,6 +224,22 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       }
 
       await insertStepsAndIngredients(data, recipeId);
+
+      // Relocate temp step images to permanent {recipeId}/ path
+      // NOTE: insertSteps → relocation 사이 짧은 윈도우 동안 DB에 temp URL이 남음.
+      //       relocation 실패 시에도 temp URL이 유효하므로 데이터 손실 없음.
+      try {
+        const relocated = await relocateTempStepImages(data.steps, recipeId);
+        for (const { stepIndex, newUrl } of relocated) {
+          await supabase
+            .from("recipe_steps")
+            .update({ image_url: newUrl })
+            .eq("recipe_id", recipeId)
+            .eq("step_order", stepIndex + 1);
+        }
+      } catch {
+        // relocation failure is non-critical; temp URLs still work
+      }
     } catch (innerErr) {
       await supabase.from("recipes").delete().eq("recipe_id", recipeId);
       throw innerErr;
@@ -533,6 +549,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
               value={field.value as StepEntry[]}
               onChange={field.onChange}
               ingredients={watchedIngredients}
+              recipeId={initialData?.recipeId}
             />
           )}
         />
