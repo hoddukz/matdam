@@ -31,17 +31,20 @@
     "popularTitle": "Popular Recipes",
     "popularSubtitle": "Most loved by the community",
     "recommendedTitle": "Recommended for You",
-    "recommendedSubtitle": "Based on your taste preferences"
+    "recommendedSubtitle": "Based on your taste preferences",
+    "exploreMore": "Explore more recipes"
   },
   "nav": {
     "explore": "Explore",
     "glossary": "Glossary",
+    "fridge": "Fridge",
     "create": "Create",
     "signIn": "Sign In",
     "profile": "Profile",
     "bookmarks": "Bookmarks",
     "shoppingList": "Shopping List",
     "settings": "Settings",
+    "myActivity": "My Activity",
     "signOut": "Sign Out"
   },
   "login": {
@@ -277,7 +280,15 @@
     "dietary_halal": "Halal",
     "dietary_low_calorie": "Low-Calorie",
     "dietary_diabetic_friendly": "Diabetic-Friendly",
-    "dietary_low_sodium": "Low-Sodium"
+    "dietary_low_sodium": "Low-Sodium",
+    "original": "Original",
+    "autoTranslated": "Auto-translated",
+    "languageKo": "한국어",
+    "languageEn": "English",
+    "translate": "Translate",
+    "translating": "Translating...",
+    "translateSuccess": "Translation complete!",
+    "translateError": "Translation failed. Please try again."
   },
   "cookingMode": {
     "stepOf": "Step {current}/{total}",
@@ -327,6 +338,7 @@
   "ingredient": {
     "searchPlaceholder": "Search ingredients...",
     "amountPlaceholder": "Qty",
+    "notePlaceholder": "Note (optional)",
     "metric": "Metric",
     "imperial": "Imperial",
     "addIngredient": "Add ingredient",
@@ -487,6 +499,20 @@
     "itemCount": "{count} items",
     "fromRecipes": "from: {recipes}",
     "uncategorized": "Other"
+  },
+  "fridge": {
+    "title": "What Can I Cook?",
+    "description": "Select ingredients you have and find matching recipes",
+    "searchPlaceholder": "Search ingredients to add...",
+    "selectedLabel": "My Ingredients",
+    "noSelected": "Add ingredients you have in your fridge",
+    "searchRecipes": "Find Recipes",
+    "searching": "Searching...",
+    "matchCount": "{matched}/{total} ingredients",
+    "noResults": "No matching recipes found. Try adding more ingredients!",
+    "resultsTitle": "Matching Recipes",
+    "minutes": "min",
+    "servings": "servings"
   },
   "footer": {
     "tagline": "Discover, remix, and share Korean recipes with the world.",

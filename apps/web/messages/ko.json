@@ -31,17 +31,20 @@
     "popularTitle": "인기 레시피",
     "popularSubtitle": "커뮤니티에서 가장 사랑받는 레시피",
     "recommendedTitle": "맞춤 추천",
-    "recommendedSubtitle": "당신의 맛 선호도에 맞는 레시피"
+    "recommendedSubtitle": "당신의 맛 선호도에 맞는 레시피",
+    "exploreMore": "더 많은 레시피 보기"
   },
   "nav": {
     "explore": "탐색",
     "glossary": "재료사전",
+    "fridge": "냉장고",
     "create": "만들기",
     "signIn": "로그인",
     "profile": "프로필",
     "bookmarks": "북마크",
     "shoppingList": "쇼핑 리스트",
     "settings": "설정",
+    "myActivity": "내 활동",
     "signOut": "로그아웃"
   },
   "login": {
@@ -277,7 +280,15 @@
     "dietary_halal": "할랄",
     "dietary_low_calorie": "저칼로리",
     "dietary_diabetic_friendly": "당뇨 친화",
-    "dietary_low_sodium": "저염식"
+    "dietary_low_sodium": "저염식",
+    "original": "원문",
+    "autoTranslated": "자동 번역",
+    "languageKo": "한국어",
+    "languageEn": "English",
+    "translate": "번역",
+    "translating": "번역 중...",
+    "translateSuccess": "번역 완료!",
+    "translateError": "번역 실패. 다시 시도해주세요."
   },
   "cookingMode": {
     "stepOf": "{current}/{total} 단계",
@@ -327,6 +338,7 @@
   "ingredient": {
     "searchPlaceholder": "재료 검색...",
     "amountPlaceholder": "수량",
+    "notePlaceholder": "메모 (선택)",
     "metric": "미터법",
     "imperial": "야드파운드법",
     "addIngredient": "재료 추가",
@@ -487,6 +499,20 @@
     "itemCount": "{count}개 재료",
     "fromRecipes": "출처: {recipes}",
     "uncategorized": "기타"
+  },
+  "fridge": {
+    "title": "뭐 해먹지?",
+    "description": "보유한 재료를 선택하면 만들 수 있는 레시피를 찾아드립니다",
+    "searchPlaceholder": "재료 검색...",
+    "selectedLabel": "내 재료",
+    "noSelected": "냉장고에 있는 재료를 추가해보세요",
+    "searchRecipes": "레시피 찾기",
+    "searching": "검색 중...",
+    "matchCount": "{matched}/{total} 재료 일치",
+    "noResults": "일치하는 레시피가 없습니다. 재료를 더 추가해보세요!",
+    "resultsTitle": "추천 레시피",
+    "minutes": "분",
+    "servings": "인분"
   },
   "footer": {
     "tagline": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요.",

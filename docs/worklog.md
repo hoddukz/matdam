@@ -13,6 +13,22 @@
 
 ## 오류/수정사항/해야할 작업
 
+### 코드리뷰 미완료
+
+- [ ] 2026-02-26 번역 기능 (수동 트리거 + 크론잡 + translate-recipe API 확장) 코드리뷰 필요
+  - `recipe-owner-menu.tsx` — 번역 버튼 추가
+  - `translate-recipe/route.ts` — title/description 번역 추가
+  - `cron/translate-missing/route.ts` — 신규 크론잡 엔드포인트
+  - `vercel.json` — 크론 스케줄 설정
+
+### 향후 번역 방향성 변경 예정
+
+- [ ] **locale 기반 단일 언어 번역으로 변경** — 현재는 `SUPPORTED_LOCALES`에 빠진 모든 언어로 번역하는 방식. 추후 접속 locale 기반으로 해당 언어만 번역하도록 변경 예정.
+  - 방향: URL의 locale (`/ja/recipe/...`) 감지 → 현재 접속 locale이 빠져있을 때만 source → 해당 locale 번역
+  - 예: 일본 유저가 `/ja/recipe/dongpo-pork` 접속 → `{"ko": "동파육"}` → 한→일만 번역 (영어 등 다른 언어는 번역 안 함)
+  - 수동 트리거 버튼: `recipeId` + `targetLocale` 파라미터로 전달
+  - 크론잡: 접속 로그 기반으로 수요 있는 locale만 번역하거나, 인기 locale 우선 처리
+
 ### 확인 필요 항목
 
 - [x] Supabase에 마이그레이션 007 + 008 적용 완료
@@ -46,9 +62,11 @@
 **P2 — UX 고도화**
 
 - [ ] 드래그 앤 드롭 스텝 순서 변경
-- [ ] 스와이프 네비게이션 (쿠킹 모드)
+- [x] 스와이프 네비게이션 (쿠킹 모드) — 좌우 터치 스와이프로 스텝 이동
 - [ ] 탐색 페이지 페이지네이션 (현재 limit 20 고정)
-- [ ] 남은 재료 연쇄 추천 / 냉장고 털이
+- [x] 냉장고 털이 — 재료 검색/선택 → 매칭 레시피 추천 페이지
+- [x] 홈 페이지 "더보기" 버튼 — 하단에 탐색 페이지 이동 CTA
+- [x] 모바일 메뉴 그룹핑 — 탐색/내 활동 아코디언 구조로 정리
 - [ ] Recipe Linter (재료-스텝 정합성 검사)
 - [ ] DB 복합 인덱스 추가 (정렬 성능)
 
@@ -86,12 +104,54 @@
 - [x] `edit/page.tsx`, `profile/page.tsx`에서 `<title>` → `generateMetadata` 패턴 통일 — 이미 구현 확인 완료
 - [x] temp step 이미지 — `relocateTempStepImages` 구현 완료 (생성 시 자동 relocation + 삭제 시 temp 경로 포함 정리)
 
-### 장기 로드맵 — 셰프 채널 + 커뮤니티
+### 장기 로드맵 — 유저 등급 + 셰프 인증 + 커뮤니티
 
-유튜브 채널 모델 참고: 각 셰프/고티어 유저가 자기만의 공간을 갖는 구조
+**유저 등급 시스템 (활동 점수 기반)**
+
+구현 방식: `users.activity_score` 컬럼 + 각 테이블 INSERT/DELETE 트리거 자동 가감 (B 방식)
+
+점수 공식:
+
+| 활동               | 포인트 |
+| ------------------ | ------ |
+| 레시피 공개        | +10    |
+| 리믹스 공개        | +5     |
+| 추천 받음 (1건당)  | +2     |
+| 리뷰 작성          | +3     |
+| 댓글 작성          | +1     |
+| 만들어봤어요       | +1     |
+| 내 레시피 북마크됨 | +1     |
+
+등급 체계 (7단계, 간격 확대):
+
+| 등급 | 이름        | 필요 점수 |
+| ---- | ----------- | --------- |
+| 1    | 견습생      | 0         |
+| 2    | 초보 요리사 | 30        |
+| 3    | 가정 요리사 | 100       |
+| 4    | 숙련 요리사 | 300       |
+| 5    | 요리 장인   | 700       |
+| 6    | 요리 달인   | 1500      |
+| 7    | 요리 대가   | 3000      |
+
+**셰프 인증 (등급과 별도)**
+
+- `users.is_verified_chef` 플래그 (등급 무관)
+- 전문 요리사 / 푸드 크리에이터 인증용 별도 뱃지
+- 신청 → 관리자 승인 방식
+- 프로필에 인증 배지 표시
+
+구현 항목:
+
+- [ ] DB 마이그레이션: `activity_score INT DEFAULT 0` + `is_verified_chef BOOLEAN DEFAULT false` 컬럼 추가
+- [ ] 7개 트리거 (recipes/recipe_votes/cook_reviews/comments/cook_logs/bookmarks INSERT/DELETE 시 점수 가감)
+- [ ] 기존 데이터 백필 SQL
+- [ ] 프로필 페이지에 등급 뱃지 표시
+- [ ] 셰프 인증 뱃지 UI
+
+**커뮤니티 기능**
 
 - [ ] **셰프 채널 (개인 페이지)** — 내 레시피 관리(기존) + 추천 식재료 큐레이션 + 추천 구매처 링크 + 팔로우/팔로워
-- [ ] **권한 티어 시스템** — 일반(레시피+리믹스) / 고티어(재료 데이터 편집+큐레이션) / 셰프(인증 배지+전용 채널)
 - [ ] **커뮤니티 기능** — 셰프에게 질문, 리믹스 체인 활용 (댓글/리뷰는 소셜 기능 Phase 1~4에서 구현 완료)
 - [ ] **재료 데이터 웹 편집** — 고티어/셰프가 웹에서 직접 식재료 정보(cuisines, importance 등) 편집
 
@@ -123,8 +183,8 @@
 
 - [x] Glossary 페이지
 - [x] Cuisine Pantry
-- [ ] 레시피 내 재료 클릭 → Glossary 연결
-- [ ] Dietary Filter (Vegan/Halal/Gluten-free 라벨)
+- [x] 레시피 내 재료 클릭 → Glossary 연결
+- [x] Dietary Filter (Vegan/Halal/Gluten-free 라벨)
 - [ ] Vitest 단위 테스트
 
 **Step 8 (쿠킹 모드+PWA): ⚠️ 부분 완료** (마스터플랜보다 앞서 구현)
@@ -133,9 +193,9 @@
 - [x] 스텝별 네비게이션 + 프로그레스바
 - [x] 복수 타이머 동시 실행
 - [x] 태블릿/모바일 반응형
-- [ ] Wake Lock API (화면 안 꺼지게)
-- [ ] 스와이프 네비게이션
-- [ ] PWA manifest + 홈 화면 추가
+- [x] Wake Lock API (화면 안 꺼지게)
+- [x] 스와이프 네비게이션
+- [x] PWA manifest + 홈 화면 추가
 - [ ] Playwright E2E 테스트
 
 **Step 9 (입력 UX 고도화): ⚠️ 부분 완료**
@@ -156,9 +216,9 @@
 
 - [x] 추천 시스템 (맛 프로필 기반)
 - [x] 인기 레시피 정렬
-- [ ] Shopping List (다중 레시피 재료 합산)
+- [x] Shopping List (다중 레시피 재료 합산)
 - [ ] 남은 재료 연쇄 추천
-- [ ] 냉장고 털이
+- [x] 냉장고 털이
 
 **Step 12 (온보딩+Linter): ⚠️ 부분 완료**
 
@@ -168,8 +228,8 @@
 
 **인프라 미구현:**
 
-- [ ] Sentry 에러 수집
-- [ ] GitHub Actions CI (lint + type-check 자동 실행)
+- [x] Sentry 에러 수집
+- [x] GitHub Actions CI (lint + type-check 자동 실행)
 - [ ] Vercel Analytics 연동
 - [ ] DB 복합 인덱스 추가 (정렬 성능)
 
@@ -180,6 +240,42 @@
 - [ ] 대기 컴포넌트 활성화 시: `chef-of-the-week-section.tsx` — "View Profile" 링크를 해당 셰프 프로필로 연결
 - [ ] 대기 컴포넌트 활성화 시: `essential-ingredients-section.tsx` — glossary 페이지 구현 후 링크 연결
 - [ ] 대기 컴포넌트 활성화 시: `kdrama-cravings-section.tsx` — KDramaItem type에 `id` 필드 추가 (React key 안정성)
+
+---
+
+## 2026-02-26 (수)
+
+### 수동 번역 트리거 + 크론잡 자동 번역 구현
+
+**1. RecipeOwnerMenu 번역 버튼 추가**
+
+- `recipe-owner-menu.tsx` — 수정/삭제 옆에 Languages 아이콘 번역 버튼 추가
+- Desktop: 독립 버튼, Mobile: 드롭다운 메뉴 항목
+- 클릭 시 `/api/translate-recipe` POST 호출 (현재 레시피만 번역)
+- 로딩 상태 (Loader2 spinner) + 성공 메시지 (3초 후 사라짐) + 에러 메시지
+- 성공 시 `router.refresh()`로 번역된 콘텐츠 반영
+
+**2. translate-recipe API 확장 (title/description 번역)**
+
+- `translate-recipe/route.ts` — 기존 steps/tips/custom_name에 더해 recipe `title`, `description` JSONB도 번역 대상에 추가
+- `TranslationItem` 타입 확장: `"recipes"` 테이블 + `"title"` 필드 지원
+- DB 업데이트 시 `recipes` 테이블은 `recipe_id`, 나머지는 `id` 컬럼으로 분기
+
+**3. 크론잡 자동 번역 엔드포인트**
+
+- `api/cron/translate-missing/route.ts` — 신규 생성
+- `Authorization: Bearer ${CRON_SECRET}` 헤더 검증 (Vercel Cron 표준)
+- `SUPABASE_SERVICE_ROLE_KEY`로 service role 클라이언트 생성 (RLS 우회)
+- recipe_steps + recipes 테이블에서 locale 키가 불완전한 레시피 탐색
+- 매시간 최대 5개 레시피 자동 번역 (title/description/steps/tips/custom_name)
+
+**4. 기타**
+
+- `vercel.json` — 매시간 크론 스케줄 (`0 * * * *`)
+- `.env.example` — `CRON_SECRET` 추가
+- `en.json` / `ko.json` — translate/translating/translateSuccess/translateError 키 추가
+
+**tsc 통과 확인 완료**
 
 ---
 
@@ -218,6 +314,30 @@
 - `cooking-mode.tsx` — useEffect로 Wake Lock 요청/해제 (visibilitychange 재획득 포함)
 
 **tsc 통과 확인 완료**
+
+### P2 UX 고도화
+
+**P2-1: 냉장고 털이 (재료 기반 레시피 추천)**
+
+- `fridge/page.tsx` — 신규 서버 컴포넌트 (인증 불요)
+- `fridge-client.tsx` — 재료 자동완성 검색 (search_ingredients RPC, 300ms 디바운스) + 선택 재료 뱃지 + 매칭 레시피 검색/정렬 (매칭률 높은 순)
+- `gnb.tsx` — 데스크톱/모바일 메뉴에 냉장고 링크 추가
+
+**P2-2: 스와이프 네비게이션 (쿠킹 모드)**
+
+- `cooking-mode.tsx` — useRef로 터치 좌표 추적 + onTouchStart/onTouchEnd 핸들러
+- 좌→우 스와이프 = 이전 단계, 우→좌 = 다음 단계
+- 수직 스크롤 구분 (|dy| > |dx| 무시) + 최소 임계값 50px
+
+**P2-3: 홈 페이지 "더보기" 버튼**
+
+- `page.tsx` (홈) — 모든 섹션 하단에 탐색 페이지 이동 CTA 버튼 추가
+- en.json/ko.json — `home.exploreMore` 번역 키
+
+**P2-4: 모바일 메뉴 그룹핑**
+
+- `gnb.tsx` — 모바일 메뉴를 탐색 그룹 (Explore/Glossary/Fridge) + "내 활동" 아코디언 (Create/Profile/Bookmarks/Shopping List/Settings) + Sign Out으로 구조화
+- en.json/ko.json — `nav.myActivity` 번역 키
 
 ---
 
