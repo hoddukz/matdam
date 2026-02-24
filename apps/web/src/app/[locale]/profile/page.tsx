@@ -1,6 +1,7 @@
 // Tag: core
 // Path: apps/web/src/app/[locale]/profile/page.tsx
 
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
@@ -116,11 +117,12 @@ export default async function ProfilePage({ params, searchParams }: Props) {
               <Card className="group h-full overflow-hidden transition-shadow hover:shadow-md">
                 <div className="relative aspect-video w-full overflow-hidden bg-muted">
                   {recipe.hero_image_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
+                    <Image
                       src={recipe.hero_image_url}
                       alt={title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
@@ -184,11 +186,12 @@ export default async function ProfilePage({ params, searchParams }: Props) {
                 <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
                   <div className="relative aspect-video w-full overflow-hidden bg-muted">
                     {recipe.hero_image_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
+                      <Image
                         src={recipe.hero_image_url}
                         alt={title}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">

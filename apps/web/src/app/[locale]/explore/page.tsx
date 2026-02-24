@@ -3,6 +3,7 @@
 
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
@@ -11,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { GitFork } from "lucide-react";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 import { DifficultyBadge } from "@/components/recipe/difficulty-badge";
+import { DIFFICULTY_LABEL_KEYS } from "@/lib/recipe/constants";
 import { ExploreSearch } from "@/components/explore/explore-search";
 import type { RecipeCardData } from "@/lib/recipe/types";
 
@@ -184,11 +186,12 @@ export default async function ExplorePage({ params, searchParams }: Props) {
                 <Card className="group h-full overflow-hidden transition-shadow hover:shadow-md">
                   <div className="relative aspect-video w-full overflow-hidden bg-muted">
                     {recipe.hero_image_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
+                      <Image
                         src={recipe.hero_image_url}
                         alt={title}
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center">
@@ -199,7 +202,18 @@ export default async function ExplorePage({ params, searchParams }: Props) {
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between gap-2">
                       <CardTitle className="line-clamp-2 text-base leading-snug">{title}</CardTitle>
-                      <DifficultyBadge level={recipe.difficulty_level} />
+                      <DifficultyBadge
+                        level={recipe.difficulty_level}
+                        label={
+                          recipe.difficulty_level && DIFFICULTY_LABEL_KEYS[recipe.difficulty_level]
+                            ? t(
+                                DIFFICULTY_LABEL_KEYS[recipe.difficulty_level] as Parameters<
+                                  typeof t
+                                >[0]
+                              )
+                            : undefined
+                        }
+                      />
                     </div>
                   </CardHeader>
                   <CardContent className="pb-2">

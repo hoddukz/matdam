@@ -26,6 +26,49 @@
 
 - [x] "난이도 체감" 스케일 역전 완료: 매우 어려움=1, 어려움=2, 보통=3, 쉬움=4, 매우 쉬움=5. 슬라이더→텍스트 버튼 그룹으로 UI 변경. 높을수록 긍정(쉬움)으로 다른 항목(맛/재도전)과 방향 통일 → 3개 평균 = 종합 레시피 점수로 활용 가능
 
+### 작업 우선순위 (2026-02-24 기준)
+
+전체 미구현 항목을 우선순위별로 정리. ★ = 런칭 전 필수.
+
+**P0 — 런칭 차단 항목**
+
+- [ ] ★ Sentry 에러 수집 연동 (프로덕션 에러 추적 불가)
+- [ ] ★ GitHub Actions CI (lint + type-check PR 자동 실행)
+
+**P1 — V1 핵심 기능 (사용자 경험 직결)**
+
+- [ ] Dietary Filter (Vegan/Halal/Gluten-free 라벨 + 탐색 필터) — 외국인 타겟 핵심
+- [ ] Shopping List (다중 레시피 재료 합산) — V1 킬러 기능
+- [ ] 레시피 내 재료 클릭 → Glossary 연결 — Step 7 미완성
+- [ ] PWA manifest + 홈 화면 추가 — 앱처럼 사용
+- [ ] Wake Lock API (쿠킹 모드 화면 안 꺼지게)
+
+**P2 — UX 고도화**
+
+- [ ] 드래그 앤 드롭 스텝 순서 변경
+- [ ] 스와이프 네비게이션 (쿠킹 모드)
+- [ ] 탐색 페이지 페이지네이션 (현재 limit 20 고정)
+- [ ] 남은 재료 연쇄 추천 / 냉장고 털이
+- [ ] Recipe Linter (재료-스텝 정합성 검사)
+- [ ] DB 복합 인덱스 추가 (정렬 성능)
+
+**P3 — 안전장치 + 품질**
+
+- [ ] 유저 신고 시스템 UI + 자동 비공개
+- [ ] pHash 중복 사진 검사
+- [ ] EXIF 메타데이터 추출 (has_exif, device_category)
+- [ ] Vitest 단위 테스트
+- [ ] Playwright E2E 테스트
+
+**P4 — 장기 로드맵**
+
+- [ ] 사용자 리뷰 기반 추천 강화
+- [ ] 난이도 이모지 → 커스텀 아이콘 교체
+- [ ] 데스크톱 좌우 분할 입력 레이아웃
+- [ ] 모바일 inputmode 최적화
+- [ ] Vercel Analytics 연동
+- [ ] 셰프 채널 / 권한 티어 / 커뮤니티 확장
+
 ### 맛 프로필 — 난이도 커스텀 아이콘
 
 - [ ] **난이도 이모지 → 커스텀 아이콘 교체** — 현재 유니코드 이모지(🥵😓😐😊😎) 사용 중. Figma 등으로 요리사 표정 아이콘 5종(매우 어려움~매우 쉬움) 제작 후 SVG 컴포넌트로 교체. `taste-profile-display.tsx`의 `DIFFICULTY_EMOJI` 배열을 커스텀 SVG 컴포넌트로 대체
@@ -52,6 +95,84 @@
 - [ ] **커뮤니티 기능** — 셰프에게 질문, 리믹스 체인 활용 (댓글/리뷰는 소셜 기능 Phase 1~4에서 구현 완료)
 - [ ] **재료 데이터 웹 편집** — 고티어/셰프가 웹에서 직접 식재료 정보(cuisines, importance 등) 편집
 
+### 마스터플랜 대비 현황 (2026-02-24 기준)
+
+**Step 1~4 (MVP-α): ✅ 완료**
+
+- [x] Step 1: 환경+인증 (Supabase, Auth, Vercel, ESLint, PostHog)
+- [x] Step 2: 재료 엔진 (시드 71개, 자동완성 RPC, 단위 변환)
+- [x] Step 3: 레시피 CRUD (등록/수정/삭제, 슬라이드 입력, 이미지, 탐색, SEO)
+- [x] Step 4: 리믹스 (리믹스 버튼, 부모 연결, Inspired by 표시)
+
+**Step 5 (시드+런칭 준비): ⚠️ 부분 완료**
+
+- [x] Privacy Policy + ToS
+- [x] 랜딩 페이지
+- [ ] 시드 레시피 10개 (콘텐츠 제작 필요)
+- [ ] Reddit 소프트 런칭
+
+**Step 6 (리뷰+북마크): ✅ 완료** (마스터플랜보다 앞서 구현)
+
+- [x] 리뷰 시스템 (cook_reviews + taste profile)
+- [x] "만들어봤어요" (cook_logs)
+- [x] 북마크
+- [x] 코멘트 시스템 + 대댓글 + 투표
+- [ ] EXIF 메타데이터 추출 (has_exif, device_category)
+
+**Step 7 (Glossary+필터): ⚠️ 부분 완료**
+
+- [x] Glossary 페이지
+- [x] Cuisine Pantry
+- [ ] 레시피 내 재료 클릭 → Glossary 연결
+- [ ] Dietary Filter (Vegan/Halal/Gluten-free 라벨)
+- [ ] Vitest 단위 테스트
+
+**Step 8 (쿠킹 모드+PWA): ⚠️ 부분 완료** (마스터플랜보다 앞서 구현)
+
+- [x] 쿠킹 모드 풀스크린 UI
+- [x] 스텝별 네비게이션 + 프로그레스바
+- [x] 복수 타이머 동시 실행
+- [x] 태블릿/모바일 반응형
+- [ ] Wake Lock API (화면 안 꺼지게)
+- [ ] 스와이프 네비게이션
+- [ ] PWA manifest + 홈 화면 추가
+- [ ] Playwright E2E 테스트
+
+**Step 9 (입력 UX 고도화): ⚠️ 부분 완료**
+
+- [x] 재료 자동완성 숫자키 선택 + 페이지네이션
+- [ ] 드래그 앤 드롭 스텝 순서 변경
+- [ ] 데스크톱 좌우 분할 입력 레이아웃
+- [ ] 모바일 inputmode 최적화
+
+**Step 10 (리뷰 고도화+신고): ⚠️ 부분 완료**
+
+- [x] 구조화 리뷰 (taste_overall, felt_difficulty, would_make_again + 디테일 6개)
+- [ ] pHash 중복 사진 검사
+- [ ] 유저 신고 시스템 UI
+- [ ] 신고 N건 누적 → 자동 비공개
+
+**Step 11 (쇼핑 리스트+추천): ⚠️ 부분 완료**
+
+- [x] 추천 시스템 (맛 프로필 기반)
+- [x] 인기 레시피 정렬
+- [ ] Shopping List (다중 레시피 재료 합산)
+- [ ] 남은 재료 연쇄 추천
+- [ ] 냉장고 털이
+
+**Step 12 (온보딩+Linter): ⚠️ 부분 완료**
+
+- [x] 온보딩 4단계 멀티스텝
+- [ ] Dietary Filter UX 고도화 (Soft/Hard 토글)
+- [ ] Recipe Linter (재료-스텝 정합성 검사)
+
+**인프라 미구현:**
+
+- [ ] Sentry 에러 수집
+- [ ] GitHub Actions CI (lint + type-check 자동 실행)
+- [ ] Vercel Analytics 연동
+- [ ] DB 복합 인덱스 추가 (정렬 성능)
+
 ### 홈 페이지 코드리뷰 잔여 항목 (나중에)
 
 - [ ] `page.tsx` — Supabase `users` 조인 배열 반환 `as unknown as` 이중 캐스트 → 공유 타입 정의로 개선
@@ -63,6 +184,54 @@
 ---
 
 ## 2026-02-24 (월)
+
+### 코드 검토 일괄 수정 (26건)
+
+전반 코드 검토 후 보안/크래시/로직/코드 품질 일괄 수정.
+
+**Critical 7건:**
+
+- RPC `upsert_recipe_details`에 `auth.uid()` 소유자 권한 체크 추가 (보안 취약점)
+- `publishRef` 기본값 `initialData?.published ?? true`로 변경 (드래프트 의도치 않은 공개 방지)
+- `parentRecipe.users?.display_name` optional chain 추가 (SSR 500 방지)
+- `comment-card` author null 가드 (삭제된 유저 크래시 방지)
+- `CookReviewForm` remount key 제거 (stale prop 문제)
+- 모든 redirect에 locale prefix 추가 (4개 파일)
+- storage 파일 확장자 MIME 기반으로 변경
+
+**Warn 12건:**
+
+- dummy UUID cook_reviews 쿼리 제거, vote double-click race condition 수정
+- 에러 피드백 UI 추가 (cook-log/comment-form/cook-review-form 3건)
+- AudioContext 미닫힘 수정, GNB getUser 중복 호출 제거
+- GNB 모바일에 북마크 링크 추가, 한글 slug 하이픈 prefix 수정, 검색 이스케이핑 강화
+
+**Suggestion 7건:**
+
+- `RecipeCardData` 공유 타입 추출 (5개 파일 중복 제거)
+- `DifficultyBadge` 공유 컴포넌트 추출 (5개 파일 중복 제거)
+- `UserTier` 중복 타입 통합, `RecipeStep.tip` 타입 추가
+- JSON-LD `recipeCuisine` 하드코딩 제거, 별점 float 반올림
+
+### 성능 최적화
+
+**HIGH IMPACT:**
+
+- `loading.tsx` 스켈레톤 4개 추가 (홈/탐색/레시피상세/프로필) — 데이터 로딩 중 스트리밍
+- `<img>` → `next/image` 전환 (8개 파일, 13개 이미지) — WebP 자동 변환, lazy loading
+- 히어로 이미지 `priority={true}` — LCP 최적화
+- `recommendedRecipes` RPC를 `Promise.all`로 병렬화
+
+**MEDIUM IMPACT:**
+
+- ISR `revalidate=3600` 레시피 상세 페이지에 추가 (CDN 캐시)
+- `DifficultyBadge` 서버 컴포넌트화 (클라이언트 번들 감소)
+
+### 난이도 이모지 + 라벨 개선
+
+- `taste-profile-display.tsx` — 난이도를 이모지(🥵😓😐😊😎) + 텍스트 2줄 레이아웃으로 변경
+- 필드 순서: 맛 종합 → 또 만들래요 → 난이도
+- 라벨: "난이도 체감" → "난이도", "다시 만들 의향" → "또 만들래요"
 
 ### 재료 시드데이터 확장 + Temp 이미지 경로 정리
 
@@ -482,6 +651,11 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-24 — 성능 최적화 (loading.tsx 4개, next/image 전환 13곳, ISR, Promise.all 병렬화, DifficultyBadge 서버 컴포넌트화)
+- [x] 2026-02-24 — 코드 검토 26건 수정 (Critical 7 + Warn 12 + Suggestion 7)
+- [x] 2026-02-24 — 난이도 이모지 + 라벨 개선 (2줄 레이아웃, 필드 순서/라벨 변경)
+- [x] 2026-02-24 — 난이도 스케일 역전 (슬라이더→텍스트 버튼, 5=매우 쉬움)
+- [x] 2026-02-24 — 소셜 기능 Phase 5 (추천 시스템 + 대댓글)
 - [x] 2026-02-24 — 재료 시드데이터 확장 41개 (Western 18 + Japanese 7 + Baking 10 + Common 6) + 코드리뷰 반영
 - [x] 2026-02-24 — Temp step 이미지 경로 정리 (relocateTempStepImages + 삭제 시 temp 경로 수집/정리)
 - [x] 2026-02-23 — 요리모드 (Cooking Mode) 구현 — 스텝별 풀스크린 뷰 + 다중 타이머 + 반응형 레이아웃

@@ -3,6 +3,7 @@
 
 import { cache } from "react";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -19,6 +20,8 @@ import { RecipeSocialClient } from "@/components/recipe/recipe-social-client";
 import { TasteProfileDisplay } from "@/components/recipe/taste-profile-display";
 import { Clock, Users, ChefHat, Lightbulb, Pencil, GitFork, CookingPot } from "lucide-react";
 import type { TasteProfile } from "@matdam/types";
+
+export const revalidate = 3600;
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -211,12 +214,14 @@ export default async function RecipeDetailPage({ params }: Props) {
       <article className="mx-auto max-w-3xl px-4 py-8">
         {/* Hero Image */}
         {recipe.hero_image_url && (
-          <div className="mb-6 overflow-hidden rounded-xl">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+          <div className="relative mb-6 h-64 overflow-hidden rounded-xl sm:h-80">
+            <Image
               src={recipe.hero_image_url}
               alt={title}
-              className="h-64 w-full object-cover sm:h-80"
+              fill
+              priority={true}
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
             />
           </div>
         )}
@@ -367,12 +372,15 @@ export default async function RecipeDetailPage({ params }: Props) {
                     <p className="whitespace-pre-line">{step.description}</p>
 
                     {step.image_url && (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={step.image_url}
-                        alt={`${t("stepNumber", { number: step.step_order })}`}
-                        className="rounded-lg"
-                      />
+                      <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                        <Image
+                          src={step.image_url}
+                          alt={`${t("stepNumber", { number: step.step_order })}`}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 384px"
+                          className="object-cover"
+                        />
+                      </div>
                     )}
 
                     <div className="flex flex-wrap gap-3">
@@ -436,12 +444,15 @@ export default async function RecipeDetailPage({ params }: Props) {
                     <Link key={remix.recipe_id} href={`/${locale}/recipe/${remix.slug}`}>
                       <Card className="overflow-hidden transition-shadow hover:shadow-md">
                         {remix.hero_image_url && (
-                          /* eslint-disable-next-line @next/next/no-img-element */
-                          <img
-                            src={remix.hero_image_url}
-                            alt={remixTitle}
-                            className="h-32 w-full object-cover"
-                          />
+                          <div className="relative h-32 w-full overflow-hidden">
+                            <Image
+                              src={remix.hero_image_url}
+                              alt={remixTitle}
+                              fill
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              className="object-cover"
+                            />
+                          </div>
                         )}
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base">{remixTitle}</CardTitle>

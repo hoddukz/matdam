@@ -1,6 +1,7 @@
 // Tag: core
 // Path: apps/web/src/components/home/recommended-recipes-section.tsx
 
+import Image from "next/image";
 import Link from "next/link";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
@@ -16,6 +17,7 @@ type RecommendedRecipesSectionProps = {
     by: string;
     minutes: string;
     servings: string;
+    difficultyLabel: (level: string) => string;
   };
 };
 
@@ -41,11 +43,12 @@ export function RecommendedRecipesSection({ locale, recipes, t }: RecommendedRec
               <Card className="group h-full overflow-hidden transition-shadow hover:shadow-md">
                 <div className="relative aspect-video w-full overflow-hidden bg-muted">
                   {recipe.hero_image_url ? (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img
+                    <Image
                       src={recipe.hero_image_url}
                       alt={title}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center">
@@ -56,7 +59,14 @@ export function RecommendedRecipesSection({ locale, recipes, t }: RecommendedRec
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between gap-2">
                     <CardTitle className="line-clamp-2 text-base leading-snug">{title}</CardTitle>
-                    <DifficultyBadge level={recipe.difficulty_level} />
+                    <DifficultyBadge
+                      level={recipe.difficulty_level}
+                      label={
+                        recipe.difficulty_level
+                          ? t.difficultyLabel(recipe.difficulty_level)
+                          : undefined
+                      }
+                    />
                   </div>
                 </CardHeader>
                 <CardContent className="pb-2">

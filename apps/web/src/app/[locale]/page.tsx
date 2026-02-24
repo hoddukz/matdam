@@ -11,6 +11,15 @@ import { PopularRecipesSection } from "@/components/home/popular-recipes-section
 import { RecommendedRecipesSection } from "@/components/home/recommended-recipes-section";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 
+const DIFFICULTY_HOME_KEYS: Record<
+  string,
+  "difficultyBeginner" | "difficultyIntermediate" | "difficultyMaster"
+> = {
+  beginner: "difficultyBeginner",
+  intermediate: "difficultyIntermediate",
+  master: "difficultyMaster",
+};
+
 type Props = {
   params: Promise<{ locale: string }>;
 };
@@ -39,11 +48,12 @@ export default async function HomePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 최신 레시피 + 최신 리믹스 + 인기 레시피 병렬 조회
+  // 최신 레시피 + 최신 리믹스 + 인기 레시피 + 맞춤 추천 병렬 조회
   const [
     { data: latestRecipes, error: latestErr },
     { data: remixRecipes, error: remixErr },
     { data: popularRpc, error: popularErr },
+    { data: recommendedRpc, error: recommendedErr },
   ] = await Promise.all([
     supabase
       .from("recipes")
@@ -63,23 +73,17 @@ export default async function HomePage({ params }: Props) {
       .order("created_at", { ascending: false })
       .limit(6),
     supabase.rpc("get_popular_recipes", { p_limit: 6 }),
+    user
+      ? supabase.rpc("get_recommended_recipes", { p_user_id: user.id, p_limit: 6 })
+      : Promise.resolve({ data: null, error: null }),
   ]);
 
   if (latestErr) console.error("Failed to fetch latest recipes:", latestErr.message);
   if (remixErr) console.error("Failed to fetch remix recipes:", remixErr.message);
   if (popularErr) console.error("Failed to fetch popular recipes:", popularErr.message);
+  if (recommendedErr) console.error("Failed to fetch recommended recipes:", recommendedErr.message);
 
-  // 맞춤 추천 — 로그인 사용자만
-  let recommendedRecipes: typeof popularRpc = null;
-  if (user) {
-    const { data, error: recommendedErr } = await supabase.rpc("get_recommended_recipes", {
-      p_user_id: user.id,
-      p_limit: 6,
-    });
-    if (recommendedErr)
-      console.error("Failed to fetch recommended recipes:", recommendedErr.message);
-    recommendedRecipes = data;
-  }
+  const recommendedRecipes = recommendedRpc;
 
   // 인기 레시피 RPC 결과 → 컴포넌트용 변환
   const popularRecipes = (popularRpc ?? []).map(
@@ -193,6 +197,10 @@ export default async function HomePage({ params }: Props) {
           by: t("by"),
           minutes: t("minutes"),
           servings: t("servings"),
+          difficultyLabel: (level: string) => {
+            const key = DIFFICULTY_HOME_KEYS[level];
+            return key ? t(key) : level;
+          },
         }}
       />
 
@@ -206,6 +214,10 @@ export default async function HomePage({ params }: Props) {
             by: t("by"),
             minutes: t("minutes"),
             servings: t("servings"),
+            difficultyLabel: (level: string) => {
+              const key = DIFFICULTY_HOME_KEYS[level];
+              return key ? t(key) : level;
+            },
           }}
         />
       )}
@@ -224,6 +236,10 @@ export default async function HomePage({ params }: Props) {
           by: t("by"),
           minutes: t("minutes"),
           servings: t("servings"),
+          difficultyLabel: (level: string) => {
+            const key = DIFFICULTY_HOME_KEYS[level];
+            return key ? t(key) : level;
+          },
         }}
       />
 
@@ -242,6 +258,10 @@ export default async function HomePage({ params }: Props) {
           by: t("by"),
           minutes: t("minutes"),
           servings: t("servings"),
+          difficultyLabel: (level: string) => {
+            const key = DIFFICULTY_HOME_KEYS[level];
+            return key ? t(key) : level;
+          },
         }}
       />
     </>

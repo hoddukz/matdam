@@ -3,6 +3,7 @@
 
 "use client";
 
+import Image from "next/image";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -175,11 +176,13 @@ export function CommentCard({
             </p>
             {/* Image */}
             {comment.image_url && (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
+              <Image
                 src={comment.image_url}
                 alt=""
-                className="mt-2 max-h-48 rounded-lg object-cover"
+                width={0}
+                height={0}
+                sizes="100vw"
+                className="mt-2 max-h-48 w-auto rounded-lg object-cover"
               />
             )}
           </div>
