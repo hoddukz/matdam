@@ -14,6 +14,7 @@ import {
   CATEGORY_LABEL_KEYS,
   DIETARY_FLAG_LABEL_KEYS,
   CUISINE_LABEL_KEYS,
+  ACTIVE_CUISINES,
 } from "@/lib/recipe/glossary-constants";
 
 type Props = {
@@ -59,6 +60,7 @@ export default async function GlossaryPage({ params, searchParams }: Props) {
     : undefined;
   const VALID_CUISINES = Object.keys(CUISINE_LABEL_KEYS);
   const cuisine = VALID_CUISINES.includes(rawCuisine ?? "") ? rawCuisine : undefined;
+  const activeCuisines = ACTIVE_CUISINES as readonly string[];
   const t = await getTranslations({ locale, namespace: "glossary" });
   const supabase = await createClient();
 
@@ -107,7 +109,7 @@ export default async function GlossaryPage({ params, searchParams }: Props) {
 
   const cuisineFilters = [
     { value: undefined, labelKey: "cuisineAll" as const },
-    ...VALID_CUISINES.map((c) => ({
+    ...activeCuisines.map((c) => ({
       value: c,
       labelKey: CUISINE_LABEL_KEYS[c] as string,
     })),

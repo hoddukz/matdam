@@ -12,7 +12,7 @@ export const CATEGORY_LABEL_KEYS: Record<string, string> = {
   other: "filterOther",
 };
 
-/** cuisine 값 → i18n 키 매핑 */
+/** cuisine 값 → i18n 키 매핑 (전체) */
 export const CUISINE_LABEL_KEYS: Record<string, string> = {
   korean: "cuisineKorean",
   japanese: "cuisineJapanese",
@@ -23,6 +23,9 @@ export const CUISINE_LABEL_KEYS: Record<string, string> = {
   indian: "cuisineIndian",
   mexican: "cuisineMexican",
 };
+
+/** 시드데이터가 존재하는 활성 문화권만 (필터 UI용) */
+export const ACTIVE_CUISINES = ["korean", "japanese", "western"] as const;
 
 /** importance 값 → i18n 키 매핑 */
 export const IMPORTANCE_LABEL_KEYS: Record<string, string> = {
