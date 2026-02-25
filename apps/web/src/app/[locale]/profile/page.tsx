@@ -83,10 +83,12 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const draftRecipes = allRecipes.filter((r) => !r.published);
 
   // 북마크된 레시피 추출 (published 레시피만 — !inner 조인으로 보장)
-  const bookmarkedRecipes = (bookmarks ?? []).map(
-    (b: { recipes: unknown }) =>
-      ({ ...(b.recipes as Record<string, unknown>), published: true }) as Recipe
-  );
+  const bookmarkedRecipes = (bookmarks ?? [])
+    .filter((b: { recipes: unknown }) => b.recipes && !Array.isArray(b.recipes))
+    .map(
+      (b: { recipes: unknown }) =>
+        ({ ...(b.recipes as Record<string, unknown>), published: true }) as Recipe
+    );
 
   const memberSince = profile?.created_at
     ? new Date(profile.created_at).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US", {

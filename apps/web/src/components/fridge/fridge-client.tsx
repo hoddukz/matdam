@@ -115,68 +115,71 @@ export function FridgeClient() {
 
     const selectedIds = selected.map((s) => s.id);
 
-    // Step 1: Find all recipe_ingredients rows for selected ingredient_ids
-    const { data: matchRows } = await supabaseRef.current
-      .from("recipe_ingredients")
-      .select("recipe_id, ingredient_id")
-      .in("ingredient_id", selectedIds);
+    try {
+      // Step 1: Find all recipe_ingredients rows for selected ingredient_ids
+      const { data: matchRows } = await supabaseRef.current
+        .from("recipe_ingredients")
+        .select("recipe_id, ingredient_id")
+        .in("ingredient_id", selectedIds);
 
-    if (!matchRows || matchRows.length === 0) {
+      if (!matchRows || matchRows.length === 0) {
+        setResults([]);
+        return;
+      }
+
+      // Step 2: Group by recipe_id and count matches
+      const matchCountMap: Record<string, number> = {};
+      for (const row of matchRows) {
+        matchCountMap[row.recipe_id] = (matchCountMap[row.recipe_id] ?? 0) + 1;
+      }
+      const matchedRecipeIds = Object.keys(matchCountMap);
+
+      // Step 3: Get total ingredient count per recipe
+      const { data: allIngRows } = await supabaseRef.current
+        .from("recipe_ingredients")
+        .select("recipe_id")
+        .in("recipe_id", matchedRecipeIds);
+
+      const totalCountMap: Record<string, number> = {};
+      for (const row of allIngRows ?? []) {
+        totalCountMap[row.recipe_id] = (totalCountMap[row.recipe_id] ?? 0) + 1;
+      }
+
+      // Step 4: Fetch recipe details (published only)
+      const { data: recipeRows } = await supabaseRef.current
+        .from("recipes")
+        .select(
+          "recipe_id, slug, title, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings"
+        )
+        .in("recipe_id", matchedRecipeIds)
+        .eq("published", true);
+
+      if (!recipeRows || recipeRows.length === 0) {
+        setResults([]);
+        return;
+      }
+
+      // Step 5: Combine and sort by matchCount descending
+      const combined: MatchedRecipe[] = recipeRows.map((r) => ({
+        recipe_id: r.recipe_id,
+        slug: r.slug,
+        title: r.title as Record<string, string>,
+        hero_image_url: r.hero_image_url,
+        difficulty_level: r.difficulty_level,
+        prep_time_minutes: r.prep_time_minutes,
+        cook_time_minutes: r.cook_time_minutes,
+        servings: r.servings,
+        matchCount: matchCountMap[r.recipe_id] ?? 0,
+        totalIngredients: totalCountMap[r.recipe_id] ?? 1,
+      }));
+
+      combined.sort((a, b) => b.matchCount - a.matchCount);
+      setResults(combined);
+    } catch {
       setResults([]);
+    } finally {
       setIsSearching(false);
-      return;
     }
-
-    // Step 2: Group by recipe_id and count matches
-    const matchCountMap: Record<string, number> = {};
-    for (const row of matchRows) {
-      matchCountMap[row.recipe_id] = (matchCountMap[row.recipe_id] ?? 0) + 1;
-    }
-    const matchedRecipeIds = Object.keys(matchCountMap);
-
-    // Step 3: Get total ingredient count per recipe
-    const { data: allIngRows } = await supabaseRef.current
-      .from("recipe_ingredients")
-      .select("recipe_id")
-      .in("recipe_id", matchedRecipeIds);
-
-    const totalCountMap: Record<string, number> = {};
-    for (const row of allIngRows ?? []) {
-      totalCountMap[row.recipe_id] = (totalCountMap[row.recipe_id] ?? 0) + 1;
-    }
-
-    // Step 4: Fetch recipe details (published only)
-    const { data: recipeRows } = await supabaseRef.current
-      .from("recipes")
-      .select(
-        "recipe_id, slug, title, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings"
-      )
-      .in("recipe_id", matchedRecipeIds)
-      .eq("published", true);
-
-    if (!recipeRows || recipeRows.length === 0) {
-      setResults([]);
-      setIsSearching(false);
-      return;
-    }
-
-    // Step 5: Combine and sort by matchCount descending
-    const combined: MatchedRecipe[] = recipeRows.map((r) => ({
-      recipe_id: r.recipe_id,
-      slug: r.slug,
-      title: r.title as Record<string, string>,
-      hero_image_url: r.hero_image_url,
-      difficulty_level: r.difficulty_level,
-      prep_time_minutes: r.prep_time_minutes,
-      cook_time_minutes: r.cook_time_minutes,
-      servings: r.servings,
-      matchCount: matchCountMap[r.recipe_id] ?? 0,
-      totalIngredients: totalCountMap[r.recipe_id] ?? 1,
-    }));
-
-    combined.sort((a, b) => b.matchCount - a.matchCount);
-    setResults(combined);
-    setIsSearching(false);
   }
 
   return (

@@ -234,7 +234,7 @@ export function CommentCard({
                 ) : (
                   <ChevronDown className="h-3 w-3" />
                 )}
-                {showReplies ? t("hideReplies") : t("showReplies") + ` (${replies.length})`}
+                {showReplies ? t("hideReplies") : t("replyCount", { count: replies.length })}
               </Button>
             )}
           </div>

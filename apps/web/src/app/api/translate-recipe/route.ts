@@ -8,12 +8,23 @@ import Anthropic from "@anthropic-ai/sdk";
 
 const SUPPORTED_LOCALES = ["ko", "en"] as const;
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function POST(request: Request) {
   // 1. Parse request
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "invalid JSON body" }, { status: 400 });
+  }
+
   const recipeId = body.recipeId as string | undefined;
   if (!recipeId) {
     return NextResponse.json({ error: "recipeId required" }, { status: 400 });
+  }
+  if (!UUID_REGEX.test(recipeId)) {
+    return NextResponse.json({ error: "invalid recipeId format" }, { status: 400 });
   }
 
   // 2. Auth check
@@ -47,13 +58,19 @@ export async function POST(request: Request) {
   }
 
   // 3. Recipe ownership verification
-  const { data: recipe } = await supabase
+  const { data: recipe, error: recipeError } = await supabase
     .from("recipes")
     .select("recipe_id, author_id, title, description")
     .eq("recipe_id", recipeId)
     .single();
 
-  if (!recipe || recipe.author_id !== user.id) {
+  if (recipeError) {
+    return NextResponse.json({ error: "database error" }, { status: 500 });
+  }
+  if (!recipe) {
+    return NextResponse.json({ error: "recipe not found" }, { status: 404 });
+  }
+  if (recipe.author_id !== user.id) {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
@@ -94,7 +111,7 @@ export async function POST(request: Request) {
 
     if (missingLocales.length === 0 || presentLocales.length === 0) continue;
 
-    const sourceLocale = presentLocales[0];
+    const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
     for (const targetLocale of missingLocales) {
       items.push({
         table: "recipes",
@@ -119,7 +136,7 @@ export async function POST(request: Request) {
 
       if (missingLocales.length === 0 || presentLocales.length === 0) continue;
 
-      const sourceLocale = presentLocales[0];
+      const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
       for (const targetLocale of missingLocales) {
         items.push({
           table: "recipe_steps",
@@ -143,7 +160,7 @@ export async function POST(request: Request) {
 
     if (missingLocales.length === 0 || presentLocales.length === 0) continue;
 
-    const sourceLocale = presentLocales[0];
+    const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
     for (const targetLocale of missingLocales) {
       items.push({
         table: "recipe_ingredients",
@@ -187,21 +204,27 @@ export async function POST(request: Request) {
 
     const numberedTexts = pairItems.map((item, i) => `[${i + 1}] ${item.sourceText}`).join("\n");
 
-    const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 4096,
-      messages: [
-        {
-          role: "user",
-          content: `You are a recipe translation assistant. Translate the following recipe texts from ${sourceLang} to ${targetLang}.
+    let response;
+    try {
+      response = await anthropic.messages.create({
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 4096,
+        messages: [
+          {
+            role: "user",
+            content: `You are a recipe translation assistant. Translate the following recipe texts from ${sourceLang} to ${targetLang}.
 These are cooking recipe step descriptions, tips, and ingredient names.
 Keep the cooking terminology natural and accurate.
 Return ONLY the translations in the same numbered format, one per line.
 
 ${numberedTexts}`,
-        },
-      ],
-    });
+          },
+        ],
+      });
+    } catch {
+      // Skip this pair on Claude API error, continue with others
+      continue;
+    }
 
     const responseText = response.content[0].type === "text" ? response.content[0].text : "";
 
@@ -212,7 +235,11 @@ ${numberedTexts}`,
       if (match) {
         const idx = parseInt(match[1], 10) - 1;
         if (idx >= 0 && idx < pairItems.length) {
-          translations.set(pairItems[idx], match[2].trim());
+          const translatedText = match[2].trim();
+          const sourceText = pairItems[idx].sourceText;
+          // S3: Skip abnormally long AI responses (> 3x source length)
+          if (translatedText.length > sourceText.length * 3) continue;
+          translations.set(pairItems[idx], translatedText);
         }
       }
     }

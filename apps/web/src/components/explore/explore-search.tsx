@@ -19,12 +19,14 @@ export function ExploreSearch() {
     const q = (formData.get("q") as string).trim();
 
     const params = new URLSearchParams();
-    // 기존 difficulty 파라미터 보존
+    // 기존 파라미터 보존
     const difficulty = searchParams.get("difficulty");
     if (difficulty) params.set("difficulty", difficulty);
-    if (q) params.set("q", q);
     const dietary = searchParams.get("dietary");
     if (dietary) params.set("dietary", dietary);
+    const sort = searchParams.get("sort");
+    if (sort) params.set("sort", sort);
+    if (q) params.set("q", q);
 
     router.push(`?${params.toString()}`);
   }

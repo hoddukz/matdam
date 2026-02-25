@@ -26,5 +26,9 @@ export function detectOriginalLocale(title: Record<string, string>): string {
     return "ko";
   }
 
+  const priorityList = ["ko", "en"];
+  for (const locale of priorityList) {
+    if (keys.includes(locale)) return locale;
+  }
   return keys[0];
 }

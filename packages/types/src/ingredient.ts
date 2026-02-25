@@ -25,7 +25,7 @@ export interface Unit {
 }
 
 export interface RecipeIngredient {
-  ingredient_id: string;
+  ingredient_id: string | null; // null for custom ingredients
   amount: number | null; // null = 비정형 수량
   unit: string | null; // unit_id, null = 비정형
   qualifier: string | null; // "to_taste", "pinch", "handful", etc.

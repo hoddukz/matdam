@@ -264,7 +264,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ recipeId }),
-    });
+    }).catch(() => {});
 
     if (published) {
       router.push(`/${locale}/recipe/${slug}`);
@@ -274,11 +274,14 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   }
 
   async function handleUpdate(data: RecipeFormValues, userId: string, published: boolean) {
-    const recipeId = initialData!.recipeId!;
-    const slug = initialData!.slug!;
+    if (!initialData?.recipeId || !initialData?.slug) {
+      return; // should never happen in edit mode
+    }
+    const recipeId = initialData.recipeId;
+    const slug = initialData.slug;
 
     // UPDATE recipe row (slug 유지, author_id 검증 포함)
-    let heroImageUrl = initialData!.heroImageUrl;
+    let heroImageUrl = initialData.heroImageUrl;
 
     if (heroFile) {
       const newUrl = await uploadRecipeImage(heroFile, recipeId, "hero");
@@ -289,10 +292,10 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     }
 
     // 기존 로케일 데이터를 보존하면서 현재 로케일만 업데이트
-    const mergedTitle = { ...initialData!.rawTitle, [locale]: data.title };
+    const mergedTitle = { ...initialData.rawTitle, [locale]: data.title };
     const mergedDescription = data.description
-      ? { ...(initialData!.rawDescription ?? {}), [locale]: data.description }
-      : initialData!.rawDescription;
+      ? { ...(initialData.rawDescription ?? {}), [locale]: data.description }
+      : initialData.rawDescription;
 
     const { error: recipeError } = await supabase
       .from("recipes")
@@ -325,7 +328,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     });
 
     const stepsPayload = data.steps.map((step, i) => {
-      const rawStep = initialData!.rawSteps?.[i];
+      const rawStep = initialData.rawSteps?.[i];
       return {
         step_order: i + 1,
         description: { ...(rawStep?.description ?? {}), [locale]: step.description },
@@ -336,7 +339,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     });
 
     const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => {
-      const rawIng = initialData!.rawIngredients?.[i];
+      const rawIng = initialData.rawIngredients?.[i];
       return {
         ingredient_id: ing.ingredient_id || null,
         custom_name: ing.ingredient_id
@@ -363,7 +366,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ recipeId }),
-    });
+    }).catch(() => {});
 
     // 캐시 우회를 위해 하드 네비게이션
     if (published) {

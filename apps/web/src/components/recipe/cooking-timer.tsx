@@ -67,7 +67,7 @@ export function ScrollColumn({
   max: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const programmaticRef = useRef(false);
 
   useEffect(() => {

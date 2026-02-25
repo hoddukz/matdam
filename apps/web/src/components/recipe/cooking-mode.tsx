@@ -76,18 +76,19 @@ export function CookingMode({ recipe, steps, ingredientsByStep, locale }: Cookin
   const progressPercent = (current / total) * 100;
   const activeTimerForStep = timers.find((tm) => tm.stepOrder === step.step_order);
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     if (currentStep < total - 1) {
       setPreviousStep(null);
       setCurrentStep((p) => p + 1);
     }
-  };
-  const goPrev = () => {
+  }, [currentStep, total]);
+
+  const goPrev = useCallback(() => {
     if (currentStep > 0) {
       setPreviousStep(null);
       setCurrentStep((p) => p - 1);
     }
-  };
+  }, [currentStep, total]);
 
   const startTimer = () => {
     if (!step.timer_seconds) return;
@@ -210,7 +211,7 @@ export function CookingMode({ recipe, steps, ingredientsByStep, locale }: Cookin
         goNext();
       }
     },
-    [currentStep, total]
+    [goPrev, goNext]
   );
 
   const isFirstStep = currentStep === 0;

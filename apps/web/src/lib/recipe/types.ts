@@ -5,7 +5,7 @@ export type RecipeCardData = {
   recipe_id: string;
   slug: string;
   title: Record<string, string>;
-  description: Record<string, string> | null;
+  description: Record<string, string>;
   hero_image_url: string | null;
   difficulty_level: string | null;
   prep_time_minutes: number | null;

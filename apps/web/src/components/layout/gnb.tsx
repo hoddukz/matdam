@@ -4,7 +4,7 @@
 "use client";
 
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,6 +19,7 @@ import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 export function GNB() {
   const t = useTranslations("nav");
+  const locale = useLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [myActivityOpen, setMyActivityOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
@@ -26,6 +27,12 @@ export function GNB() {
 
   useEffect(() => {
     const supabase = supabaseRef.current;
+
+    // Seed initial user state immediately to prevent flash of Sign In button
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -37,7 +44,7 @@ export function GNB() {
 
   async function handleSignOut() {
     await supabaseRef.current.auth.signOut();
-    window.location.href = "/";
+    window.location.href = `/${locale}`;
   }
 
   const isLoggedIn = !!user;
@@ -46,7 +53,7 @@ export function GNB() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
+        <Link href={`/${locale}`} className="flex items-center gap-2">
           <svg
             viewBox="0 -960 960 960"
             className="h-7 w-7 text-matdam-gold"
@@ -65,25 +72,25 @@ export function GNB() {
         {/* Desktop Nav */}
         <div className="hidden items-center gap-6 md:flex">
           <Link
-            href="/explore"
+            href={`/${locale}/explore`}
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
           >
             {t("explore")}
           </Link>
           <Link
-            href="/glossary"
+            href={`/${locale}/glossary`}
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
           >
             {t("glossary")}
           </Link>
           <Link
-            href="/fridge"
+            href={`/${locale}/fridge`}
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
           >
             {t("fridge")}
           </Link>
           <Button asChild size="sm" className="gap-1">
-            <Link href="/create">
+            <Link href={`/${locale}/create`}>
               <Plus className="h-4 w-4" />
               {t("create")}
             </Link>
@@ -102,23 +109,23 @@ export function GNB() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <Link href="/profile">{t("profile")}</Link>
+                  <Link href={`/${locale}/profile`}>{t("profile")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/profile?tab=bookmarks">{t("bookmarks")}</Link>
+                  <Link href={`/${locale}/profile?tab=bookmarks`}>{t("bookmarks")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/shopping-list">{t("shoppingList")}</Link>
+                  <Link href={`/${locale}/shopping-list`}>{t("shoppingList")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/settings">{t("settings")}</Link>
+                  <Link href={`/${locale}/settings`}>{t("settings")}</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut}>{t("signOut")}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <Button variant="outline" size="sm" asChild>
-              <Link href="/login">{t("signIn")}</Link>
+              <Link href={`/${locale}/login`}>{t("signIn")}</Link>
             </Button>
           )}
         </div>
@@ -140,21 +147,21 @@ export function GNB() {
           <div className="flex flex-col gap-3">
             {/* 탐색 그룹 */}
             <Link
-              href="/explore"
+              href={`/${locale}/explore`}
               className="text-sm font-medium"
               onClick={() => setMobileOpen(false)}
             >
               {t("explore")}
             </Link>
             <Link
-              href="/glossary"
+              href={`/${locale}/glossary`}
               className="text-sm font-medium"
               onClick={() => setMobileOpen(false)}
             >
               {t("glossary")}
             </Link>
             <Link
-              href="/fridge"
+              href={`/${locale}/fridge`}
               className="text-sm font-medium"
               onClick={() => setMobileOpen(false)}
             >
@@ -179,35 +186,35 @@ export function GNB() {
                 {myActivityOpen && (
                   <div className="flex flex-col gap-3 pl-3">
                     <Link
-                      href="/create"
+                      href={`/${locale}/create`}
                       className="text-sm font-medium text-foreground/80"
                       onClick={() => setMobileOpen(false)}
                     >
                       {t("create")}
                     </Link>
                     <Link
-                      href="/profile"
+                      href={`/${locale}/profile`}
                       className="text-sm font-medium text-foreground/80"
                       onClick={() => setMobileOpen(false)}
                     >
                       {t("profile")}
                     </Link>
                     <Link
-                      href="/profile?tab=bookmarks"
+                      href={`/${locale}/profile?tab=bookmarks`}
                       className="text-sm font-medium text-foreground/80"
                       onClick={() => setMobileOpen(false)}
                     >
                       {t("bookmarks")}
                     </Link>
                     <Link
-                      href="/shopping-list"
+                      href={`/${locale}/shopping-list`}
                       className="text-sm font-medium text-foreground/80"
                       onClick={() => setMobileOpen(false)}
                     >
                       {t("shoppingList")}
                     </Link>
                     <Link
-                      href="/settings"
+                      href={`/${locale}/settings`}
                       className="text-sm font-medium text-foreground/80"
                       onClick={() => setMobileOpen(false)}
                     >
@@ -227,7 +234,7 @@ export function GNB() {
               </>
             ) : (
               <Link
-                href="/login"
+                href={`/${locale}/login`}
                 className="text-sm font-medium text-primary"
                 onClick={() => setMobileOpen(false)}
               >

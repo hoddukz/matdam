@@ -149,7 +149,9 @@ export function ShoppingListClient({ recipes, items }: ShoppingListClientProps) 
 
       {/* Ingredient list grouped by category */}
       {filteredItems.length === 0 ? (
-        <p className="text-center text-muted-foreground py-8">{t("noBookmarks")}</p>
+        <p className="text-center text-muted-foreground py-8">
+          {selectedRecipeIds.size === 0 ? t("noRecipesSelected") : t("noBookmarks")}
+        </p>
       ) : (
         <div className="space-y-6">
           {sortedCategories.map((cat) => {

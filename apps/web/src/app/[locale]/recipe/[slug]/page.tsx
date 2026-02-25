@@ -455,7 +455,7 @@ export default async function RecipeDetailPage({ params }: Props) {
                 }) => {
                   const remixTitle = getLocalizedText(remix.title, locale);
                   const remixAuthor = Array.isArray(remix.users) ? remix.users[0] : remix.users;
-                  const authorName = remixAuthor.display_name;
+                  const authorName = remixAuthor?.display_name ?? "—";
                   return (
                     <Link key={remix.recipe_id} href={`/${locale}/recipe/${remix.slug}`}>
                       <Card className="overflow-hidden transition-shadow hover:shadow-md">

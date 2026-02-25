@@ -492,6 +492,7 @@
     "title": "Shopping List",
     "description": "Your combined ingredients from bookmarked recipes",
     "noBookmarks": "No bookmarked recipes yet. Bookmark recipes to build your shopping list!",
+    "noRecipesSelected": "Select at least one recipe above to see its ingredients.",
     "exploreCta": "Explore Recipes",
     "recipesLabel": "Recipes to include",
     "selectAll": "Select All",

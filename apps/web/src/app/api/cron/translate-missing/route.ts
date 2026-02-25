@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
+import { timingSafeEqual } from "crypto";
 
 const SUPPORTED_LOCALES = ["ko", "en"] as const;
 const MAX_RECIPES_PER_RUN = 5;
@@ -12,7 +13,13 @@ export async function GET(request: Request) {
   // 1. Auth: Vercel Cron sends Authorization: Bearer <CRON_SECRET>
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  const expectedBearer = `Bearer ${cronSecret ?? ""}`;
+  const providedBearer = authHeader ?? "";
+  const secretsMatch =
+    cronSecret &&
+    providedBearer.length === expectedBearer.length &&
+    timingSafeEqual(Buffer.from(providedBearer), Buffer.from(expectedBearer));
+  if (!secretsMatch) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
@@ -88,12 +95,24 @@ export async function GET(request: Request) {
   for (const recipeId of targetRecipeIds) {
     const items: TranslationItem[] = [];
 
-    // Fetch recipe for title/description
-    const { data: recipe } = await supabase
-      .from("recipes")
-      .select("recipe_id, title, description")
-      .eq("recipe_id", recipeId)
-      .single();
+    // Fetch recipe, steps, and ingredients in parallel
+    const [{ data: recipe }, { data: steps }, { data: ingredients }] = await Promise.all([
+      supabase
+        .from("recipes")
+        .select("recipe_id, title, description")
+        .eq("recipe_id", recipeId)
+        .single(),
+      supabase
+        .from("recipe_steps")
+        .select("id, step_order, description, tip")
+        .eq("recipe_id", recipeId)
+        .order("step_order"),
+      supabase
+        .from("recipe_ingredients")
+        .select("id, custom_name, display_order")
+        .eq("recipe_id", recipeId)
+        .order("display_order"),
+    ]);
 
     if (recipe) {
       for (const field of ["title", "description"] as const) {
@@ -102,7 +121,7 @@ export async function GET(request: Request) {
         const presentLocales = Object.keys(jsonb).filter((k) => jsonb[k]?.trim());
         const missingLocales = SUPPORTED_LOCALES.filter((l) => !presentLocales.includes(l));
         if (missingLocales.length === 0 || presentLocales.length === 0) continue;
-        const sourceLocale = presentLocales[0];
+        const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
         for (const targetLocale of missingLocales) {
           items.push({
             table: "recipes",
@@ -117,13 +136,6 @@ export async function GET(request: Request) {
       }
     }
 
-    // Fetch steps
-    const { data: steps } = await supabase
-      .from("recipe_steps")
-      .select("id, step_order, description, tip")
-      .eq("recipe_id", recipeId)
-      .order("step_order");
-
     for (const step of steps ?? []) {
       for (const field of ["description", "tip"] as const) {
         const jsonb = step[field] as Record<string, string> | null;
@@ -131,7 +143,7 @@ export async function GET(request: Request) {
         const presentLocales = Object.keys(jsonb).filter((k) => jsonb[k]?.trim());
         const missingLocales = SUPPORTED_LOCALES.filter((l) => !presentLocales.includes(l));
         if (missingLocales.length === 0 || presentLocales.length === 0) continue;
-        const sourceLocale = presentLocales[0];
+        const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
         for (const targetLocale of missingLocales) {
           items.push({
             table: "recipe_steps",
@@ -146,20 +158,13 @@ export async function GET(request: Request) {
       }
     }
 
-    // Fetch ingredients
-    const { data: ingredients } = await supabase
-      .from("recipe_ingredients")
-      .select("id, custom_name, display_order")
-      .eq("recipe_id", recipeId)
-      .order("display_order");
-
     for (const ing of ingredients ?? []) {
       const jsonb = ing.custom_name as Record<string, string> | null;
       if (!jsonb) continue;
       const presentLocales = Object.keys(jsonb).filter((k) => jsonb[k]?.trim());
       const missingLocales = SUPPORTED_LOCALES.filter((l) => !presentLocales.includes(l));
       if (missingLocales.length === 0 || presentLocales.length === 0) continue;
-      const sourceLocale = presentLocales[0];
+      const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
       for (const targetLocale of missingLocales) {
         items.push({
           table: "recipe_ingredients",
@@ -215,7 +220,11 @@ ${numberedTexts}`,
           if (match) {
             const idx = parseInt(match[1], 10) - 1;
             if (idx >= 0 && idx < pairItems.length) {
-              translations.set(pairItems[idx], match[2].trim());
+              const translatedText = match[2].trim();
+              const sourceText = pairItems[idx].sourceText;
+              // S3: Skip abnormally long AI responses (> 3x source length)
+              if (translatedText.length > sourceText.length * 3) continue;
+              translations.set(pairItems[idx], translatedText);
             }
           }
         }

@@ -64,7 +64,6 @@ BEGIN
       2,
       true
     );
-    r1 := r1;
   ELSE
     r1 := existing_id;
   END IF;
@@ -118,7 +117,6 @@ BEGIN
       1,
       true
     );
-    r2 := r2;
   ELSE
     r2 := existing_id;
   END IF;
@@ -164,7 +162,6 @@ BEGIN
       2,
       true
     );
-    r3 := r3;
   ELSE
     r3 := existing_id;
   END IF;
@@ -226,7 +223,6 @@ BEGIN
       3,
       true
     );
-    r4 := r4;
   ELSE
     r4 := existing_id;
   END IF;
@@ -280,7 +276,6 @@ BEGIN
       2,
       true
     );
-    r5 := r5;
   ELSE
     r5 := existing_id;
   END IF;
@@ -342,7 +337,6 @@ BEGIN
       4,
       true
     );
-    r6 := r6;
   ELSE
     r6 := existing_id;
   END IF;
@@ -399,7 +393,6 @@ BEGIN
       3,
       true
     );
-    r7 := r7;
   ELSE
     r7 := existing_id;
   END IF;
@@ -451,7 +444,6 @@ BEGIN
       3,
       true
     );
-    r8 := r8;
   ELSE
     r8 := existing_id;
   END IF;
@@ -508,7 +500,6 @@ BEGIN
       3,
       true
     );
-    r9 := r9;
   ELSE
     r9 := existing_id;
   END IF;
