@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -39,12 +39,19 @@ export function RecipeOwnerMenu({ recipeId, editHref }: RecipeOwnerMenuProps) {
   const locale = useLocale();
   const router = useRouter();
   const supabaseRef = useRef(createClient());
+  const translateTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [translateError, setTranslateError] = useState<string | null>(null);
   const [translateSuccess, setTranslateSuccess] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (translateTimerRef.current) clearTimeout(translateTimerRef.current);
+    };
+  }, []);
 
   async function handleTranslate() {
     setIsTranslating(true);
@@ -56,10 +63,13 @@ export function RecipeOwnerMenu({ recipeId, editHref }: RecipeOwnerMenuProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipeId }),
       });
-      if (!res.ok) throw new Error("Translation failed");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "Translation failed");
+      }
       setTranslateSuccess(true);
       router.refresh();
-      setTimeout(() => setTranslateSuccess(false), 3000);
+      translateTimerRef.current = setTimeout(() => setTranslateSuccess(false), 3000);
     } catch {
       setTranslateError(t("translateError"));
     } finally {

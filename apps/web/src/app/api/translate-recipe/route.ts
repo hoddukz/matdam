@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import Anthropic from "@anthropic-ai/sdk";
+import type { TranslationItem } from "@/lib/recipe/translation-types";
 
 const SUPPORTED_LOCALES = ["ko", "en"] as const;
 
@@ -27,7 +28,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid recipeId format" }, { status: 400 });
   }
 
-  // 2. Auth check
+  // 2. API key check (fail fast before expensive DB work)
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) {
+    return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
+  }
+
+  // 3. Auth check
   const cookieStore = await cookies();
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -75,30 +82,25 @@ export async function POST(request: Request) {
   }
 
   // 4. Fetch steps and ingredients
-  const [{ data: steps }, { data: ingredients }] = await Promise.all([
-    supabase
-      .from("recipe_steps")
-      .select("id, step_order, description, tip")
-      .eq("recipe_id", recipeId)
-      .order("step_order"),
-    supabase
-      .from("recipe_ingredients")
-      .select("id, custom_name, display_order")
-      .eq("recipe_id", recipeId)
-      .order("display_order"),
-  ]);
+  const [{ data: steps, error: stepsError }, { data: ingredients, error: ingredientsError }] =
+    await Promise.all([
+      supabase
+        .from("recipe_steps")
+        .select("id, step_order, description, tip")
+        .eq("recipe_id", recipeId)
+        .order("step_order"),
+      supabase
+        .from("recipe_ingredients")
+        .select("id, custom_name, display_order")
+        .eq("recipe_id", recipeId)
+        .order("display_order"),
+    ]);
+
+  if (stepsError || ingredientsError) {
+    return NextResponse.json({ error: "database error" }, { status: 500 });
+  }
 
   // 5. Collect texts that need translation
-  type TranslationItem = {
-    table: "recipe_steps" | "recipe_ingredients" | "recipes";
-    rowId: string;
-    field: "description" | "tip" | "custom_name" | "title";
-    sourceLocale: string;
-    targetLocale: string;
-    sourceText: string;
-    existing: Record<string, string>;
-  };
-
   const items: TranslationItem[] = [];
 
   // 5a. Recipe title & description
@@ -179,11 +181,6 @@ export async function POST(request: Request) {
   }
 
   // 6. Batch translate with Claude Haiku
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
-  }
-
   const anthropic = new Anthropic({ apiKey });
 
   const localeNames: Record<string, string> = { ko: "Korean", en: "English" };
@@ -226,6 +223,7 @@ ${numberedTexts}`,
       continue;
     }
 
+    if (response.content.length === 0) continue;
     const responseText = response.content[0].type === "text" ? response.content[0].text : "";
 
     // Parse numbered responses

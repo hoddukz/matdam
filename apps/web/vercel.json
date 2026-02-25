@@ -4,5 +4,10 @@
       "path": "/api/cron/translate-missing",
       "schedule": "0 0 * * *"
     }
-  ]
+  ],
+  "functions": {
+    "src/app/api/cron/translate-missing/route.ts": {
+      "maxDuration": 60
+    }
+  }
 }

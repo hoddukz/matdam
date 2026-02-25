@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import { timingSafeEqual } from "crypto";
+import type { TranslationItem } from "@/lib/recipe/translation-types";
 
 const SUPPORTED_LOCALES = ["ko", "en"] as const;
 const MAX_RECIPES_PER_RUN = 5;
@@ -13,6 +14,10 @@ export async function GET(request: Request) {
   // 1. Auth: Vercel Cron sends Authorization: Bearer <CRON_SECRET>
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error("CRON_SECRET environment variable is not set");
+    return NextResponse.json({ error: "server misconfiguration" }, { status: 500 });
+  }
   const expectedBearer = `Bearer ${cronSecret ?? ""}`;
   const providedBearer = authHeader ?? "";
   const secretsMatch =
@@ -79,16 +84,6 @@ export async function GET(request: Request) {
 
   // 5. Translate each recipe
   let totalTranslated = 0;
-
-  type TranslationItem = {
-    table: "recipe_steps" | "recipe_ingredients" | "recipes";
-    rowId: string;
-    field: "description" | "tip" | "custom_name" | "title";
-    sourceLocale: string;
-    targetLocale: string;
-    sourceText: string;
-    existing: Record<string, string>;
-  };
 
   const localeNames: Record<string, string> = { ko: "Korean", en: "English" };
 
@@ -212,6 +207,7 @@ ${numberedTexts}`,
           ],
         });
 
+        if (response.content.length === 0) continue;
         const responseText = response.content[0].type === "text" ? response.content[0].text : "";
 
         const lines = responseText.split("\n").filter((l) => l.trim());
