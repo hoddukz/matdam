@@ -333,7 +333,11 @@ export default async function RecipeDetailPage({ params }: Props) {
             )}
             <RecipeLanguageSwitcher
               slug={slug}
-              availableLocales={Object.keys(recipe.title)}
+              availableLocales={Object.keys(recipe.title).filter((loc) =>
+                (steps ?? []).every((s: { description: Record<string, string> }) =>
+                  s.description[loc]?.trim()
+                )
+              )}
               originalLocale={detectOriginalLocale(recipe.title)}
             />
           </div>
