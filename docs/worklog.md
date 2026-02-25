@@ -15,11 +15,7 @@
 
 ### 코드리뷰 미완료
 
-- [ ] 2026-02-26 번역 기능 (수동 트리거 + 크론잡 + translate-recipe API 확장) 코드리뷰 필요
-  - `recipe-owner-menu.tsx` — 번역 버튼 추가
-  - `translate-recipe/route.ts` — title/description 번역 추가
-  - `cron/translate-missing/route.ts` — 신규 크론잡 엔드포인트
-  - `vercel.json` — 크론 스케줄 설정
+- [x] 2026-02-26 번역 기능 코드리뷰 완료 (15건 발견, 전부 수정)
 
 ### 향후 번역 방향성 변경 예정
 
@@ -63,11 +59,11 @@
 
 - [ ] 드래그 앤 드롭 스텝 순서 변경
 - [x] 스와이프 네비게이션 (쿠킹 모드) — 좌우 터치 스와이프로 스텝 이동
-- [ ] 탐색 페이지 페이지네이션 (현재 limit 20 고정)
+- [x] 탐색 페이지 페이지네이션 — URL 기반 page 파라미터 + 이전/다음 버튼
 - [x] 냉장고 털이 — 재료 검색/선택 → 매칭 레시피 추천 페이지
 - [x] 홈 페이지 "더보기" 버튼 — 하단에 탐색 페이지 이동 CTA
 - [x] 모바일 메뉴 그룹핑 — 탐색/내 활동 아코디언 구조로 정리
-- [ ] Recipe Linter (재료-스텝 정합성 검사)
+- [x] Recipe Linter — 미사용 재료/빈 단계(error) + 재료 미지정/타이머 미설정(warning)
 - [ ] DB 복합 인덱스 추가 (정렬 성능)
 
 **P3 — 안전장치 + 품질**
@@ -224,7 +220,7 @@
 
 - [x] 온보딩 4단계 멀티스텝
 - [ ] Dietary Filter UX 고도화 (Soft/Hard 토글)
-- [ ] Recipe Linter (재료-스텝 정합성 검사)
+- [x] Recipe Linter — 미사용 재료/빈 단계(error) + 재료 미지정/타이머 미설정(warning)
 
 **인프라 미구현:**
 
@@ -244,6 +240,41 @@
 ---
 
 ## 2026-02-26 (수)
+
+### CI/CD 수정 + Vercel 배포 복구
+
+- CI pnpm 버전 충돌 수정 (action-setup `version: 9` 제거 → package.json `packageManager` 사용)
+- `@matdam/supabase` 패키지 `@types/node` 추가 (CI type-check `process` 에러)
+- CI test 단계 제거 (테스트 스크립트 미존재)
+- **Vercel 배포 차단 원인 발견**: `vercel.json` 크론잡 `0 * * * *` (매시간) → Hobby 플랜 제한 초과로 배포 자체 거부
+- 크론 스케줄 `0 0 * * *` (하루 1회)로 변경 → 배포 정상 복구
+
+### 코드 리뷰 37건 수정 (이전 세션 커밋)
+
+BUG 9 / SECURITY 4 / PERF 5 / WARN 12 / SUGGESTION 7 — 19개 파일 수정
+
+### 번역 기능 코드리뷰 15건 수정
+
+- translate-recipe: DB fetch 에러 체크, API 키 조기 검증, `response.content[]` 빈 배열 가드
+- cron: `CRON_SECRET` 미설정 시 500 + 로그, content 가드
+- owner-menu: API 에러 메시지 파싱, setTimeout 언마운트 누수 수정
+- `TranslationItem` 타입 공유 파일 추출 (`translation-types.ts`)
+- `vercel.json`: cron 함수 `maxDuration: 60` 설정
+
+### 탐색 페이지 페이지네이션
+
+- URL 기반 `page` 파라미터 + 페이지당 20개
+- count 쿼리로 총 페이지 수 계산
+- 이전/다음 버튼 + "Page 1 of N" 표시
+- 기존 필터/정렬/검색어 파라미터 보존
+
+### Recipe Linter 구현
+
+- `recipe-linter.ts` 유틸 신규 생성 (4가지 규칙)
+  - 미사용 재료 (error), 빈 단계 (error)
+  - 재료 미지정 단계 (warning), 타이머 미설정 (warning)
+- `recipe-form.tsx`에 통합: 저장 시 자동 검증, error 시 제출 차단
+- 경고 배너 UI (빨강/노랑 severity 분리)
 
 ### 수동 번역 트리거 + 크론잡 자동 번역 구현
 
@@ -809,6 +840,11 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-26 — Recipe Linter 구현 (4가지 규칙 + 제출 차단 + 경고 배너)
+- [x] 2026-02-26 — 탐색 페이지 페이지네이션 (URL 기반 page + count 쿼리 + 이전/다음 버튼)
+- [x] 2026-02-26 — 번역 기능 코드리뷰 15건 수정 (DB 에러 처리 + content 가드 + 타입 공유 + maxDuration)
+- [x] 2026-02-26 — 코드 리뷰 37건 수정 (BUG 9 + SECURITY 4 + PERF 5 + WARN 12 + SUGGESTION 7)
+- [x] 2026-02-26 — CI/CD 수정 + Vercel 배포 복구 (pnpm 충돌 + @types/node + 크론 스케줄)
 - [x] 2026-02-25 — P1 핵심 기능 5개 (Dietary Filter + Shopping List + 재료→Glossary 링크 + PWA manifest + Wake Lock API)
 - [x] 2026-02-24 — 성능 최적화 (loading.tsx 4개, next/image 전환 13곳, ISR, Promise.all 병렬화, DifficultyBadge 서버 컴포넌트화)
 - [x] 2026-02-24 — 코드 검토 26건 수정 (Critical 7 + Warn 12 + Suggestion 7)
