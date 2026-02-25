@@ -235,8 +235,9 @@ ${numberedTexts}`,
         if (idx >= 0 && idx < pairItems.length) {
           const translatedText = match[2].trim();
           const sourceText = pairItems[idx].sourceText;
-          // S3: Skip abnormally long AI responses (> 3x source length)
-          if (translatedText.length > sourceText.length * 3) continue;
+          // S3: Skip abnormally long AI responses (> 5x source length)
+          // Korean→English often expands 3-4x due to Korean's compact nature
+          if (translatedText.length > sourceText.length * 5) continue;
           translations.set(pairItems[idx], translatedText);
         }
       }
