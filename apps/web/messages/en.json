@@ -176,7 +176,12 @@
     "dietaryHalal": "Halal",
     "dietaryLowCalorie": "Low-Calorie",
     "dietaryDiabeticFriendly": "Diabetic-Friendly",
-    "dietaryLowSodium": "Low-Sodium"
+    "dietaryLowSodium": "Low-Sodium",
+    "lintUnusedIngredient": "Ingredient \"{name}\" is not used in any step",
+    "lintEmptyStep": "Step {step} has no description",
+    "lintStepNoIngredients": "Step {step} has no ingredients assigned",
+    "lintMissingTimer": "Step {step} mentions time but has no timer set",
+    "lintWarnings": "Please review the following:"
   },
   "validation": {
     "titleMin": "Title must be at least 3 characters",
@@ -333,7 +338,10 @@
     "filterDietaryHalal": "Halal",
     "filterDietaryLowCalorie": "Low-Calorie",
     "filterDietaryDiabeticFriendly": "Diabetic-Friendly",
-    "filterDietaryLowSodium": "Low-Sodium"
+    "filterDietaryLowSodium": "Low-Sodium",
+    "pageInfo": "Page {current} of {total}",
+    "previousPage": "Previous",
+    "nextPage": "Next"
   },
   "ingredient": {
     "searchPlaceholder": "Search ingredients...",

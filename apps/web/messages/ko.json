@@ -176,7 +176,12 @@
     "dietaryHalal": "할랄",
     "dietaryLowCalorie": "저칼로리",
     "dietaryDiabeticFriendly": "당뇨 친화",
-    "dietaryLowSodium": "저염식"
+    "dietaryLowSodium": "저염식",
+    "lintUnusedIngredient": "재료 \"{name}\"이(가) 어떤 단계에서도 사용되지 않습니다",
+    "lintEmptyStep": "{step}단계에 설명이 없습니다",
+    "lintStepNoIngredients": "{step}단계에 재료가 지정되지 않았습니다",
+    "lintMissingTimer": "{step}단계에 시간 언급이 있지만 타이머가 설정되지 않았습니다",
+    "lintWarnings": "다음 사항을 확인해주세요:"
   },
   "validation": {
     "titleMin": "제목을 3자 이상 입력해주세요",
@@ -333,7 +338,10 @@
     "filterDietaryHalal": "할랄",
     "filterDietaryLowCalorie": "저칼로리",
     "filterDietaryDiabeticFriendly": "당뇨 친화",
-    "filterDietaryLowSodium": "저염식"
+    "filterDietaryLowSodium": "저염식",
+    "pageInfo": "페이지 {current} / {total}",
+    "previousPage": "이전",
+    "nextPage": "다음"
   },
   "ingredient": {
     "searchPlaceholder": "재료 검색...",

@@ -28,6 +28,7 @@ import { createRecipeFormSchema, type RecipeFormValues } from "@/lib/validators/
 import { SELECTED_STYLE, toggleItem } from "@/lib/user/preference-constants";
 import { ImageIcon, X } from "lucide-react";
 import posthog from "posthog-js";
+import { lintRecipe, type LintResult } from "@/lib/recipe/recipe-linter";
 
 function generateSlug(title: string): string {
   const base = title
@@ -80,6 +81,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [dietaryTags, setDietaryTags] = useState<string[]>(initialData?.dietaryTags ?? []);
+  const [lintResults, setLintResults] = useState<LintResult[]>([]);
 
   const publishRef = useRef(initialData?.published ?? true);
 
@@ -153,7 +155,17 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     }
   }
 
+  function runLint(data: RecipeFormValues): LintResult[] {
+    const results = lintRecipe(data.ingredients, data.steps);
+    setLintResults(results);
+    return results;
+  }
+
   async function onSubmit(data: RecipeFormValues) {
+    const results = runLint(data);
+    const hasErrors = results.some((r) => r.severity === "error");
+    if (hasErrors) return;
+
     setIsSubmitting(true);
     setSubmitError(null);
     const published = publishRef.current;
@@ -651,6 +663,37 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
           {submitError}
         </p>
       )}
+
+      {/* Lint results banner */}
+      {lintResults.length > 0 &&
+        (() => {
+          const hasErrors = lintResults.some((r) => r.severity === "error");
+          return (
+            <div
+              className={`space-y-1 rounded-md border px-3 py-2 text-sm ${
+                hasErrors
+                  ? "border-destructive/50 bg-destructive/10"
+                  : "border-yellow-400/50 bg-yellow-50 dark:bg-yellow-950/30"
+              }`}
+            >
+              <p className="font-medium">{t("lintWarnings")}</p>
+              <ul className="space-y-0.5">
+                {lintResults.map((result, i) => (
+                  <li
+                    key={i}
+                    className={
+                      result.severity === "error"
+                        ? "text-destructive"
+                        : "text-yellow-700 dark:text-yellow-400"
+                    }
+                  >
+                    {t(result.messageKey as Parameters<typeof t>[0], result.params)}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })()}
 
       {/* Action buttons */}
       <div className="flex gap-3">

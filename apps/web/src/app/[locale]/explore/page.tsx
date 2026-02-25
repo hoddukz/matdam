@@ -20,7 +20,13 @@ import type { RecipeCardData } from "@/lib/recipe/types";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ difficulty?: string; q?: string; sort?: string; dietary?: string }>;
+  searchParams: Promise<{
+    difficulty?: string;
+    q?: string;
+    sort?: string;
+    dietary?: string;
+    page?: string;
+  }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -57,6 +63,8 @@ type DietaryTag = (typeof VALID_DIETARY_TAGS)[number];
 const VALID_SORTS = ["newest", "popular"] as const;
 type SortOption = (typeof VALID_SORTS)[number];
 
+const PAGE_SIZE = 20;
+
 export default async function ExplorePage({ params, searchParams }: Props) {
   const { locale } = await params;
   const {
@@ -64,6 +72,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
     q: rawQ,
     sort: rawSort,
     dietary: rawDietary,
+    page: rawPage,
   } = await searchParams;
   const difficulty = rawDifficulty
     ? (rawDifficulty
@@ -79,42 +88,70 @@ export default async function ExplorePage({ params, searchParams }: Props) {
         .split(",")
         .filter((v) => VALID_DIETARY_TAGS.includes(v as DietaryTag)) as DietaryTag[])
     : [];
+  const page = Math.max(1, parseInt(rawPage ?? "1", 10) || 1);
   const t = await getTranslations({ locale, namespace: "explore" });
 
   const supabase = await createClient();
 
-  let query = supabase
+  // 검색어 이스케이프 (공통)
+  const escapedQ = q ? q.replace(/[%_\\]/g, (ch) => `\\${ch}`).replace(/[.,()'"]/g, "") : null;
+
+  // 전체 개수 조회 (페이지네이션용)
+  let countQuery = supabase
+    .from("recipes")
+    .select("recipe_id", { count: "exact", head: true })
+    .eq("published", true);
+  if (sort === "popular") {
+    countQuery = countQuery
+      .order("upvote_count", { ascending: false })
+      .order("created_at", { ascending: false });
+  } else {
+    countQuery = countQuery.order("created_at", { ascending: false });
+  }
+  if (difficulty.length > 0) countQuery = countQuery.in("difficulty_level", difficulty);
+  if (dietary.length > 0) countQuery = countQuery.overlaps("dietary_tags", dietary);
+  if (escapedQ) {
+    countQuery = countQuery.or(`title->>'en'.ilike.%${escapedQ}%,title->>'ko'.ilike.%${escapedQ}%`);
+  }
+  const { count } = await countQuery;
+  const totalCount = count ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  // 현재 페이지 레시피 조회
+  let dataQuery = supabase
     .from("recipes")
     .select(
       "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, upvote_count, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url)"
     )
-    .eq("published", true)
-    .limit(20);
-
-  // 정렬 적용
+    .eq("published", true);
   if (sort === "popular") {
-    query = query
+    dataQuery = dataQuery
       .order("upvote_count", { ascending: false })
       .order("created_at", { ascending: false });
   } else {
-    query = query.order("created_at", { ascending: false });
+    dataQuery = dataQuery.order("created_at", { ascending: false });
   }
-
-  if (difficulty.length > 0) {
-    query = query.in("difficulty_level", difficulty);
+  if (difficulty.length > 0) dataQuery = dataQuery.in("difficulty_level", difficulty);
+  if (dietary.length > 0) dataQuery = dataQuery.overlaps("dietary_tags", dietary);
+  if (escapedQ) {
+    dataQuery = dataQuery.or(`title->>'en'.ilike.%${escapedQ}%,title->>'ko'.ilike.%${escapedQ}%`);
   }
+  dataQuery = dataQuery.range((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE - 1);
 
-  if (dietary.length > 0) {
-    query = query.overlaps("dietary_tags", dietary);
+  const { data: recipes } = await dataQuery;
+
+  // 페이지네이션 링크 생성 헬퍼
+  function buildPageHref(targetPage: number): string {
+    const params2 = new URLSearchParams();
+    if (difficulty.length > 0) params2.set("difficulty", difficulty.join(","));
+    if (q) params2.set("q", q);
+    if (sort !== "newest") params2.set("sort", sort);
+    if (dietary.length > 0) params2.set("dietary", dietary.join(","));
+    if (targetPage > 1) params2.set("page", String(targetPage));
+    const qs = params2.toString();
+    return qs ? `?${qs}` : "?";
   }
-
-  if (q) {
-    // PostgREST 필터 구문 문자 + LIKE 와일드카드 이스케이프
-    const escaped = q.replace(/[%_\\]/g, (ch) => `\\${ch}`).replace(/[.,()'"]/g, "");
-    query = query.or(`title->>'en'.ilike.%${escaped}%,title->>'ko'.ilike.%${escaped}%`);
-  }
-
-  const { data: recipes } = await query;
 
   // 리믹스 레시피의 부모 제목을 일괄 조회
   const parentIds = (recipes ?? [])
@@ -193,73 +230,112 @@ export default async function ExplorePage({ params, searchParams }: Props) {
           <p className="text-muted-foreground">{t("noRecipes")}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {(recipes as unknown as RecipeCardData[]).map((recipe) => {
-            const title = getLocalizedText(recipe.title, locale);
-            const totalMinutes = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
-            return (
-              <Link key={recipe.recipe_id} href={`/${locale}/recipe/${recipe.slug}`}>
-                <Card className="group h-full overflow-hidden transition-shadow hover:shadow-md">
-                  <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                    {recipe.hero_image_url ? (
-                      <Image
-                        src={recipe.hero_image_url}
-                        alt={title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center">
-                        <span className="text-4xl">&#127836;</span>
-                      </div>
-                    )}
-                  </div>
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="line-clamp-2 text-base leading-snug">{title}</CardTitle>
-                      <DifficultyBadge
-                        level={recipe.difficulty_level}
-                        label={
-                          recipe.difficulty_level && DIFFICULTY_LABEL_KEYS[recipe.difficulty_level]
-                            ? t(
-                                DIFFICULTY_LABEL_KEYS[recipe.difficulty_level] as Parameters<
-                                  typeof t
-                                >[0]
-                              )
-                            : undefined
-                        }
-                      />
+        <>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {(recipes as unknown as RecipeCardData[]).map((recipe) => {
+              const title = getLocalizedText(recipe.title, locale);
+              const totalMinutes =
+                (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
+              return (
+                <Link key={recipe.recipe_id} href={`/${locale}/recipe/${recipe.slug}`}>
+                  <Card className="group h-full overflow-hidden transition-shadow hover:shadow-md">
+                    <div className="relative aspect-video w-full overflow-hidden bg-muted">
+                      {recipe.hero_image_url ? (
+                        <Image
+                          src={recipe.hero_image_url}
+                          alt={title}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center">
+                          <span className="text-4xl">&#127836;</span>
+                        </div>
+                      )}
                     </div>
-                  </CardHeader>
-                  <CardContent className="pb-2">
-                    <p className="text-sm text-muted-foreground">
-                      {t("by")} {recipe.users?.display_name ?? "—"}
-                    </p>
-                    {recipe.parent_recipe_id && parentTitleMap[recipe.parent_recipe_id] && (
-                      <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                        <GitFork className="h-3 w-3" />
-                        {t("remixOf", { title: parentTitleMap[recipe.parent_recipe_id] })}
+                    <CardHeader className="pb-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <CardTitle className="line-clamp-2 text-base leading-snug">
+                          {title}
+                        </CardTitle>
+                        <DifficultyBadge
+                          level={recipe.difficulty_level}
+                          label={
+                            recipe.difficulty_level &&
+                            DIFFICULTY_LABEL_KEYS[recipe.difficulty_level]
+                              ? t(
+                                  DIFFICULTY_LABEL_KEYS[recipe.difficulty_level] as Parameters<
+                                    typeof t
+                                  >[0]
+                                )
+                              : undefined
+                          }
+                        />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pb-2">
+                      <p className="text-sm text-muted-foreground">
+                        {t("by")} {recipe.users?.display_name ?? "—"}
                       </p>
-                    )}
-                  </CardContent>
-                  <CardFooter className="gap-4 text-xs text-muted-foreground">
-                    {totalMinutes > 0 && (
-                      <span>
-                        {totalMinutes} {t("minutes")}
-                      </span>
-                    )}
-                    {recipe.servings != null && (
-                      <span>
-                        {recipe.servings} {t("servings")}
-                      </span>
-                    )}
-                  </CardFooter>
-                </Card>
+                      {recipe.parent_recipe_id && parentTitleMap[recipe.parent_recipe_id] && (
+                        <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                          <GitFork className="h-3 w-3" />
+                          {t("remixOf", { title: parentTitleMap[recipe.parent_recipe_id] })}
+                        </p>
+                      )}
+                    </CardContent>
+                    <CardFooter className="gap-4 text-xs text-muted-foreground">
+                      {totalMinutes > 0 && (
+                        <span>
+                          {totalMinutes} {t("minutes")}
+                        </span>
+                      )}
+                      {recipe.servings != null && (
+                        <span>
+                          {recipe.servings} {t("servings")}
+                        </span>
+                      )}
+                    </CardFooter>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* 페이지네이션 */}
+          <div className="mt-10 flex items-center justify-center gap-4">
+            {safePage > 1 ? (
+              <Link
+                href={buildPageHref(safePage - 1)}
+                className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+              >
+                {t("previousPage")}
               </Link>
-            );
-          })}
-        </div>
+            ) : (
+              <span className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-40 cursor-not-allowed">
+                {t("previousPage")}
+              </span>
+            )}
+
+            <span className="text-sm text-muted-foreground">
+              {t("pageInfo", { current: safePage, total: totalPages })}
+            </span>
+
+            {safePage < totalPages ? (
+              <Link
+                href={buildPageHref(safePage + 1)}
+                className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground"
+              >
+                {t("nextPage")}
+              </Link>
+            ) : (
+              <span className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium opacity-40 cursor-not-allowed">
+                {t("nextPage")}
+              </span>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
