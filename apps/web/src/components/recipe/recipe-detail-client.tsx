@@ -16,7 +16,7 @@ interface IngredientData {
   unit: string | null;
   qualifier: string | null;
   note: string | null;
-  custom_name: string | null;
+  custom_name: Record<string, string> | null;
   ingredients: {
     names: Record<string, string>;
     category: string;
@@ -42,7 +42,9 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
         {ingredients.map((ing, i) => {
           const name = ing.ingredients
             ? getLocalizedText(ing.ingredients?.names, locale)
-            : ing.custom_name || "";
+            : ing.custom_name
+              ? getLocalizedText(ing.custom_name, locale)
+              : "";
           const hasGlossary = !!ing.ingredient_id && ing.ingredients?.category !== "seasoning";
           return (
             <li

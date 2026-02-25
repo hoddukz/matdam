@@ -4,11 +4,13 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import { HeroSection } from "@/components/home/hero-section";
 import { LatestRecipesSection } from "@/components/home/latest-recipes-section";
 import { RecentRemixesSection } from "@/components/home/recent-remixes-section";
 import { PopularRecipesSection } from "@/components/home/popular-recipes-section";
 import { RecommendedRecipesSection } from "@/components/home/recommended-recipes-section";
+import { Button } from "@/components/ui/button";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 
 const DIFFICULTY_HOME_KEYS: Record<
@@ -268,6 +270,13 @@ export default async function HomePage({ params }: Props) {
           },
         }}
       />
+
+      {/* 더보기 CTA */}
+      <section className="mx-auto max-w-7xl px-4 pb-16 pt-4 text-center sm:px-6 lg:px-8">
+        <Button size="lg" className="h-12 px-8 text-base" asChild>
+          <Link href={`/${locale}/explore`}>{t("exploreMore")}</Link>
+        </Button>
+      </section>
     </>
   );
 }

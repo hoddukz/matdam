@@ -52,7 +52,7 @@ export default async function RemixRecipePage({ params }: Props) {
       .order("display_order"),
   ]);
 
-  const formSteps = dbStepsToForm(steps ?? [], recipeIngredients ?? []);
+  const formSteps = dbStepsToForm(steps ?? [], recipeIngredients ?? [], locale);
 
   const formIngredients = dbIngredientsToForm(recipeIngredients ?? [], locale);
 

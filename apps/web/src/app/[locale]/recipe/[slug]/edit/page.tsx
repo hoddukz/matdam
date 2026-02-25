@@ -50,7 +50,7 @@ export default async function EditRecipePage({ params }: Props) {
       .order("display_order"),
   ]);
 
-  const formSteps = dbStepsToForm(steps ?? [], recipeIngredients ?? []);
+  const formSteps = dbStepsToForm(steps ?? [], recipeIngredients ?? [], locale);
 
   const formIngredients = dbIngredientsToForm(recipeIngredients ?? [], locale);
 
@@ -63,6 +63,13 @@ export default async function EditRecipePage({ params }: Props) {
     heroImageUrl: recipe.hero_image_url,
     rawTitle: recipe.title,
     rawDescription: recipe.description,
+    rawSteps: (steps ?? []).map((s) => ({
+      description: s.description,
+      tip: s.tip,
+    })),
+    rawIngredients: (recipeIngredients ?? []).map((ri) => ({
+      custom_name: ri.custom_name,
+    })),
     title,
     description: getLocalizedText(recipe.description, locale),
     difficulty_level: recipe.difficulty_level ?? "beginner",

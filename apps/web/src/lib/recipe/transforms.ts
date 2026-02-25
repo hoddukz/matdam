@@ -7,15 +7,15 @@ import { getLocalizedText } from "./localized-text";
 
 interface DBStep {
   step_order: number;
-  description: string;
+  description: Record<string, string>;
   timer_seconds: number | null;
   image_url: string | null;
-  tip: string | null;
+  tip: Record<string, string> | null;
 }
 
 interface DBIngredient {
   ingredient_id: string | null;
-  custom_name: string | null;
+  custom_name: Record<string, string> | null;
   amount: number | null;
   unit: string | null;
   qualifier: string | null;
@@ -25,7 +25,11 @@ interface DBIngredient {
   ingredients: { id: string; names: Record<string, string> } | null;
 }
 
-export function dbStepsToForm(steps: DBStep[], ingredients: DBIngredient[]): StepEntry[] {
+export function dbStepsToForm(
+  steps: DBStep[],
+  ingredients: DBIngredient[],
+  locale: string
+): StepEntry[] {
   return steps.map((s) => {
     const indices: number[] = [];
     ingredients.forEach((ing, idx) => {
@@ -34,10 +38,10 @@ export function dbStepsToForm(steps: DBStep[], ingredients: DBIngredient[]): Ste
       }
     });
     return makeStep({
-      description: s.description,
+      description: getLocalizedText(s.description, locale),
       timer_seconds: s.timer_seconds,
       image_url: s.image_url,
-      tip: s.tip,
+      tip: s.tip ? getLocalizedText(s.tip, locale) : null,
       ingredient_indices: indices,
     });
   });
@@ -49,7 +53,11 @@ export function dbIngredientsToForm(
 ): IngredientEntry[] {
   return ingredients.map((ri) => ({
     ingredient_id: ri.ingredient_id,
-    name: ri.ingredients ? getLocalizedText(ri.ingredients.names, locale) : ri.custom_name || "",
+    name: ri.ingredients
+      ? getLocalizedText(ri.ingredients.names, locale)
+      : ri.custom_name
+        ? getLocalizedText(ri.custom_name, locale)
+        : "",
     amount: ri.amount,
     unit: ri.unit,
     qualifier: ri.qualifier,

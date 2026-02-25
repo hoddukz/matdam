@@ -49,6 +49,8 @@ export interface RecipeFormInitialData extends RecipeFormValues {
   heroImageUrl: string | null;
   rawTitle: Record<string, string>;
   rawDescription: Record<string, string> | null;
+  rawSteps?: Array<{ description: Record<string, string>; tip: Record<string, string> | null }>;
+  rawIngredients?: Array<{ custom_name: Record<string, string> | null }>;
   parentRecipeId?: string;
   rootRecipeId?: string;
   published?: boolean;
@@ -257,6 +259,13 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       ...(remix?.parentRecipeId && { parent_recipe_id: remix.parentRecipeId }),
     });
 
+    // Fire-and-forget: AI 자동번역
+    fetch("/api/translate-recipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId }),
+    });
+
     if (published) {
       router.push(`/${locale}/recipe/${slug}`);
     } else {
@@ -315,24 +324,32 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       }
     });
 
-    const stepsPayload = data.steps.map((step, i) => ({
-      step_order: i + 1,
-      description: step.description,
-      timer_seconds: step.timer_seconds ?? null,
-      image_url: step.image_url ?? null,
-      tip: step.tip ?? null,
-    }));
+    const stepsPayload = data.steps.map((step, i) => {
+      const rawStep = initialData!.rawSteps?.[i];
+      return {
+        step_order: i + 1,
+        description: { ...(rawStep?.description ?? {}), [locale]: step.description },
+        timer_seconds: step.timer_seconds ?? null,
+        image_url: step.image_url ?? null,
+        tip: step.tip ? { ...(rawStep?.tip ?? {}), [locale]: step.tip } : null,
+      };
+    });
 
-    const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
-      ingredient_id: ing.ingredient_id || null,
-      custom_name: ing.ingredient_id ? null : ing.name,
-      amount: ing.amount ?? null,
-      unit: ing.unit ?? null,
-      qualifier: ing.qualifier ?? null,
-      note: ing.note ?? null,
-      step_number: ingredientStepMap.get(i) ?? null,
-      display_order: i + 1,
-    }));
+    const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => {
+      const rawIng = initialData!.rawIngredients?.[i];
+      return {
+        ingredient_id: ing.ingredient_id || null,
+        custom_name: ing.ingredient_id
+          ? null
+          : { ...(rawIng?.custom_name ?? {}), [locale]: ing.name },
+        amount: ing.amount ?? null,
+        unit: ing.unit ?? null,
+        qualifier: ing.qualifier ?? null,
+        note: ing.note ?? null,
+        step_number: ingredientStepMap.get(i) ?? null,
+        display_order: i + 1,
+      };
+    });
 
     const { error: upsertError } = await supabase.rpc("upsert_recipe_details", {
       p_recipe_id: recipeId,
@@ -340,6 +357,13 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       p_ingredients: ingredientsPayload,
     });
     if (upsertError) throw new Error(upsertError.message);
+
+    // Fire-and-forget: AI 자동번역
+    fetch("/api/translate-recipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId }),
+    });
 
     // 캐시 우회를 위해 하드 네비게이션
     if (published) {
@@ -354,10 +378,10 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       const stepsPayload = data.steps.map((step, i) => ({
         recipe_id: recipeId,
         step_order: i + 1,
-        description: step.description,
+        description: { [locale]: step.description },
         timer_seconds: step.timer_seconds,
         image_url: step.image_url,
-        tip: step.tip,
+        tip: step.tip ? { [locale]: step.tip } : null,
       }));
 
       const { error: stepsError } = await supabase.from("recipe_steps").insert(stepsPayload);
@@ -379,7 +403,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
         recipe_id: recipeId,
         ingredient_id: ing.ingredient_id || null,
-        custom_name: ing.ingredient_id ? null : ing.name,
+        custom_name: ing.ingredient_id ? null : { [locale]: ing.name },
         amount: ing.amount,
         unit: ing.unit,
         qualifier: ing.qualifier,

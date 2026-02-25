@@ -8,17 +8,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { getLocalizedText } from "@/lib/recipe/localized-text";
+import { getLocalizedText, detectOriginalLocale } from "@/lib/recipe/localized-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeIngredientList } from "@/components/recipe/recipe-detail-client";
-import { DeleteRecipeButton } from "@/components/recipe/delete-recipe-button";
+import { RecipeOwnerMenu } from "@/components/recipe/recipe-owner-menu";
+import { RecipeLanguageSwitcher } from "@/components/recipe/recipe-language-switcher";
 import { BookmarkButton } from "@/components/recipe/bookmark-button";
 import { RecipeVoteButton } from "@/components/recipe/recipe-vote-button";
 import { RecipeSocialClient } from "@/components/recipe/recipe-social-client";
 import { TasteProfileDisplay } from "@/components/recipe/taste-profile-display";
-import { Clock, Users, ChefHat, Lightbulb, Pencil, GitFork, CookingPot } from "lucide-react";
+import { Clock, Users, ChefHat, Lightbulb, GitFork, CookingPot } from "lucide-react";
 import type { TasteProfile } from "@matdam/types";
 
 export const revalidate = 3600;
@@ -181,20 +182,24 @@ export default async function RecipeDetailPage({ params }: Props) {
       (ri: {
         amount: number | null;
         unit: string | null;
-        custom_name: string | null;
+        custom_name: Record<string, string> | null;
         ingredients: { names: Record<string, string> } | null;
       }) => {
         const name = ri.ingredients
-          ? ri.ingredients.names[locale] || ri.ingredients.names["en"] || ""
-          : ri.custom_name || "";
+          ? getLocalizedText(ri.ingredients.names, locale)
+          : ri.custom_name
+            ? getLocalizedText(ri.custom_name, locale)
+            : "";
         return ri.amount ? `${ri.amount} ${ri.unit || ""} ${name}`.trim() : name;
       }
     ),
-    recipeInstructions: (steps ?? []).map((s: { step_order: number; description: string }) => ({
-      "@type": "HowToStep",
-      position: s.step_order,
-      text: s.description,
-    })),
+    recipeInstructions: (steps ?? []).map(
+      (s: { step_order: number; description: Record<string, string> }) => ({
+        "@type": "HowToStep",
+        position: s.step_order,
+        text: getLocalizedText(s.description, locale),
+      })
+    ),
   };
 
   const totalTime = (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);
@@ -258,15 +263,10 @@ export default async function RecipeDetailPage({ params }: Props) {
                 </Button>
               )}
               {isAuthor && (
-                <>
-                  <Button variant="outline" size="sm" className="gap-1" asChild>
-                    <Link href={`/${locale}/recipe/${slug}/edit`}>
-                      <Pencil className="h-4 w-4" />
-                      {t("edit")}
-                    </Link>
-                  </Button>
-                  <DeleteRecipeButton recipeId={recipe.recipe_id} />
-                </>
+                <RecipeOwnerMenu
+                  recipeId={recipe.recipe_id}
+                  editHref={`/${locale}/recipe/${slug}/edit`}
+                />
               )}
             </div>
           </div>
@@ -331,6 +331,11 @@ export default async function RecipeDetailPage({ params }: Props) {
                 {t("minutes")}
               </span>
             )}
+            <RecipeLanguageSwitcher
+              slug={slug}
+              availableLocales={Object.keys(recipe.title)}
+              originalLocale={detectOriginalLocale(recipe.title)}
+            />
           </div>
 
           {/* 맛 프로필 스코어카드 */}
@@ -364,50 +369,54 @@ export default async function RecipeDetailPage({ params }: Props) {
               (step: {
                 id: string;
                 step_order: number;
-                description: string;
+                description: Record<string, string>;
                 timer_seconds: number | null;
                 image_url: string | null;
-                tip: string | null;
-              }) => (
-                <Card key={step.id}>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">
-                      {t("stepNumber", { number: step.step_order })}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <p className="whitespace-pre-line">{step.description}</p>
+                tip: Record<string, string> | null;
+              }) => {
+                const stepDesc = getLocalizedText(step.description, locale);
+                const stepTip = step.tip ? getLocalizedText(step.tip, locale) : null;
+                return (
+                  <Card key={step.id}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">
+                        {t("stepNumber", { number: step.step_order })}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="whitespace-pre-line">{stepDesc}</p>
 
-                    {step.image_url && (
-                      <div className="relative aspect-video w-full overflow-hidden rounded-lg">
-                        <Image
-                          src={step.image_url}
-                          alt={`${t("stepNumber", { number: step.step_order })}`}
-                          fill
-                          sizes="(max-width: 768px) 100vw, 384px"
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-3">
-                      {step.timer_seconds != null && step.timer_seconds > 0 && (
-                        <Badge variant="outline" className="gap-1">
-                          <Clock className="h-3 w-3" />
-                          {Math.floor(step.timer_seconds / 60)}:
-                          {String(step.timer_seconds % 60).padStart(2, "0")}
-                        </Badge>
-                      )}
-                      {step.tip && (
-                        <div className="flex items-start gap-1.5 rounded-md bg-muted px-3 py-2 text-sm">
-                          <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-matdam-gold" />
-                          <span>{step.tip}</span>
+                      {step.image_url && (
+                        <div className="relative aspect-video w-full overflow-hidden rounded-lg">
+                          <Image
+                            src={step.image_url}
+                            alt={`${t("stepNumber", { number: step.step_order })}`}
+                            fill
+                            sizes="(max-width: 768px) 100vw, 384px"
+                            className="object-cover"
+                          />
                         </div>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )
+
+                      <div className="flex flex-wrap gap-3">
+                        {step.timer_seconds != null && step.timer_seconds > 0 && (
+                          <Badge variant="outline" className="gap-1">
+                            <Clock className="h-3 w-3" />
+                            {Math.floor(step.timer_seconds / 60)}:
+                            {String(step.timer_seconds % 60).padStart(2, "0")}
+                          </Badge>
+                        )}
+                        {stepTip && (
+                          <div className="flex items-start gap-1.5 rounded-md bg-muted px-3 py-2 text-sm">
+                            <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-matdam-gold" />
+                            <span>{stepTip}</span>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              }
             )}
           </section>
         )}

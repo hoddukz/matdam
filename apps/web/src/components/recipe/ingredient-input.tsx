@@ -64,6 +64,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
   const [customName, setCustomName] = useState("");
   const [amount, setAmount] = useState("");
   const [unit, setUnit] = useState("");
+  const [note, setNote] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [suggestionPage, setSuggestionPage] = useState(0);
@@ -151,7 +152,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
       amount: amount ? parseFloat(amount) : null,
       unit: unit || null,
       qualifier: null,
-      note: null,
+      note: note.trim() || null,
     };
 
     onChange([...value, entry]);
@@ -170,6 +171,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
     setCustomName("");
     setAmount("");
     setUnit("");
+    setNote("");
     setResults([]);
     setShowDropdown(false);
     setSuggestionPage(0);
@@ -243,6 +245,7 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
                   {formatAmount(entry.amount, entry.unit, entry.qualifier, system)}
                 </span>
               )}
+              {entry.note && <span className="text-xs text-muted-foreground">({entry.note})</span>}
               <button
                 type="button"
                 onClick={() => handleRemove(i)}
@@ -385,6 +388,16 @@ export function IngredientInput({ value, onChange }: IngredientInputProps) {
           </Button>
         )}
       </div>
+
+      {/* Note input (optional, shown during amount/unit step) */}
+      {step !== "search" && canAdd && (
+        <Input
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder={t("notePlaceholder")}
+          className="w-full text-sm"
+        />
+      )}
     </div>
   );
 }

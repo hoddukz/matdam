@@ -7,11 +7,11 @@ export type DifficultyLevel = "beginner" | "intermediate" | "master";
 
 export interface RecipeStep {
   order: number;
-  description: string;
+  description: Record<string, string>; // { ko: "...", en: "..." }
   ingredients_used: string[]; // ingredient IDs used in this step
   timer_seconds: number | null;
   image_url: string | null;
-  tip?: string | null;
+  tip?: Record<string, string> | null; // { ko: "...", en: "..." }
 }
 
 export interface Recipe {

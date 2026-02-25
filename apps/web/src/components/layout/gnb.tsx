@@ -13,13 +13,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Menu, Plus } from "lucide-react";
+import { Menu, Plus, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 export function GNB() {
   const t = useTranslations("nav");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [myActivityOpen, setMyActivityOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const supabaseRef = useRef(createClient());
 
@@ -74,6 +75,12 @@ export function GNB() {
             className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
           >
             {t("glossary")}
+          </Link>
+          <Link
+            href="/fridge"
+            className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+          >
+            {t("fridge")}
           </Link>
           <Button asChild size="sm" className="gap-1">
             <Link href="/create">
@@ -131,6 +138,7 @@ export function GNB() {
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 py-4 md:hidden">
           <div className="flex flex-col gap-3">
+            {/* 탐색 그룹 */}
             <Link
               href="/explore"
               className="text-sm font-medium"
@@ -146,42 +154,70 @@ export function GNB() {
               {t("glossary")}
             </Link>
             <Link
-              href="/create"
+              href="/fridge"
               className="text-sm font-medium"
               onClick={() => setMobileOpen(false)}
             >
-              {t("create")}
+              {t("fridge")}
             </Link>
+
+            <div className="border-t border-border" />
+
             {isLoggedIn ? (
               <>
-                <Link
-                  href="/profile"
-                  className="text-sm font-medium"
-                  onClick={() => setMobileOpen(false)}
+                {/* 내 활동 아코디언 */}
+                <button
+                  type="button"
+                  className="flex items-center justify-between text-sm font-medium"
+                  onClick={() => setMyActivityOpen(!myActivityOpen)}
                 >
-                  {t("profile")}
-                </Link>
-                <Link
-                  href="/profile?tab=bookmarks"
-                  className="text-sm font-medium"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {t("bookmarks")}
-                </Link>
-                <Link
-                  href="/shopping-list"
-                  className="text-sm font-medium"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {t("shoppingList")}
-                </Link>
-                <Link
-                  href="/settings"
-                  className="text-sm font-medium"
-                  onClick={() => setMobileOpen(false)}
-                >
-                  {t("settings")}
-                </Link>
+                  {t("myActivity")}
+                  <ChevronDown
+                    className={`h-4 w-4 text-muted-foreground transition-transform ${myActivityOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {myActivityOpen && (
+                  <div className="flex flex-col gap-3 pl-3">
+                    <Link
+                      href="/create"
+                      className="text-sm font-medium text-foreground/80"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {t("create")}
+                    </Link>
+                    <Link
+                      href="/profile"
+                      className="text-sm font-medium text-foreground/80"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {t("profile")}
+                    </Link>
+                    <Link
+                      href="/profile?tab=bookmarks"
+                      className="text-sm font-medium text-foreground/80"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {t("bookmarks")}
+                    </Link>
+                    <Link
+                      href="/shopping-list"
+                      className="text-sm font-medium text-foreground/80"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {t("shoppingList")}
+                    </Link>
+                    <Link
+                      href="/settings"
+                      className="text-sm font-medium text-foreground/80"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      {t("settings")}
+                    </Link>
+                  </div>
+                )}
+
+                <div className="border-t border-border" />
+
                 <button
                   className="text-left text-sm font-medium text-destructive"
                   onClick={handleSignOut}

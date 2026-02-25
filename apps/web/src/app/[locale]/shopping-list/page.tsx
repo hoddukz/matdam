@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 type RawIngredientRow = {
   recipe_id: string;
   ingredient_id: string | null;
-  custom_name: string | null;
+  custom_name: Record<string, string> | null;
   amount: number | null;
   unit: string | null;
   ingredients: { names: Record<string, string>; category: string | null } | null;
@@ -122,7 +122,7 @@ export default async function ShoppingListPage({ params }: Props) {
       category = row.ingredients.category ?? null;
     } else {
       // Custom ingredient: group by custom_name + unit
-      const customName = row.custom_name ?? "";
+      const customName = row.custom_name ? getLocalizedText(row.custom_name, locale) : "";
       key = `custom::${customName.toLowerCase()}::${row.unit ?? ""}`;
       name = customName;
     }

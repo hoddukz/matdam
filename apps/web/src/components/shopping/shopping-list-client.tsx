@@ -179,11 +179,14 @@ export function ShoppingListClient({ recipes, items }: ShoppingListClientProps) 
                               isChecked ? "line-through text-muted-foreground" : "text-foreground"
                             }
                           >
-                            {item.totalAmount != null && (
-                              <span className="font-medium">{item.totalAmount} </span>
+                            <span className="font-medium">{item.name}</span>
+                            {(item.totalAmount != null || item.unit) && (
+                              <span className="text-muted-foreground">
+                                {" "}
+                                ({item.totalAmount != null && item.totalAmount}
+                                {item.unit && ` ${item.unit}`})
+                              </span>
                             )}
-                            {item.unit && <span className="font-medium">{item.unit} </span>}
-                            {item.name}
                           </span>
                           {visibleSources.length > 0 && (
                             <span className="text-xs text-muted-foreground">

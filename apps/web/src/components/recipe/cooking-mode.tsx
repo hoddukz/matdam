@@ -3,7 +3,7 @@
 
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,10 @@ import {
 interface Step {
   id: string;
   step_order: number;
-  description: string;
+  description: Record<string, string>;
   timer_seconds: number | null;
   image_url: string | null;
-  tip: string | null;
+  tip: Record<string, string> | null;
 }
 
 interface Ingredient {
@@ -36,7 +36,7 @@ interface Ingredient {
   unit: string | null;
   qualifier: string | null;
   note: string | null;
-  custom_name: string | null;
+  custom_name: Record<string, string> | null;
   ingredients: {
     names: Record<string, string>;
     category: string;
@@ -182,19 +182,54 @@ export function CookingMode({ recipe, steps, ingredientsByStep, locale }: Cookin
     };
   }, []);
 
+  // -- Swipe navigation --
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const SWIPE_THRESHOLD = 50;
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (touchStartX.current == null || touchStartY.current == null) return;
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      const dy = e.changedTouches[0].clientY - touchStartY.current;
+      touchStartX.current = null;
+      touchStartY.current = null;
+
+      // Ignore if vertical swipe is dominant (user is scrolling)
+      if (Math.abs(dy) > Math.abs(dx)) return;
+      if (Math.abs(dx) < SWIPE_THRESHOLD) return;
+
+      if (dx > 0) {
+        goPrev();
+      } else {
+        goNext();
+      }
+    },
+    [currentStep, total]
+  );
+
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === total - 1;
 
   const ingredientName = (ing: Ingredient): string => {
     return ing.ingredients
       ? getLocalizedText(ing.ingredients.names, uiLocale)
-      : ing.custom_name || "";
+      : ing.custom_name
+        ? getLocalizedText(ing.custom_name, uiLocale)
+        : "";
   };
 
   const ingredientKey = (ing: Ingredient, i: number): string => {
     return ing.ingredients
       ? (ing.ingredients.names.en ?? ing.ingredients.names[uiLocale] ?? String(i))
-      : (ing.custom_name ?? String(i));
+      : ing.custom_name
+        ? (ing.custom_name.en ?? ing.custom_name[uiLocale] ?? String(i))
+        : String(i);
   };
 
   // -- Sidebar content (shared between desktop sidebar and mobile inline) --
@@ -296,12 +331,14 @@ export function CookingMode({ recipe, steps, ingredientsByStep, locale }: Cookin
 
   const renderTip = () => {
     if (!step.tip) return null;
+    const tipText = getLocalizedText(step.tip, uiLocale);
+    if (!tipText) return null;
     return (
       <div className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm">
         <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-matdam-gold" />
         <div>
           <span className="font-semibold">{t("tip")}</span>
-          <p className="mt-0.5">{step.tip}</p>
+          <p className="mt-0.5">{tipText}</p>
         </div>
       </div>
     );
@@ -368,7 +405,11 @@ export function CookingMode({ recipe, steps, ingredientsByStep, locale }: Cookin
       {/* ── Main Content ── */}
       <div className="flex min-h-0 flex-1">
         {/* Left / Main */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main
+          className="flex-1 overflow-y-auto p-4 md:p-8"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           {/* Step Image */}
           {step.image_url && (
             <div className="mb-4 overflow-hidden rounded-xl">
@@ -384,7 +425,7 @@ export function CookingMode({ recipe, steps, ingredientsByStep, locale }: Cookin
           {/* Step Header + Description */}
           <h2 className="mb-2 text-xl font-bold md:text-2xl">{t("stepOf", { current, total })}</h2>
           <p className="whitespace-pre-line text-base leading-relaxed md:text-lg">
-            {step.description}
+            {getLocalizedText(step.description, uiLocale)}
           </p>
 
           {/* Mobile only: timer, ingredients, tip, active timers inline */}
