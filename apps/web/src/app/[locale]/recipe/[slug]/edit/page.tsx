@@ -69,6 +69,8 @@ export default async function EditRecipePage({ params }: Props) {
     })),
     rawIngredients: (recipeIngredients ?? []).map((ri) => ({
       custom_name: ri.custom_name,
+      note: ri.note,
+      qualifier: ri.qualifier,
     })),
     title,
     description: getLocalizedText(recipe.description, locale),

@@ -9,13 +9,15 @@ import { UnitToggle } from "@/components/recipe/unit-toggle";
 import { useUnitPreference } from "@/stores/unit-preference";
 import { formatAmount } from "@/lib/recipe/unit-display";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
+import { EditableTranslation } from "@/components/recipe/editable-translation";
 
 interface IngredientData {
+  id: string;
   ingredient_id: string | null;
   amount: number | null;
   unit: string | null;
-  qualifier: string | null;
-  note: string | null;
+  qualifier: Record<string, string> | null;
+  note: Record<string, string> | null;
   custom_name: Record<string, string> | null;
   ingredients: {
     names: Record<string, string>;
@@ -25,11 +27,20 @@ interface IngredientData {
 
 interface RecipeDetailClientProps {
   ingredients: IngredientData[];
+  recipeId?: string;
+  locale?: string;
+  canEditTranslation?: boolean;
 }
 
-export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
+export function RecipeIngredientList({
+  ingredients,
+  recipeId,
+  locale: localeProp,
+  canEditTranslation = false,
+}: RecipeDetailClientProps) {
   const t = useTranslations("recipeDetail");
-  const locale = useLocale();
+  const currentLocale = useLocale();
+  const locale = localeProp ?? currentLocale;
   const { system } = useUnitPreference();
 
   return (
@@ -46,6 +57,10 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
               ? getLocalizedText(ing.custom_name, locale)
               : "";
           const hasGlossary = !!ing.ingredient_id && ing.ingredients?.category !== "seasoning";
+          const canEditName = canEditTranslation && !ing.ingredient_id && !!ing.custom_name;
+          const qualifierText = getLocalizedText(ing.qualifier, locale)?.trim() || null;
+          const noteRaw = getLocalizedText(ing.note, locale)?.trim() || "";
+          const noteText = noteRaw.length >= 2 && /[\p{L}\p{N}]/u.test(noteRaw) ? noteRaw : null;
           return (
             <li
               key={i}
@@ -58,12 +73,44 @@ export function RecipeIngredientList({ ingredients }: RecipeDetailClientProps) {
                 >
                   {name}
                 </Link>
+              ) : canEditName && recipeId ? (
+                <EditableTranslation
+                  value={name}
+                  recipeId={recipeId}
+                  table="recipe_ingredients"
+                  rowId={ing.id}
+                  field="custom_name"
+                  locale={locale}
+                  canEdit
+                  className="min-w-0 truncate font-medium"
+                />
               ) : (
                 <span className="min-w-0 truncate font-medium">{name}</span>
               )}
               <span className="text-sm text-muted-foreground">
-                {formatAmount(ing.amount, ing.unit, ing.qualifier, system)}
-                {ing.note && <span className="ml-1 italic">({ing.note})</span>}
+                {formatAmount(ing.amount, ing.unit, qualifierText, system)}
+                {ing.note && noteText && (
+                  <>
+                    {" "}
+                    <span className="ml-1 italic">
+                      {"("}
+                      {canEditTranslation && recipeId ? (
+                        <EditableTranslation
+                          value={noteText}
+                          recipeId={recipeId}
+                          table="recipe_ingredients"
+                          rowId={ing.id}
+                          field="note"
+                          locale={locale}
+                          canEdit
+                        />
+                      ) : (
+                        noteText
+                      )}
+                      {")"}
+                    </span>
+                  </>
+                )}
               </span>
             </li>
           );

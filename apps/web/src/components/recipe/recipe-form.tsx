@@ -29,15 +29,11 @@ import { SELECTED_STYLE, toggleItem } from "@/lib/user/preference-constants";
 import { ImageIcon, X } from "lucide-react";
 import posthog from "posthog-js";
 import { lintRecipe, type LintResult } from "@/lib/recipe/recipe-linter";
+import { ensureLocaleObject } from "@/lib/recipe/localized-text";
+import { slugify } from "transliteration";
 
 function generateSlug(title: string): string {
-  const base = title
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
-
+  const base = slugify(title, { lowercase: true, separator: "-", trim: true });
   const suffix = crypto.randomUUID().slice(0, 8);
   return base ? `${base}-${suffix}` : suffix;
 }
@@ -51,7 +47,11 @@ export interface RecipeFormInitialData extends RecipeFormValues {
   rawTitle: Record<string, string>;
   rawDescription: Record<string, string> | null;
   rawSteps?: Array<{ description: Record<string, string>; tip: Record<string, string> | null }>;
-  rawIngredients?: Array<{ custom_name: Record<string, string> | null }>;
+  rawIngredients?: Array<{
+    custom_name: Record<string, string> | null;
+    note: Record<string, string> | null;
+    qualifier: Record<string, string> | null;
+  }>;
   parentRecipeId?: string;
   rootRecipeId?: string;
   published?: boolean;
@@ -321,6 +321,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
         hero_image_url: heroImageUrl,
         published,
         dietary_tags: dietaryTags,
+        translated_locales: {},
       })
       .eq("recipe_id", recipeId)
       .eq("author_id", userId);
@@ -343,10 +344,10 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       const rawStep = initialData.rawSteps?.[i];
       return {
         step_order: i + 1,
-        description: { ...(rawStep?.description ?? {}), [locale]: step.description },
+        description: { ...ensureLocaleObject(rawStep?.description), [locale]: step.description },
         timer_seconds: step.timer_seconds ?? null,
         image_url: step.image_url ?? null,
-        tip: step.tip ? { ...(rawStep?.tip ?? {}), [locale]: step.tip } : null,
+        tip: step.tip ? { ...ensureLocaleObject(rawStep?.tip), [locale]: step.tip } : null,
       };
     });
 
@@ -356,11 +357,13 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
         ingredient_id: ing.ingredient_id || null,
         custom_name: ing.ingredient_id
           ? null
-          : { ...(rawIng?.custom_name ?? {}), [locale]: ing.name },
+          : { ...ensureLocaleObject(rawIng?.custom_name), [locale]: ing.name },
         amount: ing.amount ?? null,
         unit: ing.unit ?? null,
-        qualifier: ing.qualifier ?? null,
-        note: ing.note ?? null,
+        qualifier: ing.qualifier
+          ? { ...ensureLocaleObject(rawIng?.qualifier), [locale]: ing.qualifier }
+          : null,
+        note: ing.note ? { ...ensureLocaleObject(rawIng?.note), [locale]: ing.note } : null,
         step_number: ingredientStepMap.get(i) ?? null,
         display_order: i + 1,
       };
@@ -372,13 +375,6 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       p_ingredients: ingredientsPayload,
     });
     if (upsertError) throw new Error(upsertError.message);
-
-    // Fire-and-forget: AI 자동번역
-    fetch("/api/translate-recipe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ recipeId }),
-    }).catch(() => {});
 
     // 캐시 우회를 위해 하드 네비게이션
     if (published) {
@@ -421,8 +417,8 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
         custom_name: ing.ingredient_id ? null : { [locale]: ing.name },
         amount: ing.amount,
         unit: ing.unit,
-        qualifier: ing.qualifier,
-        note: ing.note,
+        qualifier: ing.qualifier ? { [locale]: ing.qualifier } : null,
+        note: ing.note ? { [locale]: ing.note } : null,
         step_number: ingredientStepMap.get(i) ?? null,
         display_order: i + 1,
       }));

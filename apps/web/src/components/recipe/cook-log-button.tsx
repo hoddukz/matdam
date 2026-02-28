@@ -76,7 +76,7 @@ export function CookLogButton({
       <Button
         variant={hasCooked ? "secondary" : "outline"}
         size="sm"
-        className={`gap-1.5 ${hasCooked ? "border-green-500/50 text-green-600" : ""}`}
+        className={`h-12 w-full justify-center gap-1.5 text-base ${hasCooked ? "border-green-500/50 text-green-600" : ""}`}
         onClick={handleClick}
         disabled={pending || hasCooked}
       >

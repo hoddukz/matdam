@@ -12,6 +12,7 @@ import { PopularRecipesSection } from "@/components/home/popular-recipes-section
 import { RecommendedRecipesSection } from "@/components/home/recommended-recipes-section";
 import { Button } from "@/components/ui/button";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
+import type { UserPreferences, DietaryPreference } from "@matdam/types";
 
 const DIFFICULTY_HOME_KEYS: Record<
   string,
@@ -50,35 +51,68 @@ export default async function HomePage({ params }: Props) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // 로그인 유저의 hard 필터 태그 조회
+  let hardTags: string[] = [];
+  if (user) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("preferences")
+      .eq("user_id", user.id)
+      .single();
+    const prefs = profile?.preferences as Partial<UserPreferences> | null;
+    let dietaryPrefs: DietaryPreference[] = [];
+    if (prefs?.dietary_preferences && prefs.dietary_preferences.length > 0) {
+      dietaryPrefs = prefs.dietary_preferences;
+    } else if (prefs?.dietary_restrictions && prefs.dietary_restrictions.length > 0) {
+      dietaryPrefs = prefs.dietary_restrictions.map((tag) => ({ tag, mode: "hard" as const }));
+    }
+    hardTags = dietaryPrefs.filter((p) => p.mode === "hard").map((p) => p.tag);
+  }
+
   // 최신 레시피 + 최신 리믹스 + 인기 레시피 + 맞춤 추천 병렬 조회
+  // hard 필터가 있으면 over-fetch 후 클라이언트에서 필터링
+  const overFetchLimit = hardTags.length > 0 ? 18 : 6;
+
+  const latestQuery = supabase
+    .from("recipes")
+    .select(
+      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url)"
+    )
+    .eq("published", true)
+    .order("created_at", { ascending: false })
+    .limit(overFetchLimit);
+  if (hardTags.length > 0) latestQuery.contains("dietary_tags", hardTags);
+
+  const remixQuery = supabase
+    .from("recipes")
+    .select(
+      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url)"
+    )
+    .eq("published", true)
+    .not("parent_recipe_id", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(overFetchLimit);
+  if (hardTags.length > 0) remixQuery.contains("dietary_tags", hardTags);
+
   const [
-    { data: latestRecipes, error: latestErr },
-    { data: remixRecipes, error: remixErr },
+    { data: latestRecipesRaw, error: latestErr },
+    { data: remixRecipesRaw, error: remixErr },
     { data: popularRpc, error: popularErr },
     { data: recommendedRpc, error: recommendedErr },
   ] = await Promise.all([
-    supabase
-      .from("recipes")
-      .select(
-        "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, users!recipes_author_id_fkey(display_name, avatar_url)"
-      )
-      .eq("published", true)
-      .order("created_at", { ascending: false })
-      .limit(6),
-    supabase
-      .from("recipes")
-      .select(
-        "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, users!recipes_author_id_fkey(display_name, avatar_url)"
-      )
-      .eq("published", true)
-      .not("parent_recipe_id", "is", null)
-      .order("created_at", { ascending: false })
-      .limit(6),
-    supabase.rpc("get_popular_recipes", { p_limit: 6 }),
+    latestQuery,
+    remixQuery,
+    supabase.rpc("get_popular_recipes", { p_limit: hardTags.length > 0 ? 12 : 6 }),
     user
-      ? supabase.rpc("get_recommended_recipes", { p_user_id: user.id, p_limit: 6 })
+      ? supabase.rpc("get_recommended_recipes", {
+          p_user_id: user.id,
+          p_limit: hardTags.length > 0 ? 12 : 6,
+        })
       : Promise.resolve({ data: null, error: null }),
   ]);
+
+  const latestRecipes = (latestRecipesRaw ?? []).slice(0, 6);
+  const remixRecipes = (remixRecipesRaw ?? []).slice(0, 6);
 
   if (latestErr) console.error("Failed to fetch latest recipes:", latestErr.message);
   if (remixErr) console.error("Failed to fetch remix recipes:", remixErr.message);
@@ -87,64 +121,37 @@ export default async function HomePage({ params }: Props) {
 
   const recommendedRecipes = recommendedRpc;
 
-  // 인기 레시피 RPC 결과 → 컴포넌트용 변환
-  const popularRecipes = (popularRpc ?? []).map(
-    (r: {
-      recipe_id: string;
-      slug: string;
-      title: Record<string, string>;
-      description: Record<string, string> | null;
-      hero_image_url: string | null;
-      difficulty_level: string | null;
-      prep_time_minutes: number | null;
-      cook_time_minutes: number | null;
-      servings: number | null;
-      upvote_count: number;
-      created_at: string;
-      author_display_name: string | null;
-      author_avatar_url: string | null;
-    }) => ({
-      recipe_id: r.recipe_id,
-      slug: r.slug,
-      title: r.title,
-      description: r.description,
-      hero_image_url: r.hero_image_url,
-      difficulty_level: r.difficulty_level,
-      prep_time_minutes: r.prep_time_minutes,
-      cook_time_minutes: r.cook_time_minutes,
-      servings: r.servings,
-      upvote_count: r.upvote_count,
-      created_at: r.created_at,
-      parent_recipe_id: null,
-      dietary_tags: null,
-      users: {
-        display_name: r.author_display_name,
-        avatar_url: r.author_avatar_url,
-      },
-    })
-  );
+  // hard 필터 클라이언트 적용 헬퍼
+  type RpcRecipeRow = {
+    recipe_id: string;
+    slug: string;
+    title: Record<string, string>;
+    description: Record<string, string> | null;
+    hero_image_url: string | null;
+    difficulty_level: string | null;
+    prep_time_minutes: number | null;
+    cook_time_minutes: number | null;
+    servings: number | null;
+    upvote_count: number;
+    created_at: string;
+    author_display_name: string | null;
+    author_avatar_url: string | null;
+    dietary_tags?: string[] | null;
+  };
 
-  // 맞춤 추천 RPC 결과 → 컴포넌트용 변환
-  const recommended = (recommendedRecipes ?? []).map(
-    (r: {
-      recipe_id: string;
-      slug: string;
-      title: Record<string, string>;
-      description: Record<string, string> | null;
-      hero_image_url: string | null;
-      difficulty_level: string | null;
-      prep_time_minutes: number | null;
-      cook_time_minutes: number | null;
-      servings: number | null;
-      upvote_count: number;
-      created_at: string;
-      author_display_name: string | null;
-      author_avatar_url: string | null;
-    }) => ({
+  function filterAndMapRpc(rows: RpcRecipeRow[], limit: number) {
+    let filtered = rows;
+    if (hardTags.length > 0) {
+      filtered = rows.filter((r) => {
+        const tags = r.dietary_tags ?? [];
+        return hardTags.every((ht) => tags.includes(ht));
+      });
+    }
+    return filtered.slice(0, limit).map((r) => ({
       recipe_id: r.recipe_id,
       slug: r.slug,
       title: r.title,
-      description: r.description,
+      description: r.description ?? {},
       hero_image_url: r.hero_image_url,
       difficulty_level: r.difficulty_level,
       prep_time_minutes: r.prep_time_minutes,
@@ -153,13 +160,19 @@ export default async function HomePage({ params }: Props) {
       upvote_count: r.upvote_count,
       created_at: r.created_at,
       parent_recipe_id: null,
-      dietary_tags: null,
+      dietary_tags: r.dietary_tags ?? null,
       users: {
         display_name: r.author_display_name,
         avatar_url: r.author_avatar_url,
       },
-    })
-  );
+    }));
+  }
+
+  // 인기 레시피 RPC 결과 → 컴포넌트용 변환 + hard 필터
+  const popularRecipes = filterAndMapRpc((popularRpc ?? []) as RpcRecipeRow[], 6);
+
+  // 맞춤 추천 RPC 결과 → 컴포넌트용 변환 + hard 필터
+  const recommended = filterAndMapRpc((recommendedRecipes ?? []) as RpcRecipeRow[], 6);
 
   // 리믹스 부모 제목 일괄 조회
   const parentIds = (remixRecipes ?? [])

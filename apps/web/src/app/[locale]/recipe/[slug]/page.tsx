@@ -15,10 +15,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecipeIngredientList } from "@/components/recipe/recipe-detail-client";
 import { RecipeOwnerMenu } from "@/components/recipe/recipe-owner-menu";
 import { RecipeLanguageSwitcher } from "@/components/recipe/recipe-language-switcher";
+import { EditableTranslation } from "@/components/recipe/editable-translation";
 import { BookmarkButton } from "@/components/recipe/bookmark-button";
-import { RecipeVoteButton } from "@/components/recipe/recipe-vote-button";
 import { RecipeSocialClient } from "@/components/recipe/recipe-social-client";
 import { TasteProfileDisplay } from "@/components/recipe/taste-profile-display";
+import { ReportDialog } from "@/components/report/report-dialog";
 import { Clock, Users, ChefHat, Lightbulb, GitFork, CookingPot } from "lucide-react";
 import type { TasteProfile } from "@matdam/types";
 
@@ -88,6 +89,7 @@ export default async function RecipeDetailPage({ params }: Props) {
     { data: myVoteRow },
     { data: myCookLog },
     { count: cookCount },
+    { data: myReportRow },
   ] = await Promise.all([
     supabase.from("recipe_steps").select("*").eq("recipe_id", recipe.recipe_id).order("step_order"),
     supabase
@@ -144,6 +146,16 @@ export default async function RecipeDetailPage({ params }: Props) {
       .from("cook_logs")
       .select("*", { count: "exact", head: true })
       .eq("recipe_id", recipe.recipe_id),
+    // 내 신고 여부 조회
+    user
+      ? supabase
+          .from("reports")
+          .select("id")
+          .eq("reporter_id", user.id)
+          .eq("target_type", "recipe")
+          .eq("target_id", recipe.recipe_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   // cook_review는 cook_log_id가 필요하므로 별도 조회
@@ -157,12 +169,16 @@ export default async function RecipeDetailPage({ params }: Props) {
     existingReview = data;
   }
 
+  const hasReportedRecipe = myReportRow !== null;
   const isBookmarked = bookmarkRow !== null;
   const myVote = (myVoteRow?.vote as 1 | -1) ?? null;
   const myCookLogId = myCookLog?.cook_log_id ?? null;
   const tasteProfile = recipe.taste_profile as TasteProfile | null;
   const title = getLocalizedText(recipe.title, locale);
   const description = getLocalizedText(recipe.description, locale);
+  const originalLocale = detectOriginalLocale(recipe.title);
+  const translatedLocales = (recipe.translated_locales ?? {}) as Record<string, string>;
+  const canEditTranslation = isAuthor && locale !== originalLocale;
 
   // Supabase !inner join은 TS에서 배열 타입을 반환하지만 실제로는 단일 객체
   const author = Array.isArray(recipe.users) ? recipe.users[0] : recipe.users;
@@ -233,13 +249,42 @@ export default async function RecipeDetailPage({ params }: Props) {
 
         {/* Header */}
         <header className="mb-8">
-          <h1 className="mb-3 text-2xl sm:text-3xl font-bold tracking-tight">{title}</h1>
-          {description && <p className="mb-4 text-muted-foreground">{description}</p>}
+          <h1 className="mb-3 text-2xl sm:text-3xl font-bold tracking-tight">
+            <EditableTranslation
+              value={title}
+              recipeId={recipe.recipe_id}
+              table="recipes"
+              rowId={recipe.recipe_id}
+              field="title"
+              locale={locale}
+              canEdit={canEditTranslation}
+            />
+          </h1>
+          {description && (
+            <p className="mb-4 text-muted-foreground">
+              <EditableTranslation
+                value={description}
+                recipeId={recipe.recipe_id}
+                table="recipes"
+                rowId={recipe.recipe_id}
+                field="description"
+                locale={locale}
+                canEdit={canEditTranslation}
+                multiline
+              />
+            </p>
+          )}
 
           {/* Author + 수정/삭제/리믹스/투표 버튼 */}
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">
-              {t("by")} <span className="font-medium text-foreground">{author?.display_name}</span>
+              {t("by")}{" "}
+              <Link
+                href={`/${locale}/user/${recipe.author_id}`}
+                className="font-medium text-foreground underline-offset-4 hover:underline"
+              >
+                {author?.display_name}
+              </Link>
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <BookmarkButton
@@ -266,6 +311,14 @@ export default async function RecipeDetailPage({ params }: Props) {
                 <RecipeOwnerMenu
                   recipeId={recipe.recipe_id}
                   editHref={`/${locale}/recipe/${slug}/edit`}
+                />
+              )}
+              {!isAuthor && (
+                <ReportDialog
+                  targetType="recipe"
+                  targetId={recipe.recipe_id}
+                  isLoggedIn={!!user}
+                  hasReported={hasReportedRecipe}
                 />
               )}
             </div>
@@ -333,12 +386,15 @@ export default async function RecipeDetailPage({ params }: Props) {
             )}
             <RecipeLanguageSwitcher
               slug={slug}
+              recipeId={recipe.recipe_id}
               availableLocales={Object.keys(recipe.title).filter((loc) =>
                 (steps ?? []).every((s: { description: Record<string, string> }) =>
                   s.description[loc]?.trim()
                 )
               )}
-              originalLocale={detectOriginalLocale(recipe.title)}
+              translatedLocales={translatedLocales}
+              originalLocale={originalLocale}
+              isAuthenticated={!!user}
             />
           </div>
 
@@ -353,7 +409,12 @@ export default async function RecipeDetailPage({ params }: Props) {
         {/* Ingredients - client component for unit toggle */}
         {recipeIngredients && recipeIngredients.length > 0 && (
           <section className="mb-6 sm:mb-10">
-            <RecipeIngredientList ingredients={recipeIngredients} />
+            <RecipeIngredientList
+              ingredients={recipeIngredients}
+              recipeId={recipe.recipe_id}
+              locale={locale}
+              canEditTranslation={canEditTranslation}
+            />
           </section>
         )}
 
@@ -388,7 +449,18 @@ export default async function RecipeDetailPage({ params }: Props) {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <p className="whitespace-pre-line">{stepDesc}</p>
+                      <p className="whitespace-pre-line">
+                        <EditableTranslation
+                          value={stepDesc}
+                          recipeId={recipe.recipe_id}
+                          table="recipe_steps"
+                          rowId={step.id}
+                          field="description"
+                          locale={locale}
+                          canEdit={canEditTranslation}
+                          multiline
+                        />
+                      </p>
 
                       {step.image_url && (
                         <div className="relative aspect-video w-full overflow-hidden rounded-lg">
@@ -413,7 +485,15 @@ export default async function RecipeDetailPage({ params }: Props) {
                         {stepTip && (
                           <div className="flex items-start gap-1.5 rounded-md bg-muted px-3 py-2 text-sm">
                             <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-matdam-gold" />
-                            <span>{stepTip}</span>
+                            <EditableTranslation
+                              value={stepTip}
+                              recipeId={recipe.recipe_id}
+                              table="recipe_steps"
+                              rowId={step.id}
+                              field="tip"
+                              locale={locale}
+                              canEdit={canEditTranslation}
+                            />
                           </div>
                         )}
                       </div>
@@ -425,22 +505,17 @@ export default async function RecipeDetailPage({ params }: Props) {
           </section>
         )}
 
-        {/* Social: 추천/비추천 + 만들어봤어요 + 리뷰 + 코멘트 */}
+        {/* Social: 추천/비추천 + 만들어봤어요 + 남은 재료 + 리뷰 + 코멘트 */}
         <section className="mt-8 space-y-6">
-          <RecipeVoteButton
-            recipeId={recipe.recipe_id}
-            initialVote={myVote}
-            initialUpvotes={recipe.upvote_count ?? 0}
-            initialDownvotes={recipe.downvote_count ?? 0}
-            isLoggedIn={!!user}
-            size="lg"
-          />
           <RecipeSocialClient
             recipeId={recipe.recipe_id}
             initialCookLogId={myCookLogId}
             existingReview={existingReview}
             isLoggedIn={!!user}
             currentUserId={user?.id ?? null}
+            initialVote={myVote}
+            initialUpvotes={recipe.upvote_count ?? 0}
+            initialDownvotes={recipe.downvote_count ?? 0}
           />
         </section>
 

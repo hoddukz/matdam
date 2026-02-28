@@ -31,6 +31,7 @@ export function CommentSection({
 
   const [comments, setComments] = useState<CommentData[]>([]);
   const [myVotes, setMyVotes] = useState<Record<string, 1 | -1>>({});
+  const [reportedIds, setReportedIds] = useState<Set<string>>(new Set());
   const [sortMode, setSortMode] = useState<SortMode>("top");
   const [loading, setLoading] = useState(true);
 
@@ -47,14 +48,23 @@ export function CommentSection({
       setComments(commentData as CommentData[]);
     }
 
-    // 내 투표 조회
+    // 내 투표 + 신고 상태 조회
     if (currentUserId && commentData && commentData.length > 0) {
       const commentIds = commentData.map((c: { comment_id: string }) => c.comment_id);
-      const { data: voteData } = await supabase
-        .from("comment_votes")
-        .select("comment_id, vote")
-        .eq("user_id", currentUserId)
-        .in("comment_id", commentIds);
+
+      const [{ data: voteData }, { data: reportData }] = await Promise.all([
+        supabase
+          .from("comment_votes")
+          .select("comment_id, vote")
+          .eq("user_id", currentUserId)
+          .in("comment_id", commentIds),
+        supabase
+          .from("reports")
+          .select("target_id")
+          .eq("reporter_id", currentUserId)
+          .eq("target_type", "comment")
+          .in("target_id", commentIds),
+      ]);
 
       if (voteData) {
         const voteMap: Record<string, 1 | -1> = {};
@@ -62,6 +72,10 @@ export function CommentSection({
           voteMap[v.comment_id] = v.vote as 1 | -1;
         }
         setMyVotes(voteMap);
+      }
+
+      if (reportData) {
+        setReportedIds(new Set(reportData.map((r: { target_id: string }) => r.target_id)));
       }
     }
 
@@ -137,6 +151,8 @@ export function CommentSection({
       replies={repliesMap[c.comment_id] ?? []}
       myVotes={myVotes}
       currentUserId={currentUserId}
+      hasReported={reportedIds.has(c.comment_id)}
+      reportedIds={reportedIds}
       onDeleted={fetchComments}
       onReplyAdded={fetchComments}
     />

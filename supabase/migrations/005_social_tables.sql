@@ -1,29 +1,48 @@
 -- Tag: core
--- Path: supabase/migrations/010_recipe_social.sql
+-- Path: supabase/migrations_merged/005_social_tables.sql
 
 -- ============================================================
--- Migration 010: 레시피 소셜 기능
---   - recipe_votes (추천/비추천)
---   - cook_logs (만들어봤어요)
---   - cook_reviews (맛/품질 평가)
---   - comments (코멘트)
---   - comment_votes (코멘트 추천/비추천)
---   - recipes 테이블 확장 (taste_profile, vote 캐시)
+-- MatDam — Social Features Tables & Triggers
+-- Merged from originals: 006, 010, 012
+--
+-- Consolidation notes:
+--   • 006: bookmarks table
+--   • 010: recipe_votes, cook_logs, cook_reviews, comments,
+--           comment_votes, and all related triggers
+--   • 012: parent_comment_id column on comments folded into
+--           the CREATE TABLE definition below (no ALTER needed)
 -- ============================================================
-
-
--- ============================================================
--- 1. recipes 테이블 확장
--- ============================================================
-
-ALTER TABLE public.recipes
-  ADD COLUMN IF NOT EXISTS taste_profile   JSONB DEFAULT NULL,
-  ADD COLUMN IF NOT EXISTS upvote_count    INT   NOT NULL DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS downvote_count  INT   NOT NULL DEFAULT 0;
 
 
 -- ============================================================
--- 2. recipe_votes — 레시피 추천/비추천
+-- 1. bookmarks (from 006)
+-- ============================================================
+
+CREATE TABLE public.bookmarks (
+  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     UUID        NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  recipe_id   UUID        NOT NULL REFERENCES public.recipes(recipe_id) ON DELETE CASCADE,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (user_id, recipe_id)
+);
+
+CREATE INDEX idx_bookmarks_user_id   ON public.bookmarks(user_id);
+CREATE INDEX idx_bookmarks_recipe_id ON public.bookmarks(recipe_id);
+
+ALTER TABLE public.bookmarks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "bookmarks_select_own" ON public.bookmarks
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "bookmarks_insert_own" ON public.bookmarks
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "bookmarks_delete_own" ON public.bookmarks
+  FOR DELETE USING (auth.uid() = user_id);
+
+
+-- ============================================================
+-- 2. recipe_votes — 레시피 추천/비추천 (from 010)
 -- ============================================================
 
 CREATE TABLE public.recipe_votes (
@@ -36,7 +55,6 @@ CREATE TABLE public.recipe_votes (
 
 CREATE INDEX idx_recipe_votes_recipe_id ON public.recipe_votes(recipe_id);
 
--- RLS
 ALTER TABLE public.recipe_votes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "recipe_votes_select_all" ON public.recipe_votes
@@ -53,7 +71,7 @@ CREATE POLICY "recipe_votes_delete_own" ON public.recipe_votes
 
 
 -- ============================================================
--- 3. 투표 카운트 동기화 트리거
+-- 3. 투표 카운트 동기화 트리거 (from 010)
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION public.sync_recipe_vote_counts()
@@ -83,7 +101,7 @@ CREATE TRIGGER trg_recipe_vote_counts
 
 
 -- ============================================================
--- 4. cook_logs — "만들어봤어요" 기록
+-- 4. cook_logs — "만들어봤어요" 기록 (from 010)
 -- ============================================================
 
 CREATE TABLE public.cook_logs (
@@ -97,7 +115,6 @@ CREATE TABLE public.cook_logs (
 CREATE INDEX idx_cook_logs_recipe_id ON public.cook_logs(recipe_id);
 CREATE INDEX idx_cook_logs_user_id   ON public.cook_logs(user_id);
 
--- RLS
 ALTER TABLE public.cook_logs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "cook_logs_select_all" ON public.cook_logs
@@ -111,7 +128,7 @@ CREATE POLICY "cook_logs_delete_own" ON public.cook_logs
 
 
 -- ============================================================
--- 5. cook_reviews — 맛/품질 평가
+-- 5. cook_reviews — 맛/품질 평가 (from 010)
 -- ============================================================
 
 CREATE TABLE public.cook_reviews (
@@ -138,7 +155,6 @@ CREATE TRIGGER trg_cook_reviews_updated_at
   BEFORE UPDATE ON public.cook_reviews
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- RLS: cook_log 소유자만 INSERT/UPDATE, SELECT 전체
 ALTER TABLE public.cook_reviews ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "cook_reviews_select_all" ON public.cook_reviews
@@ -164,7 +180,7 @@ CREATE POLICY "cook_reviews_update_own" ON public.cook_reviews
 
 
 -- ============================================================
--- 6. 맛 프로필 자동 갱신 트리거
+-- 6. 맛 프로필 자동 갱신 트리거 (from 010)
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION public.sync_recipe_taste_profile()
@@ -214,30 +230,33 @@ CREATE TRIGGER trg_recipe_taste_profile
 
 
 -- ============================================================
--- 7. comments — 코멘트 (만들어본 사람만)
+-- 7. comments — 코멘트 (from 010 + 012 parent_comment_id folded in)
+-- parent_comment_id column added from 012 directly in CREATE TABLE
 -- ============================================================
 
 CREATE TABLE public.comments (
-  comment_id  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  cook_log_id UUID        NOT NULL REFERENCES public.cook_logs(cook_log_id) ON DELETE CASCADE,
-  recipe_id   UUID        NOT NULL REFERENCES public.recipes(recipe_id) ON DELETE CASCADE,
-  user_id     UUID        NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
-  body        TEXT        NOT NULL CHECK (char_length(body) BETWEEN 1 AND 2000),
-  image_url   TEXT,
-  upvote_count   INT      NOT NULL DEFAULT 0,
-  downvote_count INT      NOT NULL DEFAULT 0,
-  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+  comment_id        UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  cook_log_id       UUID        NOT NULL REFERENCES public.cook_logs(cook_log_id) ON DELETE CASCADE,
+  recipe_id         UUID        NOT NULL REFERENCES public.recipes(recipe_id) ON DELETE CASCADE,
+  user_id           UUID        NOT NULL REFERENCES public.users(user_id) ON DELETE CASCADE,
+  body              TEXT        NOT NULL CHECK (char_length(body) BETWEEN 1 AND 2000),
+  image_url         TEXT,
+  upvote_count      INT         NOT NULL DEFAULT 0,
+  downvote_count    INT         NOT NULL DEFAULT 0,
+  parent_comment_id UUID        REFERENCES public.comments(comment_id) ON DELETE CASCADE,
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE INDEX idx_comments_recipe_id ON public.comments(recipe_id);
 CREATE INDEX idx_comments_user_id   ON public.comments(user_id);
+CREATE INDEX idx_comments_parent    ON public.comments(parent_comment_id)
+  WHERE parent_comment_id IS NOT NULL;
 
 CREATE TRIGGER trg_comments_updated_at
   BEFORE UPDATE ON public.comments
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
--- RLS: cook_log 소유자만 INSERT, 본인 UPDATE/DELETE, SELECT 전체
 ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "comments_select_all" ON public.comments
@@ -261,7 +280,7 @@ CREATE POLICY "comments_delete_own" ON public.comments
 
 
 -- ============================================================
--- 8. comment_votes — 코멘트 추천/비추천
+-- 8. comment_votes — 코멘트 추천/비추천 (from 010)
 -- ============================================================
 
 CREATE TABLE public.comment_votes (
@@ -274,7 +293,6 @@ CREATE TABLE public.comment_votes (
 
 CREATE INDEX idx_comment_votes_comment_id ON public.comment_votes(comment_id);
 
--- RLS
 ALTER TABLE public.comment_votes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "comment_votes_select_all" ON public.comment_votes
@@ -291,7 +309,7 @@ CREATE POLICY "comment_votes_delete_own" ON public.comment_votes
 
 
 -- ============================================================
--- 9. 코멘트 투표 카운트 동기화 트리거
+-- 9. 코멘트 투표 카운트 동기화 트리거 (from 010)
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION public.sync_comment_vote_counts()

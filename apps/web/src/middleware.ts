@@ -22,6 +22,19 @@ export async function middleware(request: NextRequest) {
     });
   });
 
+  // Supabase auth 쿠키에만 보안 옵션 강제 적용 (NEXT_LOCALE 등은 클라이언트 접근 필요)
+  const isProduction = process.env.NODE_ENV === "production";
+  intlResponse.cookies.getAll().forEach((cookie) => {
+    if (cookie.name.startsWith("sb-")) {
+      intlResponse.cookies.set(cookie.name, cookie.value, {
+        ...cookie,
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: "lax",
+      });
+    }
+  });
+
   return intlResponse;
 }
 

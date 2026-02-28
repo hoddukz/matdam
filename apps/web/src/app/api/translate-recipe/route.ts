@@ -3,9 +3,11 @@
 
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import Anthropic from "@anthropic-ai/sdk";
 import type { TranslationItem } from "@/lib/recipe/translation-types";
+import { ensureLocaleObject } from "@/lib/recipe/localized-text";
 
 const SUPPORTED_LOCALES = ["ko", "en"] as const;
 
@@ -21,6 +23,7 @@ export async function POST(request: Request) {
   }
 
   const recipeId = body.recipeId as string | undefined;
+  const force = body.force === true;
   if (!recipeId) {
     return NextResponse.json({ error: "recipeId required" }, { status: 400 });
   }
@@ -28,15 +31,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid recipeId format" }, { status: 400 });
   }
 
-  // 2. API key check (fail fast before expensive DB work)
+  // 2. API key + service role check (fail fast before expensive DB work)
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     return NextResponse.json({ error: "ANTHROPIC_API_KEY not configured" }, { status: 500 });
   }
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!serviceRoleKey) {
+    return NextResponse.json(
+      { error: "SUPABASE_SERVICE_ROLE_KEY not configured" },
+      { status: 500 }
+    );
+  }
 
-  // 3. Auth check
+  // 3. Auth check (로그인 사용자만 허용, 소유권 불요)
   const cookieStore = await cookies();
-  const supabase = createServerClient(
+  const supabaseAuth = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -59,15 +69,18 @@ export async function POST(request: Request) {
 
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabaseAuth.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  // 3. Recipe ownership verification
+  // 4. Service role client for DB reads/writes (RLS 우회 — 번역은 누구나 트리거 가능)
+  const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey);
+
+  // 5. Recipe fetch
   const { data: recipe, error: recipeError } = await supabase
     .from("recipes")
-    .select("recipe_id, author_id, title, description")
+    .select("recipe_id, author_id, published, title, description, translated_locales")
     .eq("recipe_id", recipeId)
     .single();
 
@@ -77,11 +90,11 @@ export async function POST(request: Request) {
   if (!recipe) {
     return NextResponse.json({ error: "recipe not found" }, { status: 404 });
   }
-  if (recipe.author_id !== user.id) {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (!recipe.published) {
+    return NextResponse.json({ error: "recipe not found" }, { status: 404 });
   }
 
-  // 4. Fetch steps and ingredients
+  // 6. Fetch steps and ingredients
   const [{ data: steps, error: stepsError }, { data: ingredients, error: ingredientsError }] =
     await Promise.all([
       supabase
@@ -91,7 +104,7 @@ export async function POST(request: Request) {
         .order("step_order"),
       supabase
         .from("recipe_ingredients")
-        .select("id, custom_name, display_order")
+        .select("id, custom_name, note, qualifier, display_order")
         .eq("recipe_id", recipeId)
         .order("display_order"),
     ]);
@@ -103,21 +116,26 @@ export async function POST(request: Request) {
   // 5. Collect texts that need translation
   const items: TranslationItem[] = [];
 
-  // 5a. Recipe title & description
-  for (const field of ["title", "description"] as const) {
-    const jsonb = recipe[field] as Record<string, string> | null;
-    if (!jsonb) continue;
-
+  function collectItems(
+    table: TranslationItem["table"],
+    rowId: string,
+    field: TranslationItem["field"],
+    raw: Record<string, string> | string | null
+  ) {
+    const jsonb = ensureLocaleObject(raw);
+    if (Object.keys(jsonb).length === 0) return;
     const presentLocales = Object.keys(jsonb).filter((k) => jsonb[k]?.trim());
-    const missingLocales = SUPPORTED_LOCALES.filter((l) => !presentLocales.includes(l));
-
-    if (missingLocales.length === 0 || presentLocales.length === 0) continue;
+    if (presentLocales.length === 0) return;
 
     const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
-    for (const targetLocale of missingLocales) {
+    const targetLocales = force
+      ? SUPPORTED_LOCALES.filter((l) => l !== sourceLocale)
+      : SUPPORTED_LOCALES.filter((l) => !presentLocales.includes(l));
+
+    for (const targetLocale of targetLocales) {
       items.push({
-        table: "recipes",
-        rowId: recipeId,
+        table,
+        rowId,
         field,
         sourceLocale,
         targetLocale,
@@ -127,52 +145,27 @@ export async function POST(request: Request) {
     }
   }
 
+  // 5a. Recipe title & description
+  for (const field of ["title", "description"] as const) {
+    collectItems("recipes", recipeId, field, recipe[field] as Record<string, string> | null);
+  }
+
   // 5b. Steps
   for (const step of steps ?? []) {
     for (const field of ["description", "tip"] as const) {
-      const jsonb = step[field] as Record<string, string> | null;
-      if (!jsonb) continue;
-
-      const presentLocales = Object.keys(jsonb).filter((k) => jsonb[k]?.trim());
-      const missingLocales = SUPPORTED_LOCALES.filter((l) => !presentLocales.includes(l));
-
-      if (missingLocales.length === 0 || presentLocales.length === 0) continue;
-
-      const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
-      for (const targetLocale of missingLocales) {
-        items.push({
-          table: "recipe_steps",
-          rowId: step.id,
-          field,
-          sourceLocale,
-          targetLocale,
-          sourceText: jsonb[sourceLocale],
-          existing: jsonb,
-        });
-      }
+      collectItems("recipe_steps", step.id, field, step[field] as Record<string, string> | null);
     }
   }
 
+  // 5c. Ingredients
   for (const ing of ingredients ?? []) {
-    const jsonb = ing.custom_name as Record<string, string> | null;
-    if (!jsonb) continue;
-
-    const presentLocales = Object.keys(jsonb).filter((k) => jsonb[k]?.trim());
-    const missingLocales = SUPPORTED_LOCALES.filter((l) => !presentLocales.includes(l));
-
-    if (missingLocales.length === 0 || presentLocales.length === 0) continue;
-
-    const sourceLocale = presentLocales.includes("ko") ? "ko" : presentLocales[0];
-    for (const targetLocale of missingLocales) {
-      items.push({
-        table: "recipe_ingredients",
-        rowId: ing.id,
-        field: "custom_name",
-        sourceLocale,
-        targetLocale,
-        sourceText: jsonb[sourceLocale],
-        existing: jsonb,
-      });
+    for (const field of ["custom_name", "note", "qualifier"] as const) {
+      collectItems(
+        "recipe_ingredients",
+        ing.id,
+        field,
+        ing[field] as Record<string, string> | null
+      );
     }
   }
 
@@ -246,9 +239,10 @@ ${numberedTexts}`,
 
   // 7. Update DB with translations
   let updated = 0;
+  const successLocales = new Set<string>();
 
   for (const [item, translatedText] of translations) {
-    const merged = { ...item.existing, [item.targetLocale]: translatedText };
+    const merged = { ...ensureLocaleObject(item.existing), [item.targetLocale]: translatedText };
 
     const idColumn = item.table === "recipes" ? "recipe_id" : "id";
     const { error } = await supabase
@@ -256,7 +250,20 @@ ${numberedTexts}`,
       .update({ [item.field]: merged })
       .eq(idColumn, item.rowId);
 
-    if (!error) updated++;
+    if (!error) {
+      updated++;
+      successLocales.add(item.targetLocale);
+    }
+  }
+
+  // 8. Update translated_locales — 성공한 locale만 기록
+  if (successLocales.size > 0) {
+    const existingTranslatedLocales = (recipe.translated_locales as Record<string, string>) ?? {};
+    const merged: Record<string, string> = { ...existingTranslatedLocales };
+    for (const loc of successLocales) {
+      merged[loc] = new Date().toISOString();
+    }
+    await supabase.from("recipes").update({ translated_locales: merged }).eq("recipe_id", recipeId);
   }
 
   return NextResponse.json({ translated: updated });

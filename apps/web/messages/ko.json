@@ -107,6 +107,8 @@
     "restrictionHalal": "할랄",
     "restrictionEggFree": "달걀 무첨가",
     "restrictionShellfishFree": "갑각류 무첨가",
+    "modeSoft": "선호",
+    "modeHard": "필수",
     "step4Title": "맛 선호도",
     "step4Subtitle": "어떤 맛을 좋아하시나요?",
     "tasteSweet": "단맛",
@@ -181,7 +183,8 @@
     "lintEmptyStep": "{step}단계에 설명이 없습니다",
     "lintStepNoIngredients": "{step}단계에 재료가 지정되지 않았습니다",
     "lintMissingTimer": "{step}단계에 시간 언급이 있지만 타이머가 설정되지 않았습니다",
-    "lintWarnings": "다음 사항을 확인해주세요:"
+    "lintWarnings": "다음 사항을 확인해주세요:",
+    "dragToReorder": "드래그하여 순서 변경"
   },
   "validation": {
     "titleMin": "제목을 3자 이상 입력해주세요",
@@ -288,12 +291,18 @@
     "dietary_low_sodium": "저염식",
     "original": "원문",
     "autoTranslated": "자동 번역",
+    "notTranslated": "번역 미완료",
     "languageKo": "한국어",
     "languageEn": "English",
     "translate": "번역",
     "translating": "번역 중...",
     "translateSuccess": "번역 완료!",
-    "translateError": "번역 실패. 다시 시도해주세요."
+    "translateError": "번역 실패. 다시 시도해주세요.",
+    "translationStale": "번역 갱신 필요",
+    "editTranslation": "번역 수정",
+    "saveTranslation": "저장",
+    "cancelEdit": "취소",
+    "leftoverRecommend": "남은 재료로 뭐 해먹지?"
   },
   "cookingMode": {
     "stepOf": "{current}/{total} 단계",
@@ -341,7 +350,9 @@
     "filterDietaryLowSodium": "저염식",
     "pageInfo": "페이지 {current} / {total}",
     "previousPage": "이전",
-    "nextPage": "다음"
+    "nextPage": "다음",
+    "filterModeSoft": "선호",
+    "filterModeHard": "필수"
   },
   "ingredient": {
     "searchPlaceholder": "재료 검색...",
@@ -443,6 +454,8 @@
     "restrictionHalal": "할랄",
     "restrictionEggFree": "달걀 무첨가",
     "restrictionShellfishFree": "갑각류 무첨가",
+    "modeSoft": "선호",
+    "modeHard": "필수",
     "tasteLabel": "맛 선호도",
     "tasteSweet": "단맛",
     "tasteSweetLow": "단 음식 별로",
@@ -521,7 +534,9 @@
     "noResults": "일치하는 레시피가 없습니다. 재료를 더 추가해보세요!",
     "resultsTitle": "추천 레시피",
     "minutes": "분",
-    "servings": "인분"
+    "servings": "인분",
+    "leftoverBanner": "이전 요리의 재료입니다. 다 쓴 재료는 제거해주세요!",
+    "clearAll": "모두 지우기"
   },
   "footer": {
     "tagline": "한식 레시피를 발견하고, 리믹스하고, 세상과 공유하세요.",
@@ -533,5 +548,31 @@
     "privacy": "개인정보처리방침",
     "terms": "이용약관",
     "copyright": "맛담. All rights reserved."
+  },
+  "userProfile": {
+    "title": "유저 프로필",
+    "recipes": "레시피",
+    "noRecipes": "레시피가 없습니다",
+    "memberSince": "가입일",
+    "recipeCount": "레시피 {count}개",
+
+    "settings": "설정",
+    "minutes": "분",
+    "servings": "인분"
+  },
+  "report": {
+    "report": "신고",
+    "reported": "신고됨",
+    "title": "콘텐츠 신고",
+    "description": "신고 사유를 선택해주세요.",
+    "reason_inappropriate": "부적절하거나 불쾌한 콘텐츠",
+    "reason_spam": "스팸 또는 오해의 소지가 있는 콘텐츠",
+    "reason_copyright": "저작권 침해",
+    "reason_other": "기타",
+    "detailLabel": "상세 내용",
+    "detailPlaceholder": "문제에 대해 자세히 알려주세요...",
+    "submit": "신고 제출",
+    "submitting": "제출 중...",
+    "alreadyReported": "이미 신고한 콘텐츠입니다."
   }
 }

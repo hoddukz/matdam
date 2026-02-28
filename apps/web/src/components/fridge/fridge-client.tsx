@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Search } from "lucide-react";
+import { X, Search, Info } from "lucide-react";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 
 type SelectedIngredient = {
@@ -38,7 +38,11 @@ type MatchedRecipe = {
   totalIngredients: number;
 };
 
-export function FridgeClient() {
+interface FridgeClientProps {
+  fromRecipeId?: string;
+}
+
+export function FridgeClient({ fromRecipeId }: FridgeClientProps) {
   const t = useTranslations("fridge");
   const locale = useLocale();
   const supabaseRef = useRef(createClient());
@@ -50,8 +54,10 @@ export function FridgeClient() {
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showLeftoverBanner, setShowLeftoverBanner] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const autoSearchDoneRef = useRef(false);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -63,6 +69,56 @@ export function FridgeClient() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // fromRecipeId: 레시피 재료 자동 로드
+  useEffect(() => {
+    if (!fromRecipeId || autoSearchDoneRef.current) return;
+
+    async function loadRecipeIngredients() {
+      const supabase = supabaseRef.current;
+
+      // recipe_ingredients 에서 ingredient_id가 있는 행만 조회 + ingredients 테이블 조인
+      const { data } = await supabase
+        .from("recipe_ingredients")
+        .select("ingredient_id, ingredients(id, names)")
+        .eq("recipe_id", fromRecipeId!)
+        .not("ingredient_id", "is", null);
+
+      if (!data || data.length === 0) return;
+
+      const ingredients: SelectedIngredient[] = [];
+      const seen = new Set<string>();
+
+      for (const row of data) {
+        const ing = row.ingredients as unknown as {
+          id: string;
+          names: Record<string, string>;
+        } | null;
+        if (!ing || seen.has(ing.id)) continue;
+        seen.add(ing.id);
+        ingredients.push({
+          id: ing.id,
+          name: getLocalizedText(ing.names, locale),
+        });
+      }
+
+      if (ingredients.length > 0) {
+        setSelected(ingredients);
+        setShowLeftoverBanner(true);
+      }
+    }
+
+    loadRecipeIngredients();
+  }, [fromRecipeId, locale]);
+
+  // fromRecipeId: 재료 로드 후 자동 검색 (1회)
+  useEffect(() => {
+    if (!fromRecipeId || autoSearchDoneRef.current || selected.length === 0 || !showLeftoverBanner)
+      return;
+    autoSearchDoneRef.current = true;
+    handleSearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, showLeftoverBanner, fromRecipeId]);
 
   const fetchSuggestions = useCallback(
     async (term: string) => {
@@ -106,6 +162,13 @@ export function FridgeClient() {
 
   function handleRemove(id: string) {
     setSelected((prev) => prev.filter((s) => s.id !== id));
+  }
+
+  function handleClearAll() {
+    setSelected([]);
+    setShowLeftoverBanner(false);
+    setResults([]);
+    setHasSearched(false);
   }
 
   async function handleSearch() {
@@ -184,6 +247,24 @@ export function FridgeClient() {
 
   return (
     <div className="mt-6 space-y-6">
+      {/* Leftover banner */}
+      {showLeftoverBanner && (
+        <div className="flex items-start gap-3 rounded-lg border border-matdam-gold/30 bg-matdam-gold/5 p-4">
+          <Info className="mt-0.5 h-5 w-5 shrink-0 text-matdam-gold" />
+          <div className="flex-1">
+            <p className="text-sm font-medium">{t("leftoverBanner")}</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="shrink-0 text-xs text-muted-foreground"
+            onClick={handleClearAll}
+          >
+            {t("clearAll")}
+          </Button>
+        </div>
+      )}
+
       {/* Ingredient search input */}
       <div ref={containerRef} className="relative">
         <div className="relative">

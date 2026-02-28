@@ -16,7 +16,9 @@ import { DIFFICULTY_LABEL_KEYS } from "@/lib/recipe/constants";
 import { ExploreSearch } from "@/components/explore/explore-search";
 import { DietaryFilterPopover } from "@/components/explore/dietary-filter-popover";
 import { DifficultyFilterPopover } from "@/components/explore/difficulty-filter-popover";
+import { exploreParamsSchema } from "@/lib/validation/search-params";
 import type { RecipeCardData } from "@/lib/recipe/types";
+import type { DietaryPreference, UserPreferences } from "@matdam/types";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -25,6 +27,8 @@ type Props = {
     q?: string;
     sort?: string;
     dietary?: string;
+    dietary_hard?: string;
+    dietary_soft?: string;
     page?: string;
   }>;
 };
@@ -43,119 +47,155 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const VALID_DIFFICULTIES = ["beginner", "intermediate", "master"] as const;
-type Difficulty = (typeof VALID_DIFFICULTIES)[number];
-
-const VALID_DIETARY_TAGS = [
-  "vegan",
-  "vegetarian",
-  "pescatarian",
-  "gluten_free",
-  "dairy_free",
-  "nut_free",
-  "halal",
-  "low_calorie",
-  "diabetic_friendly",
-  "low_sodium",
-] as const;
-type DietaryTag = (typeof VALID_DIETARY_TAGS)[number];
-
-const VALID_SORTS = ["newest", "popular"] as const;
-type SortOption = (typeof VALID_SORTS)[number];
-
 const PAGE_SIZE = 20;
+
+/** 유저 설정에서 DietaryPreference[] 추출 (하위 호환) */
+function extractDietaryPreferences(prefs?: Partial<UserPreferences> | null): DietaryPreference[] {
+  if (!prefs) return [];
+  if (prefs.dietary_preferences && prefs.dietary_preferences.length > 0) {
+    return prefs.dietary_preferences;
+  }
+  // 레거시 폴백: dietary_restrictions → hard 모드
+  if (prefs.dietary_restrictions && prefs.dietary_restrictions.length > 0) {
+    return prefs.dietary_restrictions.map((tag) => ({ tag, mode: "hard" as const }));
+  }
+  return [];
+}
 
 export default async function ExplorePage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const {
-    difficulty: rawDifficulty,
-    q: rawQ,
-    sort: rawSort,
-    dietary: rawDietary,
-    page: rawPage,
-  } = await searchParams;
-  const difficulty = rawDifficulty
-    ? (rawDifficulty
-        .split(",")
-        .filter((v) => VALID_DIFFICULTIES.includes(v as Difficulty)) as Difficulty[])
-    : [];
-  const q = rawQ?.trim() || undefined;
-  const sort: SortOption = VALID_SORTS.includes(rawSort as SortOption)
-    ? (rawSort as SortOption)
-    : "newest";
-  const dietary = rawDietary
-    ? (rawDietary
-        .split(",")
-        .filter((v) => VALID_DIETARY_TAGS.includes(v as DietaryTag)) as DietaryTag[])
-    : [];
-  const page = Math.max(1, parseInt(rawPage ?? "1", 10) || 1);
+  const raw = await searchParams;
   const t = await getTranslations({ locale, namespace: "explore" });
+
+  // Zod 중앙 검증 — 검증 실패한 파라미터는 DB 쿼리에 도달하지 않음
+  const parsed = exploreParamsSchema.safeParse(raw);
+  const {
+    q: sanitizedQ,
+    sort = "newest",
+    difficulty = [],
+    dietary = [],
+    dietary_hard = [],
+    dietary_soft = [],
+    page = 1,
+  } = parsed.success
+    ? parsed.data
+    : {
+        q: undefined,
+        sort: "newest" as const,
+        difficulty: [],
+        dietary: [],
+        dietary_hard: [],
+        dietary_soft: [],
+        page: 1,
+      };
 
   const supabase = await createClient();
 
-  // 검색어 이스케이프 (공통)
-  const escapedQ = q ? q.replace(/[%_\\]/g, (ch) => `\\${ch}`).replace(/[.,()'"]/g, "") : null;
+  // 로그인 유저의 dietary 설정 조회
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // 전체 개수 조회 (페이지네이션용)
-  let countQuery = supabase
-    .from("recipes")
-    .select("recipe_id", { count: "exact", head: true })
-    .eq("published", true);
-  if (sort === "popular") {
-    countQuery = countQuery
-      .order("upvote_count", { ascending: false })
-      .order("created_at", { ascending: false });
-  } else {
-    countQuery = countQuery.order("created_at", { ascending: false });
+  let userDietaryPrefs: DietaryPreference[] = [];
+  if (user) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("preferences")
+      .eq("user_id", user.id)
+      .single();
+    userDietaryPrefs = extractDietaryPreferences(
+      profile?.preferences as Partial<UserPreferences> | null
+    );
   }
-  if (difficulty.length > 0) countQuery = countQuery.in("difficulty_level", difficulty);
-  if (dietary.length > 0) countQuery = countQuery.overlaps("dietary_tags", dietary);
-  if (escapedQ) {
-    countQuery = countQuery.or(`title->>'en'.ilike.%${escapedQ}%,title->>'ko'.ilike.%${escapedQ}%`);
-  }
-  const { count } = await countQuery;
-  const totalCount = count ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
 
-  // 현재 페이지 레시피 조회
-  let dataQuery = supabase
-    .from("recipes")
-    .select(
-      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, upvote_count, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url)"
-    )
-    .eq("published", true);
-  if (sort === "popular") {
-    dataQuery = dataQuery
-      .order("upvote_count", { ascending: false })
-      .order("created_at", { ascending: false });
-  } else {
-    dataQuery = dataQuery.order("created_at", { ascending: false });
-  }
-  if (difficulty.length > 0) dataQuery = dataQuery.in("difficulty_level", difficulty);
-  if (dietary.length > 0) dataQuery = dataQuery.overlaps("dietary_tags", dietary);
-  if (escapedQ) {
-    dataQuery = dataQuery.or(`title->>'en'.ilike.%${escapedQ}%,title->>'ko'.ilike.%${escapedQ}%`);
-  }
-  dataQuery = dataQuery.range((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE - 1);
+  // URL에 dietary 파라미터가 없으면 유저 설정 자동 적용
+  const hasExplicitDietary =
+    raw.dietary_hard !== undefined || raw.dietary_soft !== undefined || raw.dietary !== undefined;
 
-  const { data: recipes } = await dataQuery;
+  let effectiveHard: string[] = dietary_hard;
+  let effectiveSoft: string[] = dietary_soft;
+
+  if (!hasExplicitDietary && userDietaryPrefs.length > 0) {
+    effectiveHard = userDietaryPrefs.filter((p) => p.mode === "hard").map((p) => p.tag as string);
+    effectiveSoft = userDietaryPrefs.filter((p) => p.mode === "soft").map((p) => p.tag as string);
+  }
+
+  // RPC 호출 — 검색/필터/정렬/페이지네이션을 DB 함수에서 처리 (SQL Injection 제거)
+  const rpcParams = {
+    search_term: sanitizedQ ?? "",
+    sort_option: sort,
+    difficulty_filter: difficulty,
+    dietary_filter: dietary,
+    page_number: page,
+    page_size: PAGE_SIZE,
+    dietary_hard_filter: effectiveHard,
+    dietary_soft_filter: effectiveSoft,
+  };
+
+  const { data: rpcRows } = await supabase.rpc("search_recipes", rpcParams);
+  let rows = rpcRows ?? [];
+  let totalCount = rows.length > 0 ? Number(rows[0].total_count) : 0;
+  let totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  let safePage = totalCount > 0 ? Math.min(page, totalPages) : 1;
+
+  // 요청 페이지가 범위 초과 시 보정된 페이지로 재조회
+  if (rows.length === 0 && page > 1) {
+    const { data: retryRows } = await supabase.rpc("search_recipes", {
+      ...rpcParams,
+      page_number: 1,
+    });
+    rows = retryRows ?? [];
+    totalCount = rows.length > 0 ? Number(rows[0].total_count) : 0;
+    totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+    safePage = Math.min(page, totalPages);
+
+    if (safePage > 1) {
+      const { data: correctedRows } = await supabase.rpc("search_recipes", {
+        ...rpcParams,
+        page_number: safePage,
+      });
+      rows = correctedRows ?? [];
+    }
+  }
+
+  // RPC 결과를 RecipeCardData 형태로 매핑
+  const recipes: RecipeCardData[] = rows.map((r: Record<string, unknown>) => ({
+    recipe_id: r.recipe_id as string,
+    slug: r.slug as string,
+    title: r.title as Record<string, string>,
+    description: r.description as Record<string, string>,
+    hero_image_url: r.hero_image_url as string | null,
+    difficulty_level: r.difficulty_level as string | null,
+    prep_time_minutes: r.prep_time_minutes as number | null,
+    cook_time_minutes: r.cook_time_minutes as number | null,
+    servings: r.servings as number | null,
+    created_at: r.created_at as string,
+    parent_recipe_id: r.parent_recipe_id as string | null,
+    upvote_count: r.upvote_count as number,
+    dietary_tags: r.dietary_tags as string[] | null,
+    users: {
+      display_name: r.author_name as string | null,
+      avatar_url: r.author_avatar as string | null,
+    },
+  }));
 
   // 페이지네이션 링크 생성 헬퍼
   function buildPageHref(targetPage: number): string {
     const params2 = new URLSearchParams();
     if (difficulty.length > 0) params2.set("difficulty", difficulty.join(","));
-    if (q) params2.set("q", q);
+    if (sanitizedQ) params2.set("q", sanitizedQ);
     if (sort !== "newest") params2.set("sort", sort);
     if (dietary.length > 0) params2.set("dietary", dietary.join(","));
+    if (dietary_hard.length > 0) params2.set("dietary_hard", dietary_hard.join(","));
+    if (dietary_soft.length > 0) params2.set("dietary_soft", dietary_soft.join(","));
     if (targetPage > 1) params2.set("page", String(targetPage));
     const qs = params2.toString();
     return qs ? `?${qs}` : "?";
   }
 
   // 리믹스 레시피의 부모 제목을 일괄 조회
-  const parentIds = (recipes ?? [])
-    .map((r: { parent_recipe_id: string | null }) => r.parent_recipe_id)
+  const parentIds = recipes
+    .map((r) => r.parent_recipe_id)
     .filter((id): id is string => id !== null);
 
   const parentTitleMap: Record<string, string> = {};
@@ -197,7 +237,7 @@ export default async function ExplorePage({ params, searchParams }: Props) {
               <DifficultyFilterPopover />
             </Suspense>
             <Suspense fallback={null}>
-              <DietaryFilterPopover />
+              <DietaryFilterPopover userPreferences={userDietaryPrefs} />
             </Suspense>
           </div>
 
@@ -205,9 +245,11 @@ export default async function ExplorePage({ params, searchParams }: Props) {
             {sortOptions.map((option) => {
               const params = new URLSearchParams();
               if (difficulty.length > 0) params.set("difficulty", difficulty.join(","));
-              if (q) params.set("q", q);
+              if (sanitizedQ) params.set("q", sanitizedQ);
               if (option.value !== "newest") params.set("sort", option.value);
               if (dietary.length > 0) params.set("dietary", dietary.join(","));
+              if (dietary_hard.length > 0) params.set("dietary_hard", dietary_hard.join(","));
+              if (dietary_soft.length > 0) params.set("dietary_soft", dietary_soft.join(","));
               const href = `?${params.toString()}`;
               const isActive = sort === option.value;
               return (
@@ -225,14 +267,14 @@ export default async function ExplorePage({ params, searchParams }: Props) {
         </div>
       </div>
 
-      {!recipes || recipes.length === 0 ? (
+      {recipes.length === 0 ? (
         <div className="flex min-h-[400px] items-center justify-center">
           <p className="text-muted-foreground">{t("noRecipes")}</p>
         </div>
       ) : (
         <>
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {(recipes as unknown as RecipeCardData[]).map((recipe) => {
+            {recipes.map((recipe) => {
               const title = getLocalizedText(recipe.title, locale);
               const totalMinutes =
                 (recipe.prep_time_minutes ?? 0) + (recipe.cook_time_minutes ?? 0);

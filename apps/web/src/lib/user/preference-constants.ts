@@ -135,6 +135,11 @@ export const SKILL_LABEL_I18N_MAP: Record<DifficultyLevel, string> = {
 
 export const SELECTED_STYLE = "ring-2 ring-matdam-gold bg-matdam-gold/10 border-matdam-gold";
 
+export const DIETARY_MODE_I18N: Record<string, { label: string; description: string }> = {
+  soft: { label: "dietaryModeSoft", description: "dietaryModeSoftDesc" },
+  hard: { label: "dietaryModeHard", description: "dietaryModeHardDesc" },
+};
+
 export function toggleItem<T>(list: T[], item: T): T[] {
   return list.includes(item) ? list.filter((i) => i !== item) : [...list, item];
 }

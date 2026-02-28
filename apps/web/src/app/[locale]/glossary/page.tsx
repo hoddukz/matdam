@@ -16,6 +16,7 @@ import {
   CUISINE_LABEL_KEYS,
   ACTIVE_CUISINES,
 } from "@/lib/recipe/glossary-constants";
+import { glossaryParamsSchema, VALID_CATEGORIES } from "@/lib/validation/search-params";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -31,18 +32,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-const VALID_CATEGORIES = [
-  "sauce_paste",
-  "seasoning",
-  "vegetable",
-  "protein",
-  "grain_noodle",
-  "dairy_egg",
-  "other",
-] as const;
-
-type Category = (typeof VALID_CATEGORIES)[number];
-
 type Ingredient = {
   id: string;
   names: Record<string, string>;
@@ -54,58 +43,69 @@ type Ingredient = {
 
 export default async function GlossaryPage({ params, searchParams }: Props) {
   const { locale } = await params;
-  const { category: rawCategory, q, cuisine: rawCuisine } = await searchParams;
-  const category = VALID_CATEGORIES.includes(rawCategory as Category)
-    ? (rawCategory as Category)
-    : undefined;
-  const VALID_CUISINES = Object.keys(CUISINE_LABEL_KEYS);
-  const cuisine = VALID_CUISINES.includes(rawCuisine ?? "") ? rawCuisine : undefined;
-  const activeCuisines = ACTIVE_CUISINES as readonly string[];
+  const raw = await searchParams;
   const t = await getTranslations({ locale, namespace: "glossary" });
+
+  // Zod 중앙 검증 — 검증 실패 시 DB 쿼리 스킵
+  const VALID_CUISINES = Object.keys(CUISINE_LABEL_KEYS);
+  const parsed = glossaryParamsSchema.safeParse(raw);
+  const validParams = parsed.success ? parsed.data : {};
+  const category = validParams.category;
+  const cuisine =
+    validParams.cuisine && VALID_CUISINES.includes(validParams.cuisine)
+      ? validParams.cuisine
+      : undefined;
+  const q = validParams.q;
+
+  // Zod 검증 실패 시 DB 쿼리 스킵 (타이밍 기반 오탐 방지)
+  const hasInvalidParam = !parsed.success;
+  const activeCuisines = ACTIVE_CUISINES as readonly string[];
   const supabase = await createClient();
 
-  const ingredients: Ingredient[] = await (async () => {
-    if (q && q.trim().length >= 2) {
-      // 검색어가 있으면 RPC 사용
-      const { data } = await supabase.rpc("search_ingredients", {
-        search_term: q.trim(),
-        locale,
-        result_limit: 50,
-      });
-      let results = (data ?? []) as Ingredient[];
-      // 카테고리 필터 적용
-      if (category) results = results.filter((i) => i.category === category);
-      // cuisine 필터: RPC는 cuisines를 반환하지 않으므로 id 목록으로 2차 필터
-      if (cuisine && results.length > 0) {
-        const ids = results.map((i) => i.id);
-        const { data: filtered } = await supabase
+  const ingredients: Ingredient[] = hasInvalidParam
+    ? []
+    : await (async () => {
+        if (q && q.length >= 2) {
+          // 검색어가 있으면 RPC 사용 (Zod에서 이미 trim/검증 완료)
+          const { data } = await supabase.rpc("search_ingredients", {
+            search_term: q,
+            locale,
+            result_limit: 50,
+          });
+          let results = (data ?? []) as Ingredient[];
+          // 카테고리 필터 적용
+          if (category) results = results.filter((i) => i.category === category);
+          // cuisine 필터: RPC는 cuisines를 반환하지 않으므로 id 목록으로 2차 필터
+          if (cuisine && results.length > 0) {
+            const ids = results.map((i) => i.id);
+            const { data: filtered } = await supabase
+              .from("ingredients")
+              .select("id")
+              .in("id", ids)
+              .contains("cuisines", [cuisine]);
+            const validIds = new Set((filtered ?? []).map((r: { id: string }) => r.id));
+            results = results.filter((i) => validIds.has(i.id));
+          }
+          return results;
+        }
+
+        // 검색어 없으면 직접 쿼리
+        let query = supabase
           .from("ingredients")
-          .select("id")
-          .in("id", ids)
-          .contains("cuisines", [cuisine]);
-        const validIds = new Set((filtered ?? []).map((r: { id: string }) => r.id));
-        results = results.filter((i) => validIds.has(i.id));
-      }
-      return results;
-    }
+          .select("id, names, category, dietary_flags, description, image_url, cuisines")
+          .order("names->en")
+          .limit(100);
 
-    // 검색어 없으면 직접 쿼리
-    let query = supabase
-      .from("ingredients")
-      .select("id, names, category, dietary_flags, description, image_url, cuisines")
-      .order("names->en")
-      .limit(100);
+        if (category) {
+          query = query.eq("category", category);
+        }
+        if (cuisine) {
+          query = query.contains("cuisines", [cuisine]);
+        }
 
-    if (category) {
-      query = query.eq("category", category);
-    }
-    if (cuisine) {
-      query = query.contains("cuisines", [cuisine]);
-    }
-
-    const { data } = await query;
-    return (data ?? []) as Ingredient[];
-  })();
+        const { data } = await query;
+        return (data ?? []) as Ingredient[];
+      })();
 
   const cuisineFilters = [
     { value: undefined, labelKey: "cuisineAll" as const },

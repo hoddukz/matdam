@@ -96,11 +96,11 @@ export function RecipeVoteButton({
   const btnSize = isLg ? "default" : "sm";
 
   return (
-    <div className={`flex items-center ${isLg ? "justify-center gap-3" : "gap-1"}`}>
+    <div className={isLg ? "contents" : "flex items-center gap-1"}>
       <Button
         variant="outline"
         size={btnSize}
-        className={`gap-2 ${isLg ? "px-6 py-2 text-base" : ""} ${myVote === 1 ? "border-matdam-gold bg-matdam-gold/10 text-matdam-gold" : ""}`}
+        className={`gap-2 ${isLg ? "h-12 w-full justify-center text-base" : ""} ${myVote === 1 ? "border-matdam-gold bg-matdam-gold/10 text-matdam-gold" : ""}`}
         onClick={() => handleVote(1)}
         disabled={pending}
       >
@@ -110,7 +110,7 @@ export function RecipeVoteButton({
       <Button
         variant="outline"
         size={btnSize}
-        className={`gap-2 ${isLg ? "px-6 py-2 text-base" : ""} ${myVote === -1 ? "border-destructive bg-destructive/10 text-destructive" : ""}`}
+        className={`gap-2 ${isLg ? "h-12 w-full justify-center text-base" : ""} ${myVote === -1 ? "border-destructive bg-destructive/10 text-destructive" : ""}`}
         onClick={() => handleVote(-1)}
         disabled={pending}
       >

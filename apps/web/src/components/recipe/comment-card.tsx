@@ -4,12 +4,14 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown, Trash2, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { ReportDialog } from "@/components/report/report-dialog";
 import { CommentForm } from "./comment-form";
 
 type CommentUser = { display_name: string; avatar_url: string | null };
@@ -38,6 +40,8 @@ interface CommentCardProps {
   replies?: CommentData[];
   myVotes?: Record<string, 1 | -1>;
   currentUserId: string | null;
+  hasReported?: boolean;
+  reportedIds?: Set<string>;
   onDeleted?: () => void;
   onReplyAdded?: () => void;
 }
@@ -52,6 +56,8 @@ export function CommentCard({
   replies = [],
   myVotes = {},
   currentUserId,
+  hasReported = false,
+  reportedIds = new Set(),
   onDeleted,
   onReplyAdded,
 }: CommentCardProps) {
@@ -150,22 +156,35 @@ export function CommentCard({
             >
               {author?.display_name?.charAt(0)?.toUpperCase() ?? "?"}
             </div>
-            <span className={`font-medium ${isReply ? "text-xs" : "text-sm"}`}>
+            <Link
+              href={`/${locale}/user/${comment.user_id}`}
+              className={`font-medium underline-offset-4 hover:underline ${isReply ? "text-xs" : "text-sm"}`}
+            >
               {author?.display_name ?? "—"}
-            </span>
+            </Link>
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>
-          {isOwner && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {isOwner && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive"
+                onClick={handleDelete}
+                disabled={deleting}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+            {!isOwner && (
+              <ReportDialog
+                targetType="comment"
+                targetId={comment.comment_id}
+                isLoggedIn={isLoggedIn}
+                hasReported={hasReported}
+              />
+            )}
+          </div>
         </div>
 
         {/* Body + Vote 같은 줄 */}
@@ -269,6 +288,8 @@ export function CommentCard({
               isReply
               cookLogId={cookLogId}
               currentUserId={currentUserId}
+              hasReported={reportedIds.has(reply.comment_id)}
+              reportedIds={reportedIds}
               onDeleted={onReplyAdded}
               onReplyAdded={onReplyAdded}
             />

@@ -1,8 +1,9 @@
 -- Tag: core
--- Path: /Users/hodduk/Documents/git/mat_dam/supabase/migrations/004_storage_bucket.sql
+-- Path: supabase/migrations_merged/003_storage_bucket.sql
 
 -- ============================================================
--- Migration 004: Supabase Storage Bucket for Recipe Images
+-- MatDam — Supabase Storage Bucket for Recipe Images
+-- Merged from original: 004
 -- ============================================================
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

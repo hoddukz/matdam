@@ -33,6 +33,13 @@ export interface TastePreferences {
   umami: number;
 }
 
+export type DietaryPreferenceMode = "soft" | "hard";
+
+export interface DietaryPreference {
+  tag: DietaryRestriction;
+  mode: DietaryPreferenceMode;
+}
+
 export interface UserPreferences {
   onboarding_complete?: boolean;
   skill_level?: import("./recipe").DifficultyLevel;
@@ -40,6 +47,7 @@ export interface UserPreferences {
   diet_type?: DietType;
   protein_preferences?: ProteinPreference[];
   dietary_restrictions?: DietaryRestriction[];
+  dietary_preferences?: DietaryPreference[];
   taste_preferences?: TastePreferences;
   preferred_unit?: "metric" | "imperial";
 }

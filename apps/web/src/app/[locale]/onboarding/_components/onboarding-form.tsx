@@ -31,6 +31,8 @@ import type {
   CuisinePreference,
   DietType,
   DietaryRestriction,
+  DietaryPreference,
+  DietaryPreferenceMode,
   ProteinPreference,
   TastePreferences,
   UserPreferences,
@@ -45,6 +47,17 @@ const TOTAL_STEPS = 4;
 interface OnboardingFormProps {
   defaultDisplayName: string;
   existingPreferences?: Partial<UserPreferences> | null;
+}
+
+/** 기존 dietary_restrictions → DietaryPreference[] 폴백 변환 */
+function initDietaryPrefs(prefs?: Partial<UserPreferences> | null): DietaryPreference[] {
+  if (prefs?.dietary_preferences && prefs.dietary_preferences.length > 0) {
+    return prefs.dietary_preferences;
+  }
+  if (prefs?.dietary_restrictions && prefs.dietary_restrictions.length > 0) {
+    return prefs.dietary_restrictions.map((tag) => ({ tag, mode: "hard" as const }));
+  }
+  return [];
 }
 
 export function OnboardingForm({ defaultDisplayName, existingPreferences }: OnboardingFormProps) {
@@ -73,8 +86,8 @@ export function OnboardingForm({ defaultDisplayName, existingPreferences }: Onbo
   const [proteins, setProteins] = useState<ProteinPreference[]>(
     existingPreferences?.protein_preferences ?? []
   );
-  const [restrictions, setRestrictions] = useState<DietaryRestriction[]>(
-    existingPreferences?.dietary_restrictions ?? []
+  const [dietaryPrefs, setDietaryPrefs] = useState<DietaryPreference[]>(
+    initDietaryPrefs(existingPreferences)
   );
 
   // Step 4
@@ -109,6 +122,26 @@ export function OnboardingForm({ defaultDisplayName, existingPreferences }: Onbo
     setStep((s) => Math.min(s + 1, TOTAL_STEPS));
   }
 
+  function toggleRestriction(restriction: DietaryRestriction) {
+    setDietaryPrefs((prev) => {
+      const existing = prev.find((p) => p.tag === restriction);
+      if (existing) {
+        return prev.filter((p) => p.tag !== restriction);
+      }
+      return [...prev, { tag: restriction, mode: "hard" as DietaryPreferenceMode }];
+    });
+  }
+
+  function toggleRestrictionMode(restriction: DietaryRestriction) {
+    setDietaryPrefs((prev) =>
+      prev.map((p) =>
+        p.tag === restriction
+          ? { ...p, mode: p.mode === "hard" ? ("soft" as const) : ("hard" as const) }
+          : p
+      )
+    );
+  }
+
   async function handleSubmit() {
     setError("");
     setSubmitting(true);
@@ -122,13 +155,19 @@ export function OnboardingForm({ defaultDisplayName, existingPreferences }: Onbo
       return;
     }
 
+    // 하위 호환: dietary_restrictions 배열도 함께 저장
+    const restrictionTags = dietaryPrefs.map((p) => p.tag);
+
     const preferences: UserPreferences = {
       onboarding_complete: true,
       ...(skillLevel && { skill_level: skillLevel }),
       ...(cuisines.length > 0 && { cuisines }),
       ...(dietType && { diet_type: dietType }),
       ...(proteins.length > 0 && { protein_preferences: proteins }),
-      ...(restrictions.length > 0 && { dietary_restrictions: restrictions }),
+      ...(dietaryPrefs.length > 0 && {
+        dietary_restrictions: restrictionTags,
+        dietary_preferences: dietaryPrefs,
+      }),
       taste_preferences: tastes,
     };
 
@@ -292,22 +331,40 @@ export function OnboardingForm({ defaultDisplayName, existingPreferences }: Onbo
             </div>
           </div>
 
-          {/* Restrictions */}
+          {/* Restrictions with Soft/Hard toggle */}
           <div className="space-y-3">
             <Label>{t("restrictionsLabel")}</Label>
-            <div className="flex flex-wrap gap-2">
-              {RESTRICTIONS.map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRestrictions(toggleItem(restrictions, r))}
-                  className={`rounded-full border px-3 py-1.5 text-sm transition-all hover:border-matdam-gold/50 ${
-                    restrictions.includes(r) ? SELECTED_STYLE : "border-border"
-                  }`}
-                >
-                  {t(RESTRICTION_I18N_MAP[r] as Parameters<typeof t>[0])}
-                </button>
-              ))}
+            <div className="space-y-2">
+              {RESTRICTIONS.map((r) => {
+                const pref = dietaryPrefs.find((p) => p.tag === r);
+                const isSelected = !!pref;
+                return (
+                  <div key={r} className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => toggleRestriction(r)}
+                      className={`flex-1 rounded-full border px-3 py-1.5 text-sm text-left transition-all hover:border-matdam-gold/50 ${
+                        isSelected ? SELECTED_STYLE : "border-border"
+                      }`}
+                    >
+                      {t(RESTRICTION_I18N_MAP[r] as Parameters<typeof t>[0])}
+                    </button>
+                    {isSelected && (
+                      <button
+                        type="button"
+                        onClick={() => toggleRestrictionMode(r)}
+                        className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
+                          pref.mode === "hard"
+                            ? "bg-destructive/10 text-destructive"
+                            : "bg-amber-400/10 text-amber-600"
+                        }`}
+                      >
+                        {pref.mode === "hard" ? t("modeHard") : t("modeSoft")}
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>

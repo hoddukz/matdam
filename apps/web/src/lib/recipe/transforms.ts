@@ -18,8 +18,8 @@ interface DBIngredient {
   custom_name: Record<string, string> | null;
   amount: number | null;
   unit: string | null;
-  qualifier: string | null;
-  note: string | null;
+  qualifier: Record<string, string> | null;
+  note: Record<string, string> | null;
   step_number: number | null;
   display_order: number;
   ingredients: { id: string; names: Record<string, string> } | null;
@@ -60,7 +60,7 @@ export function dbIngredientsToForm(
         : "",
     amount: ri.amount,
     unit: ri.unit,
-    qualifier: ri.qualifier,
-    note: ri.note,
+    qualifier: getLocalizedText(ri.qualifier, locale) || null,
+    note: getLocalizedText(ri.note, locale) || null,
   }));
 }

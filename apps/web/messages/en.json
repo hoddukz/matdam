@@ -107,6 +107,8 @@
     "restrictionHalal": "Halal",
     "restrictionEggFree": "Egg-Free",
     "restrictionShellfishFree": "Shellfish-Free",
+    "modeSoft": "Prefer",
+    "modeHard": "Required",
     "step4Title": "Taste Preferences",
     "step4Subtitle": "How do you like your food?",
     "tasteSweet": "Sweet",
@@ -181,7 +183,8 @@
     "lintEmptyStep": "Step {step} has no description",
     "lintStepNoIngredients": "Step {step} has no ingredients assigned",
     "lintMissingTimer": "Step {step} mentions time but has no timer set",
-    "lintWarnings": "Please review the following:"
+    "lintWarnings": "Please review the following:",
+    "dragToReorder": "Drag to reorder"
   },
   "validation": {
     "titleMin": "Title must be at least 3 characters",
@@ -288,12 +291,18 @@
     "dietary_low_sodium": "Low-Sodium",
     "original": "Original",
     "autoTranslated": "Auto-translated",
+    "notTranslated": "Not translated",
     "languageKo": "한국어",
     "languageEn": "English",
     "translate": "Translate",
     "translating": "Translating...",
     "translateSuccess": "Translation complete!",
-    "translateError": "Translation failed. Please try again."
+    "translateError": "Translation failed. Please try again.",
+    "translationStale": "Translation outdated",
+    "editTranslation": "Edit translation",
+    "saveTranslation": "Save",
+    "cancelEdit": "Cancel",
+    "leftoverRecommend": "What can I make with leftovers?"
   },
   "cookingMode": {
     "stepOf": "Step {current}/{total}",
@@ -341,7 +350,9 @@
     "filterDietaryLowSodium": "Low-Sodium",
     "pageInfo": "Page {current} of {total}",
     "previousPage": "Previous",
-    "nextPage": "Next"
+    "nextPage": "Next",
+    "filterModeSoft": "Prefer",
+    "filterModeHard": "Required"
   },
   "ingredient": {
     "searchPlaceholder": "Search ingredients...",
@@ -443,6 +454,8 @@
     "restrictionHalal": "Halal",
     "restrictionEggFree": "Egg-Free",
     "restrictionShellfishFree": "Shellfish-Free",
+    "modeSoft": "Prefer",
+    "modeHard": "Required",
     "tasteLabel": "Taste Preferences",
     "tasteSweet": "Sweet",
     "tasteSweetLow": "Not sweet",
@@ -521,7 +534,9 @@
     "noResults": "No matching recipes found. Try adding more ingredients!",
     "resultsTitle": "Matching Recipes",
     "minutes": "min",
-    "servings": "servings"
+    "servings": "servings",
+    "leftoverBanner": "These are ingredients from your last recipe. Remove what you've used up!",
+    "clearAll": "Clear All"
   },
   "footer": {
     "tagline": "Discover, remix, and share Korean recipes with the world.",
@@ -533,5 +548,31 @@
     "privacy": "Privacy",
     "terms": "Terms",
     "copyright": "MatDam. All rights reserved."
+  },
+  "userProfile": {
+    "title": "User Profile",
+    "recipes": "Recipes",
+    "noRecipes": "No recipes yet",
+    "memberSince": "Member since",
+    "recipeCount": "{count} recipes",
+
+    "settings": "Settings",
+    "minutes": "min",
+    "servings": "servings"
+  },
+  "report": {
+    "report": "Report",
+    "reported": "Reported",
+    "title": "Report Content",
+    "description": "Please select a reason for reporting this content.",
+    "reason_inappropriate": "Inappropriate or offensive content",
+    "reason_spam": "Spam or misleading",
+    "reason_copyright": "Copyright violation",
+    "reason_other": "Other",
+    "detailLabel": "Additional details",
+    "detailPlaceholder": "Please provide more details about the issue...",
+    "submit": "Submit Report",
+    "submitting": "Submitting...",
+    "alreadyReported": "You have already reported this content."
   }
 }

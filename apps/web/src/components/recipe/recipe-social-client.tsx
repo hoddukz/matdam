@@ -4,11 +4,13 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
 import { CookLogButton } from "./cook-log-button";
+import { RecipeVoteButton } from "./recipe-vote-button";
 import { CookReviewForm } from "./cook-review-form";
 import { CommentSection } from "./comment-section";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, Utensils } from "lucide-react";
 import type { CookReview } from "@matdam/types";
 
 interface RecipeSocialClientProps {
@@ -17,6 +19,9 @@ interface RecipeSocialClientProps {
   existingReview: Partial<CookReview> | null;
   isLoggedIn: boolean;
   currentUserId: string | null;
+  initialVote: 1 | -1 | null;
+  initialUpvotes: number;
+  initialDownvotes: number;
 }
 
 export function RecipeSocialClient({
@@ -25,8 +30,12 @@ export function RecipeSocialClient({
   existingReview,
   isLoggedIn,
   currentUserId,
+  initialVote,
+  initialUpvotes,
+  initialDownvotes,
 }: RecipeSocialClientProps) {
   const t = useTranslations("recipeDetail");
+  const locale = useLocale();
   const [cookLogId, setCookLogId] = useState<string | null>(initialCookLogId);
   const [showReview, setShowReview] = useState(false);
 
@@ -36,13 +45,30 @@ export function RecipeSocialClient({
 
   return (
     <div className="space-y-6">
-      {/* 만들어봤어요 버튼 */}
-      <CookLogButton
-        recipeId={recipeId}
-        initialCookLogId={cookLogId}
-        isLoggedIn={isLoggedIn}
-        onCookLogCreated={handleCookLogCreated}
-      />
+      {/* 2x2 액션 버튼 그리드 */}
+      <div className="grid grid-cols-2 gap-3">
+        <RecipeVoteButton
+          recipeId={recipeId}
+          initialVote={initialVote}
+          initialUpvotes={initialUpvotes}
+          initialDownvotes={initialDownvotes}
+          isLoggedIn={isLoggedIn}
+          size="lg"
+        />
+        <CookLogButton
+          recipeId={recipeId}
+          initialCookLogId={cookLogId}
+          isLoggedIn={isLoggedIn}
+          onCookLogCreated={handleCookLogCreated}
+        />
+        <Link
+          href={`/${locale}/fridge?from=${recipeId}`}
+          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md border border-input bg-background text-base font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
+        >
+          <Utensils className="h-5 w-5" />
+          {t("leftoverRecommend")}
+        </Link>
+      </div>
 
       {/* 리뷰 폼 (만들어본 경우만) */}
       {cookLogId && (

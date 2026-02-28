@@ -1,9 +1,19 @@
 -- Tag: core
--- Path: /Users/hodduk/Documents/git/mat_dam/supabase/migrations/001_mvp_alpha.sql
+-- Path: supabase/migrations_merged/001_schema.sql
 
 -- ============================================================
--- MatDam MVP-α Database Migration
--- Supabase (PostgreSQL)
+-- MatDam — Consolidated Schema Migration
+-- Merged from originals: 001, 005, 007, 010, 012, 014, 016, 017
+--
+-- Consolidation notes:
+--   • recipe_steps.description/tip: created as JSONB (014 folded in)
+--   • recipe_ingredients.ingredient_id: nullable (005 folded in)
+--   • recipe_ingredients.custom_name/qualifier/note: JSONB (014+016 folded in)
+--   • recipe_ingredients constraint: final version from 016 folded in
+--   • recipes: taste_profile/upvote_count/downvote_count from 010 folded in
+--   • recipes: translated_locales from 017 folded in
+--   • ingredients: cuisines/importance from 007 folded in
+--   • comments: parent_comment_id from 012 folded in
 -- ============================================================
 
 
@@ -49,6 +59,7 @@ CREATE TRIGGER trg_users_updated_at
 
 -- ----------------------------------------------------------
 -- 2-2. ingredients (재료 마스터)
+-- Includes cuisines/importance columns folded in from 007
 -- ----------------------------------------------------------
 CREATE TABLE public.ingredients (
   id             TEXT        PRIMARY KEY,
@@ -61,8 +72,14 @@ CREATE TABLE public.ingredients (
   substitutes    TEXT[]      NOT NULL DEFAULT '{}',
   description    JSONB       NOT NULL DEFAULT '{}'::jsonb,
   image_url      TEXT,
+  cuisines       TEXT[]      NOT NULL DEFAULT '{}',
+  importance     TEXT        NOT NULL DEFAULT 'recommended'
+                             CHECK (importance IN ('must_have', 'recommended', 'advanced')),
   created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+CREATE INDEX idx_ingredients_cuisines
+  ON public.ingredients USING GIN (cuisines);
 
 
 -- ----------------------------------------------------------
@@ -78,6 +95,8 @@ CREATE TABLE public.units (
 
 -- ----------------------------------------------------------
 -- 2-4. recipes
+-- Includes taste_profile/upvote_count/downvote_count from 010
+-- and translated_locales from 017, all folded in
 -- ----------------------------------------------------------
 CREATE TABLE public.recipes (
   recipe_id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -100,6 +119,10 @@ CREATE TABLE public.recipes (
   master_choice      BOOLEAN     NOT NULL DEFAULT false,
   published          BOOLEAN     NOT NULL DEFAULT false,
   published_version  INTEGER,
+  taste_profile      JSONB       DEFAULT NULL,
+  upvote_count       INT         NOT NULL DEFAULT 0,
+  downvote_count     INT         NOT NULL DEFAULT 0,
+  translated_locales JSONB       NOT NULL DEFAULT '{}',
   created_at         TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
@@ -111,40 +134,47 @@ CREATE TRIGGER trg_recipes_updated_at
 
 -- ----------------------------------------------------------
 -- 2-5. recipe_steps
+-- description/tip created as JSONB (014 folded in — no ALTER needed)
 -- ----------------------------------------------------------
 CREATE TABLE public.recipe_steps (
-  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-  recipe_id    UUID        NOT NULL REFERENCES public.recipes(recipe_id) ON DELETE CASCADE,
-  step_order   INTEGER     NOT NULL,
-  title        TEXT,
-  description  TEXT        NOT NULL,
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  recipe_id     UUID        NOT NULL REFERENCES public.recipes(recipe_id) ON DELETE CASCADE,
+  step_order    INTEGER     NOT NULL,
+  title         TEXT,
+  description   JSONB       NOT NULL,
   timer_seconds INTEGER,
-  image_url    TEXT,
-  tip          TEXT,
-  created_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  image_url     TEXT,
+  tip           JSONB,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE (recipe_id, step_order)
 );
 
 
 -- ----------------------------------------------------------
--- 2-6. recipe_ingredients (정규화 — step_number로 스텝 연결)
+-- 2-6. recipe_ingredients
+-- ingredient_id nullable (005 folded in)
+-- custom_name/qualifier/note as JSONB (014+016 folded in)
+-- Constraint: final version from 016 folded in
 -- ----------------------------------------------------------
 CREATE TABLE public.recipe_ingredients (
   id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   recipe_id      UUID        NOT NULL REFERENCES public.recipes(recipe_id) ON DELETE CASCADE,
-  ingredient_id  TEXT        NOT NULL REFERENCES public.ingredients(id),
+  ingredient_id  TEXT        REFERENCES public.ingredients(id),
   amount         NUMERIC,
   unit           TEXT        REFERENCES public.units(unit_id),
-  qualifier      TEXT,
-  note           TEXT,
+  qualifier      JSONB,
+  note           JSONB,
+  custom_name    JSONB,
   step_number    INTEGER,
   display_order  INTEGER     NOT NULL DEFAULT 0,
-  created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT chk_ingredient_or_custom
+    CHECK (ingredient_id IS NOT NULL OR (custom_name IS NOT NULL AND custom_name != '{}'::jsonb))
 );
 
 
 -- ============================================================
--- 3. INDEXES
+-- 3. INDEXES (basic — additional composite indexes in 007_indexes.sql)
 -- ============================================================
 
 CREATE INDEX idx_recipes_slug          ON public.recipes(slug);

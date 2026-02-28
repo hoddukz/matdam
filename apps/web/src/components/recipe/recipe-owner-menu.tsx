@@ -3,10 +3,9 @@
 
 "use client";
 
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -24,10 +23,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { DeleteRecipeButton } from "./delete-recipe-button";
 import { createClient } from "@/lib/supabase/client";
 import { extractStoragePath } from "@/lib/supabase/storage";
-import { Languages, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 interface RecipeOwnerMenuProps {
   recipeId: string;
@@ -37,45 +35,10 @@ interface RecipeOwnerMenuProps {
 export function RecipeOwnerMenu({ recipeId, editHref }: RecipeOwnerMenuProps) {
   const t = useTranslations("recipeDetail");
   const locale = useLocale();
-  const router = useRouter();
   const supabaseRef = useRef(createClient());
-  const translateTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [translateError, setTranslateError] = useState<string | null>(null);
-  const [translateSuccess, setTranslateSuccess] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      if (translateTimerRef.current) clearTimeout(translateTimerRef.current);
-    };
-  }, []);
-
-  async function handleTranslate() {
-    setIsTranslating(true);
-    setTranslateError(null);
-    setTranslateSuccess(false);
-    try {
-      const res = await fetch("/api/translate-recipe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recipeId }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? "Translation failed");
-      }
-      setTranslateSuccess(true);
-      router.refresh();
-      translateTimerRef.current = setTimeout(() => setTranslateSuccess(false), 3000);
-    } catch {
-      setTranslateError(t("translateError"));
-    } finally {
-      setIsTranslating(false);
-    }
-  }
 
   async function handleDelete() {
     setIsDeleting(true);
@@ -125,33 +88,23 @@ export function RecipeOwnerMenu({ recipeId, editHref }: RecipeOwnerMenuProps) {
 
   return (
     <>
-      {/* Desktop: 기존 버튼 */}
+      {/* Desktop: 수정/삭제 버튼 */}
       <div className="hidden md:flex md:items-center md:gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1"
-          onClick={handleTranslate}
-          disabled={isTranslating}
-        >
-          {isTranslating ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Languages className="h-4 w-4" />
-          )}
-          {isTranslating ? t("translating") : t("translate")}
-        </Button>
-        {translateSuccess && (
-          <span className="text-sm text-green-600">{t("translateSuccess")}</span>
-        )}
-        {translateError && <span className="text-sm text-destructive">{translateError}</span>}
         <Button variant="outline" size="sm" className="gap-1" asChild>
           <Link href={editHref}>
             <Pencil className="h-4 w-4" />
             {t("edit")}
           </Link>
         </Button>
-        <DeleteRecipeButton recipeId={recipeId} />
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1 text-destructive hover:bg-destructive/10"
+          onClick={() => setDeleteDialogOpen(true)}
+        >
+          <Trash2 className="h-4 w-4" />
+          {t("delete")}
+        </Button>
       </div>
 
       {/* Mobile: ... 드롭다운 */}
@@ -163,14 +116,6 @@ export function RecipeOwnerMenu({ recipeId, editHref }: RecipeOwnerMenuProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem className="gap-2" onSelect={handleTranslate} disabled={isTranslating}>
-              {isTranslating ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Languages className="h-4 w-4" />
-              )}
-              {isTranslating ? t("translating") : t("translate")}
-            </DropdownMenuItem>
             <DropdownMenuItem asChild>
               <Link href={editHref} className="gap-2">
                 <Pencil className="h-4 w-4" />
@@ -186,29 +131,27 @@ export function RecipeOwnerMenu({ recipeId, editHref }: RecipeOwnerMenuProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{t("deleteConfirm")}</AlertDialogTitle>
-              <AlertDialogDescription>{t("deleteDescription")}</AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              {deleteError && <p className="w-full text-sm text-destructive">{deleteError}</p>}
-              <AlertDialogCancel disabled={isDeleting}>{t("deleteCancel")}</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                {isDeleting ? t("deleting") : t("delete")}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        {translateSuccess && <p className="mt-1 text-xs text-green-600">{t("translateSuccess")}</p>}
-        {translateError && <p className="mt-1 text-xs text-destructive">{translateError}</p>}
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteConfirm")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("deleteDescription")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            {deleteError && <p className="w-full text-sm text-destructive">{deleteError}</p>}
+            <AlertDialogCancel disabled={isDeleting}>{t("deleteCancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? t("deleting") : t("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

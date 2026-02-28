@@ -11,6 +11,8 @@ export type {
   DietType,
   ProteinPreference,
   DietaryRestriction,
+  DietaryPreferenceMode,
+  DietaryPreference,
   CuisinePreference,
   TasteKey,
   TastePreferences,

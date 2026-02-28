@@ -7,7 +7,7 @@
 
 ## 긴급 오류/수정사항
 
-(없음)
+- [x] **재료 note/qualifier DB 데이터 잘림 문제** — 원인: 코드가 JSONB 방식(`getLocalizedText`)으로 처리하는데 DB에 016 마이그레이션이 미적용 상태였음. 마이그레이션 적용 후 해결. (2026-02-27)
 
 ---
 
@@ -57,18 +57,18 @@
 
 **P2 — UX 고도화**
 
-- [ ] 드래그 앤 드롭 스텝 순서 변경
+- [x] 드래그 앤 드롭 스텝 순서 변경 — `@dnd-kit/core` + `@dnd-kit/sortable`로 구현 완료 (step-editor.tsx)
 - [x] 스와이프 네비게이션 (쿠킹 모드) — 좌우 터치 스와이프로 스텝 이동
 - [x] 탐색 페이지 페이지네이션 — URL 기반 page 파라미터 + 이전/다음 버튼
 - [x] 냉장고 털이 — 재료 검색/선택 → 매칭 레시피 추천 페이지
 - [x] 홈 페이지 "더보기" 버튼 — 하단에 탐색 페이지 이동 CTA
 - [x] 모바일 메뉴 그룹핑 — 탐색/내 활동 아코디언 구조로 정리
 - [x] Recipe Linter — 미사용 재료/빈 단계(error) + 재료 미지정/타이머 미설정(warning)
-- [ ] DB 복합 인덱스 추가 (정렬 성능)
+- [x] DB 복합 인덱스 추가 (정렬 성능) — 019_composite_indexes.sql 13개 인덱스
 
 **P3 — 안전장치 + 품질**
 
-- [ ] 유저 신고 시스템 UI + 자동 비공개
+- [x] 유저 신고 시스템 UI + 자동 비공개
 - [ ] pHash 중복 사진 검사
 - [ ] EXIF 메타데이터 추출 (has_exif, device_category)
 - [ ] Vitest 단위 테스트
@@ -197,7 +197,7 @@
 **Step 9 (입력 UX 고도화): ⚠️ 부분 완료**
 
 - [x] 재료 자동완성 숫자키 선택 + 페이지네이션
-- [ ] 드래그 앤 드롭 스텝 순서 변경
+- [x] 드래그 앤 드롭 스텝 순서 변경 — `@dnd-kit` 구현 완료
 - [ ] 데스크톱 좌우 분할 입력 레이아웃
 - [ ] 모바일 inputmode 최적화
 
@@ -205,21 +205,21 @@
 
 - [x] 구조화 리뷰 (taste_overall, felt_difficulty, would_make_again + 디테일 6개)
 - [ ] pHash 중복 사진 검사
-- [ ] 유저 신고 시스템 UI
-- [ ] 신고 N건 누적 → 자동 비공개
+- [x] 유저 신고 시스템 UI
+- [x] 신고 N건 누적 → 자동 비공개
 
 **Step 11 (쇼핑 리스트+추천): ⚠️ 부분 완료**
 
 - [x] 추천 시스템 (맛 프로필 기반)
 - [x] 인기 레시피 정렬
 - [x] Shopping List (다중 레시피 재료 합산)
-- [ ] 남은 재료 연쇄 추천
+- [x] 남은 재료 연쇄 추천
 - [x] 냉장고 털이
 
 **Step 12 (온보딩+Linter): ⚠️ 부분 완료**
 
 - [x] 온보딩 4단계 멀티스텝
-- [ ] Dietary Filter UX 고도화 (Soft/Hard 토글)
+- [x] Dietary Filter UX 고도화 (Soft/Hard 토글)
 - [x] Recipe Linter — 미사용 재료/빈 단계(error) + 재료 미지정/타이머 미설정(warning)
 
 **인프라 미구현:**
@@ -227,7 +227,7 @@
 - [x] Sentry 에러 수집
 - [x] GitHub Actions CI (lint + type-check 자동 실행)
 - [ ] Vercel Analytics 연동
-- [ ] DB 복합 인덱스 추가 (정렬 성능)
+- [x] DB 복합 인덱스 추가 (정렬 성능) — 019_composite_indexes.sql
 
 ### 홈 페이지 코드리뷰 잔여 항목 (나중에)
 
@@ -239,7 +239,164 @@
 
 ---
 
-## 2026-02-26 (수)
+## 2026-02-28 (금)
+
+### 마이그레이션 파일 통합 정리
+
+21개 → 8개 파일로 통합. 원본 백업: `/Users/hodduk/Documents/git/mat_dam/supabase/migrations_backup_20260228.tar.gz` (`tar xzf`로 복원 가능)
+
+| 병합 파일                  | 원본                                                                                        |
+| -------------------------- | ------------------------------------------------------------------------------------------- |
+| `001_schema.sql`           | 001, 005, 007, 010, 012, 014, 016, 017 (ALTER TABLE 7건 → CREATE TABLE 최종 상태로 folding) |
+| `002_seed_ingredients.sql` | 002, 007(UPDATE), 009, 011 (재료 107개 + 단위 15개 통합)                                    |
+| `003_storage_bucket.sql`   | 004                                                                                         |
+| `004_rpc_functions.sql`    | 003, 008, 012, 018, 020 (superseded RPC 제거, 최종 버전만 유지)                             |
+| `005_social_tables.sql`    | 006, 010, 012 (parent_comment_id CREATE TABLE에 포함)                                       |
+| `006_reports.sql`          | 015                                                                                         |
+| `007_indexes.sql`          | 019                                                                                         |
+| `008_seed_recipes.sql`     | 013, 021 (레시피 12개 통합, TEXT→JSONB 시드 반영)                                           |
+
+### 레시피 3개 시드 추가 (021 → 008에 통합)
+
+- 고추장찌개 (`gochujang-jjigae`) — 4인분, 6단계, 재료 12개
+- 마라(로제) 떡볶이 (`mara-rose-tteokbokki`) — 평생 떡볶이 리믹스, 3인분, 6단계, 재료 15개
+- 꽈리고추 목살조림 (`kkwarigochu-moksal-jorim`) — 3인분, 7단계, 재료 14개
+
+### 슬러그 transliteration 적용
+
+- `transliteration` 패키지 설치, `recipe-form.tsx`의 `generateSlug`에 `slugify()` 적용
+- 한글/일본어/중국어 등 비라틴 문자 → 로마자 변환 (예: 매운 떡볶이 → `maeun-tteokbokki-a1b2c3d4`)
+
+### 재료 note 괄호 표시 수정
+
+- `recipe-detail-client.tsx` — JSX 괄호 공백 제거 (`{"("}`, `{")"}`)
+- `editable-translation.tsx` — 연필 아이콘 `inline-flex gap-1` → `relative inline` + `absolute` 위치 (레이아웃 영향 제거)
+
+### Step 11 & 12 미완료 항목 구현
+
+**1. 남은 재료 연쇄 추천 (Step 11)**
+
+- `fridge/page.tsx` — `searchParams` 수신, `from` 파라미터 추출 → `FridgeClient`에 전달
+- `fridge-client.tsx` — `fromRecipeId` prop 추가, useEffect로 레시피 재료 자동 로드 + 자동 검색 (ref flag 1회), 안내 배너 UI + "모두 지우기" 버튼
+- `recipe-social-client.tsx` — cook_log 존재 시 "남은 재료로 뭐 해먹지?" 링크 버튼 추가 (`Utensils` 아이콘, `/{locale}/fridge?from={recipeId}`)
+- i18n: `fridge.leftoverBanner`, `fridge.clearAll`, `recipeDetail.leftoverRecommend` (ko/en)
+
+**2. Dietary Filter Soft/Hard 토글 (Step 12)**
+
+- `packages/types/src/user.ts` — `DietaryPreferenceMode`, `DietaryPreference` 타입 추가, `UserPreferences.dietary_preferences` 필드 추가
+- `packages/types/src/index.ts` — 새 타입 export
+- `preference-constants.ts` — `DIETARY_MODE_I18N` 상수 추가
+- `020_search_recipes_v2.sql` — `search_recipes` RPC v2: `dietary_hard_filter` (ALL 포함 필수, `@>`), `dietary_soft_filter` (매칭 수 기반 정렬 부스트). 기존 6파라미터 default 값으로 하위 호환.
+- `search-params.ts` — `dietary_hard`, `dietary_soft` Zod 스키마 필드 추가
+- `dietary-filter-popover.tsx` — 3-state UI: 미선택 → Checkbox 선택 → hard(기본) ↔ soft 토글. URL: `?dietary_hard=..&dietary_soft=..`. 배지: hard 빨강, soft 노랑. `userPreferences` prop으로 유저 설정 자동 적용.
+- `explore/page.tsx` — `searchParams` 타입 확장, 로그인 유저 `preferences` 조회 → `DietaryPreference[]` 변환 → popover에 전달, RPC에 hard/soft 전달. URL 파라미터 없으면 유저 설정 자동 적용.
+- `onboarding-form.tsx` — `DietaryPreference[]` 상태로 변경, 첫 선택 hard 기본, 선택 항목 옆 선호/필수 토글. `dietary_preferences` + `dietary_restrictions` 동시 저장 (하위 호환).
+- `settings-form.tsx` — 동일 soft/hard 토글 적용
+- `page.tsx` (홈) — 로그인 유저 hard 태그 조회 → 최신/리믹스 쿼리 `.contains()` 필터, 인기/추천 RPC over-fetch 후 클라이언트 필터
+- i18n: `explore.filterModeSoft/Hard`, `onboarding.modeSoft/Hard`, `settings.modeSoft/Hard` (ko/en)
+
+**tsc --noEmit 통과 확인**
+
+---
+
+## 2026-02-27 (목)
+
+### P2 완료: 드래그 앤 드롭 확인 + DB 복합 인덱스 추가
+
+1. **드래그 앤 드롭 스텝 순서 변경** — 이미 `@dnd-kit/core` + `@dnd-kit/sortable`로 `step-editor.tsx`에 구현 완료 확인. 워크로그 체크 처리.
+2. **DB 복합 인덱스 13개 추가** — `019_composite_indexes.sql` 신규 생성
+   - TIER 1 (핵심 5개): recipes published+created, published+upvote, author+created / cook_logs user+recipe / recipe_ingredients ingredient+recipe
+   - TIER 2 (고빈도 4개): recipes published+remix / comments recipe+created / recipe_votes user+recipe / bookmarks user+recipe
+   - TIER 3 (보조 3개): reports reporter+target / recipe_steps recipe+order / recipe_ingredients recipe+order
+   - Partial index (`WHERE published = true`) + DESC 정렬 + `IF NOT EXISTS` 멱등성
+
+### 보안 스캔 (OWASP ZAP) 수정
+
+OWASP ZAP 2.17.0 자동 스캔 결과 기반 보안 취약점 수정. 보고서: `docs/matdam_security_audit_report_260226.html`
+
+**수정 완료 항목:**
+
+1. **SQL Injection (HIGH→해결)** — `explore/page.tsx`, `glossary/page.tsx`
+   - `.or()` 문자열 보간에서 블랙리스트 이스케이프 → 화이트리스트 방식 전환
+   - 영문/한글/숫자/공백/하이픈만 허용, PostgREST 특수문자 원천 차단
+   - glossary `category`/`cuisine`은 이미 화이트리스트 검증 (false positive)
+
+2. **Security Headers (MEDIUM→해결)** — `next.config.ts`
+   - CSP, X-Frame-Options: DENY, X-Content-Type-Options: nosniff
+   - Referrer-Policy, Permissions-Policy, object-src/base-uri/form-action/frame-src 추가
+   - PostHog 스크립트/API + Sentry worker blob: 허용
+   - `unsafe-eval`은 dev 모드에서만 허용, prod 제거
+
+3. **X-Powered-By 제거 (LOW→해결)** — `next.config.ts`
+   - `poweredByHeader: false` 설정
+
+4. **Cookie HttpOnly (LOW→해결)** — `middleware.ts`, `supabase/middleware.ts`
+   - 모든 쿠키(Supabase + NEXT_LOCALE)에 httpOnly/secure/sameSite 강제 적용
+
+**ZAP false positive (오탐) 항목:**
+
+- SQL Injection: glossary `category`/`cuisine`, explore `sort` — 전부 화이트리스트 검증 완료, 시간 기반 탐지 오탐
+- CSP unsafe-inline (script/style) — Next.js/Tailwind 필수, nonce 기반 전환 시 제거 가능 (별도 작업)
+- Timestamp Disclosure, Suspicious Comments, Content-Type Missing — informational
+
+### 번역 기능 버그 수정
+
+1. **번역 "forbidden" 에러** — `translate-recipe/route.ts`
+   - 원인: 레시피 소유자만 번역 가능하도록 제한되어 있었음
+   - 수정: 소유권 체크 제거, service role 클라이언트로 RLS 우회, 모든 인증 사용자 번역 가능
+
+2. **번역 후 페이지 갱신 안 됨** — `recipe-language-switcher.tsx`
+   - 원인: ISR 캐시 (revalidate=3600)로 `router.refresh()`가 캐시된 페이지 반환
+   - 수정: `window.location.reload()`로 하드 리로드
+
+3. **번역 버튼 사라짐** — `recipe-language-switcher.tsx`
+   - 원인: translated_locales 업데이트 후 isStale=false가 되어 버튼 숨김
+   - 수정: `isAuthenticated && !isOriginal` 조건으로 비원본 locale에서 항상 표시
+
+---
+
+## 2026-02-26 (수) — 오후
+
+### 공개 유저 프로필 페이지 + 유저 신고 기능
+
+**1. 공개 유저 프로필 페이지 신규 생성**
+
+- `apps/web/src/app/[locale]/user/[userId]/page.tsx` — 신규 생성
+  - URL: `/{locale}/user/{userId}` (읽기 전용 공개 프로필)
+  - avatar, display_name, 가입일, 공개 레시피 수 표시
+  - 공개 레시피 그리드 (published=true만, profile 페이지 `renderBookmarkGrid` 스타일 재활용)
+  - 본인 프로필: 설정 페이지 링크 (Settings 아이콘)
+  - 타인 프로필: ReportDialog (유저 신고) 버튼
+  - `generateMetadata` — locale 대응 메타데이터 (`getTranslations` 사용)
+  - UUID 형식 검증 — 잘못된 userId 시 500이 아닌 `notFound()` 반환
+
+**2. 작성자 이름 클릭 가능 Link 변경**
+
+- `recipe/[slug]/page.tsx` — 작성자 이름 `<span>` → `<Link href=/{locale}/user/{author_id}>` 변경
+- `comment-card.tsx` — 댓글 작성자 이름 `<span>` → `<Link href=/{locale}/user/{user_id}>` 변경
+
+**3. 유저 신고 기능**
+
+- `015_reports.sql` — CHECK 제약조건에 `'user'` 추가, 트리거 함수에 user 케이스 추가 (`trust_score = -1`)
+- `report-dialog.tsx` — `targetType` 타입에 `"user"` 추가
+- 트리거 threshold `>= 3` → `= 3` 변경 (정확히 3건째에만 1회 실행, 반복 실행 방지)
+
+**4. i18n**
+
+- `en.json` / `ko.json` — `userProfile` 네임스페이스 추가 (title, recipes, noRecipes, memberSince, recipeCount, settings, minutes, servings)
+
+**코드리뷰 4건 수정:**
+
+- Critical: UUID 형식 검증 추가 (500→404 정상 처리)
+- Critical: generateMetadata 한국어 하드코딩 → getTranslations locale 대응
+- Warning: 트리거 threshold `>= 3` → `= 3` (멱등성)
+- Suggestion: 미사용 `userProfile.reportUser` i18n 키 삭제
+
+**tsc 통과 확인 완료**
+
+---
+
+## 2026-02-26 (수) — 오전
 
 ### CI/CD 수정 + Vercel 배포 복구
 
@@ -840,6 +997,11 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-02-27 — P2 완료: 드래그 앤 드롭 확인 (이미 구현) + DB 복합 인덱스 13개 추가 (019_composite_indexes.sql)
+- [x] 2026-02-27 — OWASP ZAP 보안 스캔 수정 (SQL Injection 화이트리스트 + Security Headers + Cookie HttpOnly + X-Powered-By 제거)
+- [x] 2026-02-27 — 번역 기능 버그 수정 3건 (forbidden 에러 + ISR 캐시 + 버튼 사라짐)
+- [x] 2026-02-27 — note/qualifier 데이터 잘림 해결 (016 마이그레이션 적용)
+- [x] 2026-02-26 — 공개 유저 프로필 페이지 + 유저 신고 기능 (프로필 페이지 신규 + 작성자 Link 변경 + 신고 user 타입 + 코드리뷰 4건 수정)
 - [x] 2026-02-26 — Recipe Linter 구현 (4가지 규칙 + 제출 차단 + 경고 배너)
 - [x] 2026-02-26 — 탐색 페이지 페이지네이션 (URL 기반 page + count 쿼리 + 이전/다음 버튼)
 - [x] 2026-02-26 — 번역 기능 코드리뷰 15건 수정 (DB 에러 처리 + content 가드 + 타입 공유 + maxDuration)
