@@ -45,7 +45,8 @@
     "shoppingList": "쇼핑 리스트",
     "settings": "설정",
     "myActivity": "내 활동",
-    "signOut": "로그아웃"
+    "signOut": "로그아웃",
+    "news": "새소식"
   },
   "login": {
     "title": "로그인",
@@ -373,6 +374,7 @@
     "noBookmarks": "북마크한 레시피가 없습니다",
     "memberSince": "가입일",
     "recipeCount": "레시피 {count}개",
+    "activityScore": "활동 점수",
     "servings": "인분",
     "minutes": "분"
   },
@@ -544,6 +546,7 @@
     "legal": "법적 고지",
     "explore": "탐색",
     "glossary": "재료사전",
+    "news": "새소식",
     "about": "소개",
     "privacy": "개인정보처리방침",
     "terms": "이용약관",
@@ -555,7 +558,7 @@
     "noRecipes": "레시피가 없습니다",
     "memberSince": "가입일",
     "recipeCount": "레시피 {count}개",
-
+    "activityScore": "활동 점수",
     "settings": "설정",
     "minutes": "분",
     "servings": "인분"
@@ -574,5 +577,43 @@
     "submit": "신고 제출",
     "submitting": "제출 중...",
     "alreadyReported": "이미 신고한 콘텐츠입니다."
+  },
+  "rank": {
+    "apprentice": "견습생",
+    "noviceCook": "초보 요리사",
+    "homeCook": "가정 요리사",
+    "skilledCook": "숙련 요리사",
+    "artisan": "요리 장인",
+    "master": "요리 달인",
+    "grandmaster": "요리 대가",
+    "verifiedChef": "인증 셰프",
+    "partnerChef": "파트너 셰프"
+  },
+  "news": {
+    "title": "새소식",
+    "subtitle": "맛담의 업데이트와 새로운 기능을 확인하세요.",
+    "rankTableTier": "등급",
+    "rankTableName": "이름",
+    "rankTableScore": "필요 점수",
+    "backToList": "새소식 목록으로",
+    "pinned": "고정",
+    "noAnnouncements": "아직 새소식이 없습니다.",
+    "writeNew": "새 공지 작성",
+    "editPost": "수정",
+    "deletePost": "삭제",
+    "deleteConfirm": "이 공지를 삭제하시겠습니까?",
+    "titlePlaceholder": "제목을 입력하세요",
+    "summaryPlaceholder": "요약을 입력하세요",
+    "contentPlaceholder": "본문을 입력하세요 (마크다운 지원)",
+    "preview": "미리보기",
+    "write": "작성",
+    "save": "저장",
+    "cancel": "취소",
+    "pinnedToggle": "상단 고정",
+    "publishToggle": "공개",
+    "targetAll": "전체",
+    "targetKo": "한국어만",
+    "targetEn": "영어만",
+    "targetLocale": "대상 국가"
   }
 }

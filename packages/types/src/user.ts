@@ -52,6 +52,19 @@ export interface UserPreferences {
   preferred_unit?: "metric" | "imperial";
 }
 
+export type UserRankKey =
+  | "apprentice"
+  | "noviceCook"
+  | "homeCook"
+  | "skilledCook"
+  | "artisan"
+  | "master"
+  | "grandmaster";
+
+export type UserRole = "user" | "admin";
+
+export type VerifiedType = "chef" | "partner";
+
 export interface UserProfile {
   user_id: string;
   display_name: string;
@@ -59,5 +72,8 @@ export interface UserProfile {
   tier: import("./recipe").DifficultyLevel;
   trust_score: number;
   preferences: UserPreferences;
+  activity_score: number;
+  verified_type: VerifiedType | null;
+  role: UserRole;
   created_at: string;
 }

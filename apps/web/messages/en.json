@@ -45,7 +45,8 @@
     "shoppingList": "Shopping List",
     "settings": "Settings",
     "myActivity": "My Activity",
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "news": "News"
   },
   "login": {
     "title": "Sign In",
@@ -373,6 +374,7 @@
     "noBookmarks": "No bookmarked recipes yet",
     "memberSince": "Member since",
     "recipeCount": "{count} recipes",
+    "activityScore": "Activity Score",
     "servings": "servings",
     "minutes": "min"
   },
@@ -544,6 +546,7 @@
     "legal": "Legal",
     "explore": "Explore",
     "glossary": "Glossary",
+    "news": "News",
     "about": "About",
     "privacy": "Privacy",
     "terms": "Terms",
@@ -555,7 +558,7 @@
     "noRecipes": "No recipes yet",
     "memberSince": "Member since",
     "recipeCount": "{count} recipes",
-
+    "activityScore": "Activity Score",
     "settings": "Settings",
     "minutes": "min",
     "servings": "servings"
@@ -574,5 +577,43 @@
     "submit": "Submit Report",
     "submitting": "Submitting...",
     "alreadyReported": "You have already reported this content."
+  },
+  "rank": {
+    "apprentice": "Apprentice",
+    "noviceCook": "Novice Cook",
+    "homeCook": "Home Cook",
+    "skilledCook": "Skilled Cook",
+    "artisan": "Artisan",
+    "master": "Master",
+    "grandmaster": "Grandmaster",
+    "verifiedChef": "Verified Chef",
+    "partnerChef": "Partner Chef"
+  },
+  "news": {
+    "title": "News",
+    "subtitle": "Stay up to date with MatDam updates and new features.",
+    "rankTableTier": "Tier",
+    "rankTableName": "Name",
+    "rankTableScore": "Required Score",
+    "backToList": "Back to News",
+    "pinned": "Pinned",
+    "noAnnouncements": "No announcements yet.",
+    "writeNew": "Write New",
+    "editPost": "Edit",
+    "deletePost": "Delete",
+    "deleteConfirm": "Delete this announcement?",
+    "titlePlaceholder": "Enter title",
+    "summaryPlaceholder": "Enter summary",
+    "contentPlaceholder": "Enter content (Markdown supported)",
+    "preview": "Preview",
+    "write": "Write",
+    "save": "Save",
+    "cancel": "Cancel",
+    "pinnedToggle": "Pin to top",
+    "publishToggle": "Published",
+    "targetAll": "All",
+    "targetKo": "Korean only",
+    "targetEn": "English only",
+    "targetLocale": "Target Locale"
   }
 }
