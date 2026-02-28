@@ -8,6 +8,7 @@ import { GitFork } from "lucide-react";
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 import { DifficultyBadge } from "@/components/recipe/difficulty-badge";
 import type { RecipeCardData } from "@/lib/recipe/types";
+import { RankBadge } from "@/components/user/rank-badge";
 
 type RecentRemixesSectionProps = {
   locale: string;
@@ -86,8 +87,14 @@ export function RecentRemixesSection({
                   </div>
                 </CardHeader>
                 <CardContent className="pb-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                     {t.by} {recipe.users?.display_name ?? "\u2014"}
+                    {recipe.users && (
+                      <RankBadge
+                        activityScore={recipe.users.activity_score ?? 0}
+                        verifiedType={recipe.users.verified_type ?? null}
+                      />
+                    )}
                   </p>
                   {parentTitle && (
                     <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">

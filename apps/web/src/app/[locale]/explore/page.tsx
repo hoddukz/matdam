@@ -19,6 +19,7 @@ import { DifficultyFilterPopover } from "@/components/explore/difficulty-filter-
 import { exploreParamsSchema } from "@/lib/validation/search-params";
 import type { RecipeCardData } from "@/lib/recipe/types";
 import type { DietaryPreference, UserPreferences } from "@matdam/types";
+import { RankBadge } from "@/components/user/rank-badge";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -176,6 +177,8 @@ export default async function ExplorePage({ params, searchParams }: Props) {
     users: {
       display_name: r.author_name as string | null,
       avatar_url: r.author_avatar as string | null,
+      activity_score: (r.author_activity_score as number) ?? 0,
+      verified_type: (r.author_verified_type as "chef" | "partner" | null) ?? null,
     },
   }));
 
@@ -317,8 +320,14 @@ export default async function ExplorePage({ params, searchParams }: Props) {
                       </div>
                     </CardHeader>
                     <CardContent className="pb-2">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                         {t("by")} {recipe.users?.display_name ?? "—"}
+                        {recipe.users && (
+                          <RankBadge
+                            activityScore={recipe.users.activity_score ?? 0}
+                            verifiedType={recipe.users.verified_type ?? null}
+                          />
+                        )}
                       </p>
                       {recipe.parent_recipe_id && parentTitleMap[recipe.parent_recipe_id] && (
                         <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">

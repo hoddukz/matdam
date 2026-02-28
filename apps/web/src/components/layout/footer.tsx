@@ -38,6 +38,11 @@ export function Footer() {
                   {t("glossary")}
                 </Link>
               </li>
+              <li>
+                <Link href="/news" className="text-sm text-muted-foreground hover:text-foreground">
+                  {t("news")}
+                </Link>
+              </li>
             </ul>
           </div>
 

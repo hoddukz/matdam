@@ -35,6 +35,13 @@ docs/ideas/
 docs/research/
 docs/tech/
 docs/work_order/
+docs/*ZAP-Report*
+docs/matdam_security_audit_report*
+
+# supabase - seed data & backups
+supabase/migrations/002_seed_ingredients.sql
+supabase/migrations/008_seed_recipes.sql
+supabase/migrations_backup_*.tar.gz
 
 # vercel
 .vercel/

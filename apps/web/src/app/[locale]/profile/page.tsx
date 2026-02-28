@@ -16,6 +16,7 @@ import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DeleteRecipeButton } from "@/components/recipe/delete-recipe-button";
 import { Pencil } from "lucide-react";
+import { RankBadge } from "@/components/user/rank-badge";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -59,7 +60,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const [{ data: profile }, { data: recipes }, { data: bookmarks }] = await Promise.all([
     supabase
       .from("users")
-      .select("display_name, avatar_url, created_at")
+      .select("display_name, avatar_url, created_at, activity_score, verified_type")
       .eq("user_id", user.id)
       .single(),
     supabase
@@ -255,7 +256,14 @@ export default async function ProfilePage({ params, searchParams }: Props) {
           </AvatarFallback>
         </Avatar>
         <div>
-          <h1 className="text-lg sm:text-2xl font-bold">{profile?.display_name ?? user.email}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg sm:text-2xl font-bold">{profile?.display_name ?? user.email}</h1>
+            <RankBadge
+              activityScore={profile?.activity_score ?? 0}
+              verifiedType={(profile?.verified_type as "chef" | "partner" | null) ?? null}
+              size="md"
+            />
+          </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             {memberSince && (
               <span>
@@ -263,6 +271,9 @@ export default async function ProfilePage({ params, searchParams }: Props) {
               </span>
             )}
             <span>{t("recipeCount", { count: allRecipes.length })}</span>
+            <span>
+              {t("activityScore")}: {profile?.activity_score ?? 0}
+            </span>
           </div>
         </div>
       </div>

@@ -7,6 +7,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { getLocalizedText } from "@/lib/recipe/localized-text";
 import { DifficultyBadge } from "@/components/recipe/difficulty-badge";
 import type { RecipeCardData } from "@/lib/recipe/types";
+import { RankBadge } from "@/components/user/rank-badge";
 
 type LatestRecipesSectionProps = {
   locale: string;
@@ -75,8 +76,14 @@ export function LatestRecipesSection({ locale, recipes, t }: LatestRecipesSectio
                   </div>
                 </CardHeader>
                 <CardContent className="pb-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5">
                     {t.by} {recipe.users?.display_name ?? "\u2014"}
+                    {recipe.users && (
+                      <RankBadge
+                        activityScore={recipe.users.activity_score ?? 0}
+                        verifiedType={recipe.users.verified_type ?? null}
+                      />
+                    )}
                   </p>
                 </CardContent>
                 <CardFooter className="gap-4 text-xs text-muted-foreground">

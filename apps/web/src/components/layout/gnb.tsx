@@ -89,6 +89,12 @@ export function GNB() {
           >
             {t("fridge")}
           </Link>
+          <Link
+            href={`/${locale}/news`}
+            className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+          >
+            {t("news")}
+          </Link>
           <Button asChild size="sm" className="gap-1">
             <Link href={`/${locale}/create`}>
               <Plus className="h-4 w-4" />
@@ -166,6 +172,13 @@ export function GNB() {
               onClick={() => setMobileOpen(false)}
             >
               {t("fridge")}
+            </Link>
+            <Link
+              href={`/${locale}/news`}
+              className="text-sm font-medium"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t("news")}
             </Link>
 
             <div className="border-t border-border" />

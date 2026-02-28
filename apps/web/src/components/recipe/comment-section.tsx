@@ -40,7 +40,9 @@ export function CommentSection({
 
     const { data: commentData } = await supabase
       .from("comments")
-      .select("*, users!comments_user_id_fkey(display_name, avatar_url)")
+      .select(
+        "*, users!comments_user_id_fkey(display_name, avatar_url, activity_score, verified_type)"
+      )
       .eq("recipe_id", recipeId)
       .order("created_at", { ascending: false });
 

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { ReportDialog } from "@/components/report/report-dialog";
 import { Settings } from "lucide-react";
+import { RankBadge } from "@/components/user/rank-badge";
 
 type Props = {
   params: Promise<{ locale: string; userId: string }>;
@@ -73,7 +74,7 @@ export default async function UserProfilePage({ params }: Props) {
   ] = await Promise.all([
     supabase
       .from("users")
-      .select("user_id, display_name, avatar_url, created_at")
+      .select("user_id, display_name, avatar_url, created_at, activity_score, verified_type")
       .eq("user_id", userId)
       .single(),
     supabase
@@ -125,7 +126,14 @@ export default async function UserProfilePage({ params }: Props) {
           </AvatarFallback>
         </Avatar>
         <div className="flex-1">
-          <h1 className="text-lg sm:text-2xl font-bold">{profile.display_name}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-lg sm:text-2xl font-bold">{profile.display_name}</h1>
+            <RankBadge
+              activityScore={profile.activity_score ?? 0}
+              verifiedType={(profile.verified_type as "chef" | "partner" | null) ?? null}
+              size="md"
+            />
+          </div>
           <div className="mt-1 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             {memberSince && (
               <span>
@@ -133,6 +141,9 @@ export default async function UserProfilePage({ params }: Props) {
               </span>
             )}
             <span>{t("recipeCount", { count: publishedRecipes.length })}</span>
+            <span>
+              {t("activityScore")}: {profile.activity_score ?? 0}
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-2">

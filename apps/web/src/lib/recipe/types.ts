@@ -14,6 +14,11 @@ export type RecipeCardData = {
   created_at: string;
   parent_recipe_id: string | null;
   upvote_count: number;
-  users: { display_name: string | null; avatar_url: string | null };
+  users: {
+    display_name: string | null;
+    avatar_url: string | null;
+    activity_score?: number;
+    verified_type?: "chef" | "partner" | null;
+  };
   dietary_tags: string[] | null;
 };

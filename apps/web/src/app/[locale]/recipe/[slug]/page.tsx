@@ -21,7 +21,8 @@ import { RecipeSocialClient } from "@/components/recipe/recipe-social-client";
 import { TasteProfileDisplay } from "@/components/recipe/taste-profile-display";
 import { ReportDialog } from "@/components/report/report-dialog";
 import { Clock, Users, ChefHat, Lightbulb, GitFork, CookingPot } from "lucide-react";
-import type { TasteProfile } from "@matdam/types";
+import type { TasteProfile, VerifiedType } from "@matdam/types";
+import { RankBadge } from "@/components/user/rank-badge";
 
 export const revalidate = 3600;
 
@@ -34,7 +35,9 @@ const getRecipe = cache(async (slug: string) => {
   const supabase = await createClient();
   const { data } = await supabase
     .from("recipes")
-    .select("*, users!recipes_author_id_fkey(display_name, avatar_url)")
+    .select(
+      "*, users!recipes_author_id_fkey(display_name, avatar_url, activity_score, verified_type)"
+    )
     .eq("slug", slug)
     .eq("published", true)
     .single();
@@ -277,7 +280,7 @@ export default async function RecipeDetailPage({ params }: Props) {
 
           {/* Author + 수정/삭제/리믹스/투표 버튼 */}
           <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground flex items-center gap-1.5">
               {t("by")}{" "}
               <Link
                 href={`/${locale}/user/${recipe.author_id}`}
@@ -285,6 +288,14 @@ export default async function RecipeDetailPage({ params }: Props) {
               >
                 {author?.display_name}
               </Link>
+              {author && (
+                <RankBadge
+                  activityScore={(author as { activity_score?: number }).activity_score ?? 0}
+                  verifiedType={
+                    (author as { verified_type?: VerifiedType | null }).verified_type ?? null
+                  }
+                />
+              )}
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <BookmarkButton

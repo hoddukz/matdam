@@ -76,7 +76,7 @@ export default async function HomePage({ params }: Props) {
   const latestQuery = supabase
     .from("recipes")
     .select(
-      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url)"
+      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url, activity_score, verified_type)"
     )
     .eq("published", true)
     .order("created_at", { ascending: false })
@@ -86,7 +86,7 @@ export default async function HomePage({ params }: Props) {
   const remixQuery = supabase
     .from("recipes")
     .select(
-      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url)"
+      "recipe_id, slug, title, description, hero_image_url, difficulty_level, prep_time_minutes, cook_time_minutes, servings, created_at, parent_recipe_id, dietary_tags, users!recipes_author_id_fkey(display_name, avatar_url, activity_score, verified_type)"
     )
     .eq("published", true)
     .not("parent_recipe_id", "is", null)
@@ -136,6 +136,8 @@ export default async function HomePage({ params }: Props) {
     created_at: string;
     author_display_name: string | null;
     author_avatar_url: string | null;
+    author_activity_score?: number;
+    author_verified_type?: string | null;
     dietary_tags?: string[] | null;
   };
 
@@ -164,6 +166,8 @@ export default async function HomePage({ params }: Props) {
       users: {
         display_name: r.author_display_name,
         avatar_url: r.author_avatar_url,
+        activity_score: r.author_activity_score ?? 0,
+        verified_type: (r.author_verified_type as "chef" | "partner" | null) ?? null,
       },
     }));
   }

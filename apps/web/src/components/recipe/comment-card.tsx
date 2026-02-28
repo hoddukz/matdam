@@ -12,9 +12,15 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown, Trash2, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 import { ReportDialog } from "@/components/report/report-dialog";
+import { RankBadge } from "@/components/user/rank-badge";
 import { CommentForm } from "./comment-form";
 
-type CommentUser = { display_name: string; avatar_url: string | null };
+type CommentUser = {
+  display_name: string;
+  avatar_url: string | null;
+  activity_score?: number;
+  verified_type?: "chef" | "partner" | null;
+};
 
 export type CommentData = {
   comment_id: string;
@@ -162,6 +168,12 @@ export function CommentCard({
             >
               {author?.display_name ?? "—"}
             </Link>
+            {author && (
+              <RankBadge
+                activityScore={author.activity_score ?? 0}
+                verifiedType={author.verified_type ?? null}
+              />
+            )}
             <span className="text-xs text-muted-foreground">{timeAgo}</span>
           </div>
           <div className="flex items-center gap-1">
