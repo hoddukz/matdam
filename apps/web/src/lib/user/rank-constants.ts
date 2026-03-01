@@ -53,3 +53,36 @@ export const RANK_I18N_MAP: Record<UserRankKey, string> = {
   master: "master",
   grandmaster: "grandmaster",
 };
+
+/**
+ * 등급별 권한 매핑
+ * 새 권한 추가 시 여기에 키 + 필요 등급만 추가하면 됨
+ */
+export type RankPermission =
+  | "suggest_ingredient_edit" // 재료 수정 제안
+  | "report_content" // 콘텐츠 신고
+  | "edit_ingredient" // 재료 직접 편집
+  | "verify_recipe_vote" // 레시피 검증 투표
+  | "add_ingredient" // 신규 재료 등록
+  | "review_reports" // 신고 검토 참여
+  | "curate_recipes" // 레시피 큐레이션
+  | "moderate"; // 커뮤니티 모더레이터
+
+const PERMISSION_MIN_RANK: Record<RankPermission, UserRankKey> = {
+  suggest_ingredient_edit: "homeCook",
+  report_content: "homeCook",
+  edit_ingredient: "skilledCook",
+  verify_recipe_vote: "skilledCook",
+  add_ingredient: "artisan",
+  review_reports: "artisan",
+  curate_recipes: "master",
+  moderate: "master",
+};
+
+/** activity_score 기준으로 특정 권한 보유 여부 확인 */
+export function hasPermission(score: number, permission: RankPermission): boolean {
+  const requiredKey = PERMISSION_MIN_RANK[permission];
+  const requiredDef = RANK_DEFINITIONS.find((r) => r.key === requiredKey);
+  if (!requiredDef) return false;
+  return score >= requiredDef.minScore;
+}

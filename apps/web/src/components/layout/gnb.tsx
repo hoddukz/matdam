@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Menu, Plus, ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { signOutAction } from "@/app/[locale]/login/actions";
 import type { User } from "@supabase/supabase-js";
 export function GNB() {
   const t = useTranslations("nav");
@@ -44,7 +45,7 @@ export function GNB() {
 
   async function handleSignOut() {
     await supabaseRef.current.auth.signOut();
-    window.location.href = `/${locale}`;
+    await signOutAction();
   }
 
   const isLoggedIn = !!user;
