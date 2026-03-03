@@ -1,5 +1,5 @@
 // Tag: core
-// Path: apps/web/src/components/recipe/comment-card.tsx
+// Path: apps/web/src/components/comment/comment-card.tsx
 
 "use client";
 
@@ -22,10 +22,16 @@ type CommentUser = {
   verified_type?: "chef" | "partner" | null;
 };
 
+type FormContext =
+  | { targetType: "recipe"; recipeId: string; cookLogId: string }
+  | { targetType: "ingredient"; ingredientId: string };
+
 export type CommentData = {
   comment_id: string;
-  cook_log_id: string;
-  recipe_id: string;
+  target_type?: "recipe" | "ingredient";
+  cook_log_id: string | null;
+  recipe_id: string | null;
+  ingredient_id?: string | null;
   user_id: string;
   body: string;
   image_url: string | null;
@@ -42,7 +48,8 @@ interface CommentCardProps {
   isLoggedIn: boolean;
   isOwner: boolean;
   isReply?: boolean;
-  cookLogId: string | null;
+  canReply: boolean;
+  formContext: FormContext | null;
   replies?: CommentData[];
   myVotes?: Record<string, 1 | -1>;
   currentUserId: string | null;
@@ -58,7 +65,8 @@ export function CommentCard({
   isLoggedIn,
   isOwner,
   isReply = false,
-  cookLogId,
+  canReply,
+  formContext,
   replies = [],
   myVotes = {},
   currentUserId,
@@ -67,7 +75,7 @@ export function CommentCard({
   onDeleted,
   onReplyAdded,
 }: CommentCardProps) {
-  const t = useTranslations("recipeDetail");
+  const t = useTranslations("comments");
   const locale = useLocale();
   const router = useRouter();
   const supabaseRef = useRef(createClient());
@@ -133,7 +141,7 @@ export function CommentCard({
   }
 
   async function handleDelete() {
-    if (!confirm(t("commentDeleteConfirm"))) return;
+    if (!confirm(t("deleteConfirm"))) return;
     setDeleting(true);
 
     try {
@@ -242,7 +250,7 @@ export function CommentCard({
         </div>
 
         {/* 답글 버튼 — 최상위 댓글만 (2단계 제한) */}
-        {!isReply && cookLogId && (
+        {!isReply && canReply && (
           <div className="mt-2 flex items-center gap-2">
             <Button
               variant="ghost"
@@ -273,11 +281,10 @@ export function CommentCard({
       </div>
 
       {/* 인라인 답글 폼 */}
-      {!isReply && showReplyForm && cookLogId && (
+      {!isReply && showReplyForm && canReply && formContext && (
         <div className="ml-8 mt-2">
           <CommentForm
-            recipeId={comment.recipe_id}
-            cookLogId={cookLogId}
+            context={formContext}
             parentCommentId={comment.comment_id}
             onCommentAdded={() => {
               setShowReplyForm(false);
@@ -298,7 +305,8 @@ export function CommentCard({
               isLoggedIn={isLoggedIn}
               isOwner={currentUserId === reply.user_id}
               isReply
-              cookLogId={cookLogId}
+              canReply={false}
+              formContext={null}
               currentUserId={currentUserId}
               hasReported={reportedIds.has(reply.comment_id)}
               reportedIds={reportedIds}

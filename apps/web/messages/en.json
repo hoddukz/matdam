@@ -592,6 +592,28 @@
     "verifiedChef": "Verified Chef",
     "partnerChef": "Partner Chef"
   },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Share your thoughts...",
+    "requiresCook": "Mark \"I Made This\" to comment.",
+    "loginToComment": "Sign in to comment",
+    "deleteConfirm": "Delete this comment?",
+    "sortTop": "Top",
+    "sortNewest": "Newest",
+    "noComments": "No comments yet.",
+    "loading": "Loading...",
+    "reply": "Reply",
+    "replyPlaceholder": "Write a reply...",
+    "replyCount": "{count} replies",
+    "hideReplies": "Hide replies",
+    "showReplies": "Show replies"
+  },
+  "discussion": {
+    "title": "Community",
+    "comingSoon": "Community discussions coming soon!",
+    "newThread": "Start Discussion",
+    "noThreads": "No discussions yet."
+  },
   "news": {
     "title": "News",
     "subtitle": "Stay up to date with MatDam updates and new features.",

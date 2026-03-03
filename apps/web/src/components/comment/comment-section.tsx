@@ -1,5 +1,5 @@
 // Tag: core
-// Path: apps/web/src/components/recipe/comment-section.tsx
+// Path: apps/web/src/components/comment/comment-section.tsx
 
 "use client";
 
@@ -13,20 +13,18 @@ import { ArrowUpDown } from "lucide-react";
 
 type SortMode = "top" | "newest";
 
+type CommentContext =
+  | { targetType: "recipe"; recipeId: string; cookLogId: string | null }
+  | { targetType: "ingredient"; ingredientId: string };
+
 interface CommentSectionProps {
-  recipeId: string;
-  cookLogId: string | null; // null이면 만들어보지 않은 유저
+  context: CommentContext;
   currentUserId: string | null;
   isLoggedIn: boolean;
 }
 
-export function CommentSection({
-  recipeId,
-  cookLogId,
-  currentUserId,
-  isLoggedIn,
-}: CommentSectionProps) {
-  const t = useTranslations("recipeDetail");
+export function CommentSection({ context, currentUserId, isLoggedIn }: CommentSectionProps) {
+  const t = useTranslations("comments");
   const supabaseRef = useRef(createClient());
 
   const [comments, setComments] = useState<CommentData[]>([]);
@@ -35,15 +33,20 @@ export function CommentSection({
   const [sortMode, setSortMode] = useState<SortMode>("top");
   const [loading, setLoading] = useState(true);
 
+  const targetId = context.targetType === "recipe" ? context.recipeId : context.ingredientId;
+
   const fetchComments = useCallback(async () => {
     const supabase = supabaseRef.current;
+
+    const filterColumn = context.targetType === "recipe" ? "recipe_id" : "ingredient_id";
 
     const { data: commentData } = await supabase
       .from("comments")
       .select(
         "*, users!comments_user_id_fkey(display_name, avatar_url, activity_score, verified_type)"
       )
-      .eq("recipe_id", recipeId)
+      .eq(filterColumn, targetId)
+      .eq("target_type", context.targetType)
       .order("created_at", { ascending: false });
 
     if (commentData) {
@@ -82,7 +85,7 @@ export function CommentSection({
     }
 
     setLoading(false);
-  }, [recipeId, currentUserId]);
+  }, [context.targetType, targetId, currentUserId]);
 
   useEffect(() => {
     fetchComments();
@@ -133,10 +136,29 @@ export function CommentSection({
   // 전체 최상위 댓글 수 (답글 제외)
   const topLevelCount = topLevel.length;
 
+  // 폼 표시 조건 및 FormContext 결정
+  const canShowForm = context.targetType === "recipe" ? !!context.cookLogId : isLoggedIn;
+
+  const formContext =
+    context.targetType === "recipe" && context.cookLogId
+      ? ({
+          targetType: "recipe",
+          recipeId: context.recipeId,
+          cookLogId: context.cookLogId,
+        } as const)
+      : context.targetType === "ingredient"
+        ? ({ targetType: "ingredient", ingredientId: context.ingredientId } as const)
+        : null;
+
+  // 각 댓글의 canReply / formContext 결정
+  const cardCanReply = context.targetType === "recipe" ? !!context.cookLogId : isLoggedIn;
+
+  const cardFormContext = formContext;
+
   if (loading) {
     return (
       <div className="space-y-3">
-        <h3 className="text-lg font-semibold">{t("commentsTitle")}</h3>
+        <h3 className="text-lg font-semibold">{t("title")}</h3>
         <div className="text-sm text-muted-foreground">{t("loading")}</div>
       </div>
     );
@@ -149,7 +171,8 @@ export function CommentSection({
       myVote={myVotes[c.comment_id] ?? null}
       isLoggedIn={isLoggedIn}
       isOwner={currentUserId === c.user_id}
-      cookLogId={cookLogId}
+      canReply={cardCanReply}
+      formContext={cardFormContext}
       replies={repliesMap[c.comment_id] ?? []}
       myVotes={myVotes}
       currentUserId={currentUserId}
@@ -164,7 +187,7 @@ export function CommentSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">
-          {t("commentsTitle")}
+          {t("title")}
           {topLevelCount > 0 && (
             <span className="ml-2 text-sm font-normal text-muted-foreground">{topLevelCount}</span>
           )}
@@ -182,11 +205,13 @@ export function CommentSection({
         )}
       </div>
 
-      {/* 작성 폼 — 만들어본 유저만 */}
-      {cookLogId ? (
-        <CommentForm recipeId={recipeId} cookLogId={cookLogId} onCommentAdded={fetchComments} />
-      ) : isLoggedIn ? (
-        <p className="text-sm text-muted-foreground">{t("commentRequiresCook")}</p>
+      {/* 작성 폼 */}
+      {canShowForm && formContext ? (
+        <CommentForm context={formContext} onCommentAdded={fetchComments} />
+      ) : isLoggedIn && context.targetType === "recipe" ? (
+        <p className="text-sm text-muted-foreground">{t("requiresCook")}</p>
+      ) : !isLoggedIn ? (
+        <p className="text-sm text-muted-foreground">{t("loginToComment")}</p>
       ) : null}
 
       {/* Top 3 */}

@@ -592,6 +592,28 @@
     "verifiedChef": "인증 셰프",
     "partnerChef": "파트너 셰프"
   },
+  "comments": {
+    "title": "댓글",
+    "placeholder": "의견을 남겨주세요...",
+    "requiresCook": "\"만들어봤어요\"를 눌러야 댓글을 남길 수 있어요.",
+    "loginToComment": "로그인하고 댓글을 남겨보세요",
+    "deleteConfirm": "이 댓글을 삭제할까요?",
+    "sortTop": "추천순",
+    "sortNewest": "최신순",
+    "noComments": "아직 댓글이 없어요.",
+    "loading": "불러오는 중...",
+    "reply": "답글",
+    "replyPlaceholder": "답글을 작성하세요...",
+    "replyCount": "답글 {count}개",
+    "hideReplies": "답글 숨기기",
+    "showReplies": "답글 보기"
+  },
+  "discussion": {
+    "title": "커뮤니티",
+    "comingSoon": "커뮤니티 기능을 준비 중입니다!",
+    "newThread": "토론 시작",
+    "noThreads": "아직 토론이 없어요."
+  },
   "news": {
     "title": "새소식",
     "subtitle": "맛담의 업데이트와 새로운 기능을 확인하세요.",

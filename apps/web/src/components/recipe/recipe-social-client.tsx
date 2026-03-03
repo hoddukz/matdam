@@ -9,7 +9,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { CookLogButton } from "./cook-log-button";
 import { RecipeVoteButton } from "./recipe-vote-button";
 import { CookReviewForm } from "./cook-review-form";
-import { CommentSection } from "./comment-section";
+import { CommentSection } from "@/components/comment/comment-section";
 import { ChevronDown, ChevronUp, Utensils } from "lucide-react";
 import type { CookReview } from "@matdam/types";
 
@@ -94,8 +94,7 @@ export function RecipeSocialClient({
 
       {/* 코멘트 섹션 */}
       <CommentSection
-        recipeId={recipeId}
-        cookLogId={cookLogId}
+        context={{ targetType: "recipe", recipeId, cookLogId }}
         currentUserId={currentUserId}
         isLoggedIn={isLoggedIn}
       />

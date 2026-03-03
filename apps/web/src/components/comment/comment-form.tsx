@@ -1,5 +1,5 @@
 // Tag: core
-// Path: apps/web/src/components/recipe/comment-form.tsx
+// Path: apps/web/src/components/comment/comment-form.tsx
 
 "use client";
 
@@ -9,20 +9,18 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 
+type FormContext =
+  | { targetType: "recipe"; recipeId: string; cookLogId: string }
+  | { targetType: "ingredient"; ingredientId: string };
+
 interface CommentFormProps {
-  recipeId: string;
-  cookLogId: string;
+  context: FormContext;
   parentCommentId?: string;
   onCommentAdded?: () => void;
 }
 
-export function CommentForm({
-  recipeId,
-  cookLogId,
-  parentCommentId,
-  onCommentAdded,
-}: CommentFormProps) {
-  const t = useTranslations("recipeDetail");
+export function CommentForm({ context, parentCommentId, onCommentAdded }: CommentFormProps) {
+  const t = useTranslations("comments");
   const supabaseRef = useRef(createClient());
 
   const [body, setBody] = useState("");
@@ -47,12 +45,21 @@ export function CommentForm({
       } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
-      const insertData: Record<string, string> = {
-        cook_log_id: cookLogId,
-        recipe_id: recipeId,
-        user_id: user.id,
-        body: trimmed,
-      };
+      const insertData: Record<string, string> =
+        context.targetType === "recipe"
+          ? {
+              target_type: "recipe",
+              cook_log_id: context.cookLogId,
+              recipe_id: context.recipeId,
+              user_id: user.id,
+              body: trimmed,
+            }
+          : {
+              target_type: "ingredient",
+              ingredient_id: context.ingredientId,
+              user_id: user.id,
+              body: trimmed,
+            };
 
       if (parentCommentId) {
         insertData.parent_comment_id = parentCommentId;
@@ -78,7 +85,7 @@ export function CommentForm({
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder={isReply ? t("replyPlaceholder") : t("commentPlaceholder")}
+          placeholder={isReply ? t("replyPlaceholder") : t("placeholder")}
           maxLength={2000}
           rows={isReply ? 1 : 2}
           className="flex-1 resize-none rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"

@@ -52,8 +52,10 @@ export interface TasteProfile {
 /** 코멘트 */
 export interface Comment {
   comment_id: string;
-  cook_log_id: string;
-  recipe_id: string;
+  target_type: "recipe" | "ingredient";
+  cook_log_id: string | null;
+  recipe_id: string | null;
+  ingredient_id: string | null;
   user_id: string;
   body: string;
   image_url: string | null;

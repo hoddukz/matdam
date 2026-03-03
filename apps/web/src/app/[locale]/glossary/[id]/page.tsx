@@ -10,6 +10,7 @@ import { getLocalizedText } from "@/lib/recipe/localized-text";
 import { CATEGORY_LABEL_KEYS, DIETARY_FLAG_LABEL_KEYS } from "@/lib/recipe/glossary-constants";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlossaryCommentClient } from "./glossary-comment-client";
 
 type Props = {
   params: Promise<{ locale: string; id: string }>;
@@ -43,8 +44,14 @@ export default async function GlossaryDetailPage({ params }: Props) {
   ]);
   const supabase = await createClient();
 
-  // 병렬 쿼리: 재료 + 이 재료를 사용하는 published 레시피
-  const [{ data: ingredient }, { data: usedRecipes }] = await Promise.all([
+  // 병렬 쿼리: 재료 + 이 재료를 사용하는 published 레시피 + 유저 정보
+  const [
+    { data: ingredient },
+    { data: usedRecipes },
+    {
+      data: { user },
+    },
+  ] = await Promise.all([
     supabase
       .from("ingredients")
       .select("id, names, category, dietary_flags, substitutes, description, image_url")
@@ -57,6 +64,7 @@ export default async function GlossaryDetailPage({ params }: Props) {
       )
       .eq("ingredient_id", id)
       .eq("recipes.published", true),
+    supabase.auth.getUser(),
   ]);
 
   if (!ingredient) notFound();
@@ -205,6 +213,15 @@ export default async function GlossaryDetailPage({ params }: Props) {
             })}
           </div>
         )}
+      </section>
+
+      {/* 댓글 섹션 */}
+      <section className="mt-8">
+        <GlossaryCommentClient
+          ingredientId={ing.id}
+          currentUserId={user?.id ?? null}
+          isLoggedIn={!!user}
+        />
       </section>
     </div>
   );
