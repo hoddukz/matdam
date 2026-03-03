@@ -7,7 +7,7 @@
 
 ## 긴급 오류/수정사항
 
-- [x] **재료 note/qualifier DB 데이터 잘림 문제** — 원인: 코드가 JSONB 방식(`getLocalizedText`)으로 처리하는데 DB에 016 마이그레이션이 미적용 상태였음. 마이그레이션 적용 후 해결. (2026-02-27)
+(없음)
 
 ---
 
@@ -27,12 +27,10 @@
 
 ### 확인 필요 항목
 
-- [x] Supabase에 마이그레이션 007 + 008 적용 완료
-- [x] Pantry 페이지 실제 동작 확인 (`/glossary/pantry/korean`) — 정상
-- [x] Glossary cuisine 필터 동작 확인 (`/glossary?cuisine=korean`) — 정상
-- [x] Supabase에 마이그레이션 010 적용 (`010_recipe_social.sql`)
-- [x] 레시피 상세 페이지 소셜 기능 동작 확인 (투표/만들어봤어요/리뷰 DB 저장 확인 완료, 코멘트 UI 확인 완료)
-- [x] Supabase에 마이그레이션 011 적용 (`011_expanded_ingredient_seeds.sql`) + 검색에서 새 재료 노출 확인
+- [ ] Supabase에 마이그레이션 009 적용 (`009_user_ranking.sql`) + activity_score 컬럼 확인
+- [ ] 레시피 공개 시 activity_score 증가 확인
+- [ ] 프로필/레시피 상세/댓글에서 등급 뱃지 정상 표시 확인
+- [ ] `/news` 페이지 접근 + 등급 설명 내용 확인
 
 ### 평가 스케일 방향 — 결정 완료 (2026-02-24)
 
@@ -139,11 +137,11 @@
 
 구현 항목:
 
-- [ ] DB 마이그레이션: `activity_score INT DEFAULT 0` + `is_verified_chef BOOLEAN DEFAULT false` 컬럼 추가
-- [ ] 7개 트리거 (recipes/recipe_votes/cook_reviews/comments/cook_logs/bookmarks INSERT/DELETE 시 점수 가감)
-- [ ] 기존 데이터 백필 SQL
-- [ ] 프로필 페이지에 등급 뱃지 표시
-- [ ] 셰프 인증 뱃지 UI
+- [x] DB 마이그레이션: `activity_score INT DEFAULT 0` + `verified_type TEXT` 컬럼 추가
+- [x] 6개 트리거 (recipes/recipe_votes/cook_reviews/comments/cook_logs/bookmarks INSERT/DELETE 시 점수 가감)
+- [x] 기존 데이터 백필 SQL
+- [x] 프로필 페이지에 등급 뱃지 표시
+- [x] 셰프/파트너 인증 뱃지 UI
 
 **커뮤니티 기능**
 
@@ -239,7 +237,95 @@
 
 ---
 
+## 2026-03-03 (월)
+
+### 레시피 입력 언어 자동 감지 (detectLocale)
+
+**문제:** 레시피 폼에서 JSONB 키를 URL의 locale(`/en/`, `/ko/`)로 결정하고 있어서, 영어 페이지에서 한국어를 입력하면 `{"en": "한국어텍스트"}`로 잘못 저장됨. 번역 시에도 en 키에 한국어가 들어있어 번역 불필요로 판단되는 문제 발생.
+
+**해결:**
+
+- `apps/web/src/lib/recipe/localized-text.ts` — `detectLocale(text)` 함수 추가
+  - 한글 포함 → `"ko"`, 히라가나/가타카나 → `"ja"`, 한자 → `"zh"`, 그 외 → `"en"`
+  - 유니코드 정규식 기반, 외부 라이브러리 불필요
+- `apps/web/src/components/recipe/recipe-form.tsx` — 14곳의 `[locale]` → `[detectLocale(text)]`로 교체
+  - `handleCreate`: title, description, step description/tip, ingredient custom_name/qualifier/note
+  - `handleUpdate`: 동일 범위
+  - `insertStepsAndIngredients`: 동일 범위
+
+**향후 언어 확장 시:**
+
+- 한/중/일/영 → 유니코드 정규식으로 충분 (현재 구현으로 커버)
+- 라틴 문자 계열 다국어 (프/독/스페인어 등) 구분 필요 시 → `franc` 라이브러리 도입
+
+### 재료 note/qualifier 영문 번역 누락 수정 (DB)
+
+- `recipe_ingredients`의 note/qualifier JSONB에서 `en` 키에 한국어가 그대로 복사된 항목 47개 수동 수정
+  - note 40개 + qualifier 7개 (전부 garlic "다진")
+- 화유(花油) 재료 영문명 `Lard` → `Hwayou (Fire Oil)`, note `Sichuan peppercorn oil` → `Smoky flavored oil`로 수정
+
+### 레시피 설명 보강 + 작성자 통합
+
+- 31개 레시피 description을 1문장 → 2~3문장으로 보강 (ko + en 동시)
+- 전체 레시피 author를 `matdam` 계정으로 통합, `matdam` role을 `admin`으로 변경
+
+### 언어 설정 기능 구현
+
+- `packages/types/src/user.ts` — `UserPreferences`에 `preferred_locale?: "ko" | "en"` 추가
+- `apps/web/messages/ko.json` / `en.json` — settings 네임스페이스에 `languageLabel`, `languageKo`, `languageEn` i18n 키 추가
+- `apps/web/src/components/layout/gnb.tsx` — GNB에 언어 드롭다운 셀렉터 추가 (데스크톱 + 모바일)
+  - 🇰🇷 한국어 / 🇺🇸 English 국기+자국어 표시, 클릭 시 드롭다운
+  - `NEXT_LOCALE` 쿠키 설정 (1년 유효) + 경로 locale 전환 + 로그인 시 DB fire-and-forget 업데이트
+  - `LOCALE_OPTIONS` 배열로 관리 — 언어 추가 시 한 줄만 추가하면 됨
+- `apps/web/src/app/[locale]/settings/_components/settings-form.tsx` — Display Name 아래 언어 선택 섹션 추가
+  - 한국어 / English 버튼 (기존 Skill Level UI 패턴)
+  - 저장 시 DB `preferred_locale` + `NEXT_LOCALE` 쿠키 반영, locale 변경 시 새 URL로 redirect
+
+**동작 우선순위:** NEXT_LOCALE 쿠키 (1순위) → Accept-Language 헤더 (2순위) → defaultLocale "en" (3순위)
+
+---
+
 ## 2026-02-28 (금)
+
+### 유저 등급 시스템 + 새소식 페이지 구현
+
+**1. DB 마이그레이션 (`009_user_ranking.sql`)**
+
+- `users` 테이블에 `activity_score INTEGER DEFAULT 0` + `verified_type TEXT` 컬럼 추가
+- `sync_activity_score()` 트리거 함수: 6개 테이블 (recipes/recipe_votes/cook_reviews/comments/cook_logs/bookmarks)에서 INSERT/DELETE/UPDATE 이벤트 감지하여 점수 자동 가감
+- 기존 데이터 백필 SQL (모든 유저의 activity_score 일괄 계산)
+- 등급은 DB 컬럼 없이 앱에서 계산 (7단계: 견습생~요리 대가)
+
+**2. 타입 + 상수**
+
+- `packages/types/src/user.ts` — `UserRankKey`, `VerifiedType` 타입 추가, `UserProfile`에 `activity_score`, `verified_type` 추가
+- `packages/types/src/index.ts` — 새 타입 export
+- `apps/web/src/lib/user/rank-constants.ts` — `RANK_DEFINITIONS` 7단계 정의 + `getRankFromScore()` 유틸
+
+**3. RankBadge 컴포넌트**
+
+- `apps/web/src/components/user/rank-badge.tsx` — 등급별 색상 배지 + 인증 셰프/파트너 BadgeCheck 아이콘
+
+**4. 뱃지 통합 (5개 파일)**
+
+- `recipe/[slug]/page.tsx` — 작성자 이름 옆 RankBadge
+- `profile/page.tsx` — 닉네임 옆 RankBadge + 활동 점수
+- `user/[userId]/page.tsx` — 닉네임 옆 RankBadge + 활동 점수
+- `comment-section.tsx` — 쿼리에 activity_score, verified_type 추가
+- `comment-card.tsx` — 작성자 옆 RankBadge
+
+**5. 새소식 페이지**
+
+- `apps/web/src/app/[locale]/news/page.tsx` — 등급 시스템 소개 아티클 (7단계 테이블 + 점수 획득 방법)
+- `footer.tsx` — Navigation에 새소식 링크 추가
+
+**6. i18n**
+
+- `ko.json` / `en.json` — `rank` (7등급 + 인증 타입), `news` (제목/소개/등급표/점수가이드), `footer.news`, `profile.activityScore`, `userProfile.activityScore` 키 추가
+
+**tsc --noEmit 통과 확인**
+
+---
 
 ### 마이그레이션 파일 통합 정리
 
@@ -997,6 +1083,13 @@ ca7dfd7 Step 3 완성: 레시피 수정/삭제 + 프로필 페이지 + V2 디자
 
 ## 완료 항목
 
+- [x] 2026-03-03 — 레시피 입력 언어 자동 감지 (detectLocale) — URL locale 대신 입력 텍스트 기반으로 JSONB 키 결정
+- [x] 2026-03-03 — 재료 note/qualifier 영문 번역 누락 47개 수정 + 화유 영문명 수정
+- [x] 2026-03-03 — 레시피 설명 31개 보강 + 작성자 matdam 통합 + admin 권한
+- [x] 2026-03-03 — 언어 설정 기능 (GNB 드롭다운 + 설정 페이지 + NEXT_LOCALE 쿠키 + DB preferred_locale)
+- [x] 2026-02-28 — 유저 등급 시스템 구현 (activity_score + verified_type + 트리거 6개 + 백필 + RankBadge 컴포넌트 + 5개 페이지 통합)
+- [x] 2026-02-28 — 새소식 페이지 구현 (/news + 등급 시스템 소개 + 푸터 링크)
+- [x] 2026-02-28 — 재료 note/qualifier DB 데이터 잘림 해결 (016 마이그레이션 적용)
 - [x] 2026-02-27 — P2 완료: 드래그 앤 드롭 확인 (이미 구현) + DB 복합 인덱스 13개 추가 (019_composite_indexes.sql)
 - [x] 2026-02-27 — OWASP ZAP 보안 스캔 수정 (SQL Injection 화이트리스트 + Security Headers + Cookie HttpOnly + X-Powered-By 제거)
 - [x] 2026-02-27 — 번역 기능 버그 수정 3건 (forbidden 에러 + ISR 캐시 + 버튼 사라짐)

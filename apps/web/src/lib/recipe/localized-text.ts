@@ -27,6 +27,17 @@ export function ensureLocaleObject(
 }
 
 /**
+ * 입력 텍스트의 언어를 감지하여 저장할 locale 키를 결정.
+ * 한글이 포함되면 "ko", 일본어(히라가나/가타카나)면 "ja", 한자만이면 "zh", 그 외 "en".
+ */
+export function detectLocale(text: string): "ko" | "en" | "ja" | "zh" {
+  if (/[가-힣ㄱ-ㅎㅏ-ㅣ]/.test(text)) return "ko";
+  if (/[ぁ-んァ-ヶ]/.test(text)) return "ja";
+  if (/[\u4e00-\u9fff]/.test(text)) return "zh";
+  return "en";
+}
+
+/**
  * JSONB 키 순서는 PostgreSQL에서 알파벳순 정렬되므로 신뢰할 수 없음.
  * title 값에 한글(Hangul)이 포함되어 있으면 원본은 한국어로 판별.
  */

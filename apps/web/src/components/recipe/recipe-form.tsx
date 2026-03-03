@@ -29,7 +29,7 @@ import { SELECTED_STYLE, toggleItem } from "@/lib/user/preference-constants";
 import { ImageIcon, X } from "lucide-react";
 import posthog from "posthog-js";
 import { lintRecipe, type LintResult } from "@/lib/recipe/recipe-linter";
-import { ensureLocaleObject } from "@/lib/recipe/localized-text";
+import { ensureLocaleObject, detectLocale } from "@/lib/recipe/localized-text";
 import { slugify } from "transliteration";
 
 function generateSlug(title: string): string {
@@ -208,8 +208,10 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       .from("recipes")
       .insert({
         slug,
-        title: { [locale]: data.title },
-        description: data.description ? { [locale]: data.description } : null,
+        title: { [detectLocale(data.title)]: data.title },
+        description: data.description
+          ? { [detectLocale(data.description)]: data.description }
+          : null,
         author_id: userId,
         difficulty_level: data.difficulty_level,
         servings: data.servings,
@@ -304,9 +306,12 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     }
 
     // 기존 로케일 데이터를 보존하면서 현재 로케일만 업데이트
-    const mergedTitle = { ...initialData.rawTitle, [locale]: data.title };
+    const mergedTitle = { ...initialData.rawTitle, [detectLocale(data.title)]: data.title };
     const mergedDescription = data.description
-      ? { ...(initialData.rawDescription ?? {}), [locale]: data.description }
+      ? {
+          ...(initialData.rawDescription ?? {}),
+          [detectLocale(data.description)]: data.description,
+        }
       : initialData.rawDescription;
 
     const { error: recipeError } = await supabase
@@ -344,10 +349,15 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       const rawStep = initialData.rawSteps?.[i];
       return {
         step_order: i + 1,
-        description: { ...ensureLocaleObject(rawStep?.description), [locale]: step.description },
+        description: {
+          ...ensureLocaleObject(rawStep?.description),
+          [detectLocale(step.description)]: step.description,
+        },
         timer_seconds: step.timer_seconds ?? null,
         image_url: step.image_url ?? null,
-        tip: step.tip ? { ...ensureLocaleObject(rawStep?.tip), [locale]: step.tip } : null,
+        tip: step.tip
+          ? { ...ensureLocaleObject(rawStep?.tip), [detectLocale(step.tip)]: step.tip }
+          : null,
       };
     });
 
@@ -357,13 +367,18 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
         ingredient_id: ing.ingredient_id || null,
         custom_name: ing.ingredient_id
           ? null
-          : { ...ensureLocaleObject(rawIng?.custom_name), [locale]: ing.name },
+          : { ...ensureLocaleObject(rawIng?.custom_name), [detectLocale(ing.name)]: ing.name },
         amount: ing.amount ?? null,
         unit: ing.unit ?? null,
         qualifier: ing.qualifier
-          ? { ...ensureLocaleObject(rawIng?.qualifier), [locale]: ing.qualifier }
+          ? {
+              ...ensureLocaleObject(rawIng?.qualifier),
+              [detectLocale(ing.qualifier)]: ing.qualifier,
+            }
           : null,
-        note: ing.note ? { ...ensureLocaleObject(rawIng?.note), [locale]: ing.note } : null,
+        note: ing.note
+          ? { ...ensureLocaleObject(rawIng?.note), [detectLocale(ing.note)]: ing.note }
+          : null,
         step_number: ingredientStepMap.get(i) ?? null,
         display_order: i + 1,
       };
@@ -389,10 +404,10 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       const stepsPayload = data.steps.map((step, i) => ({
         recipe_id: recipeId,
         step_order: i + 1,
-        description: { [locale]: step.description },
+        description: { [detectLocale(step.description)]: step.description },
         timer_seconds: step.timer_seconds,
         image_url: step.image_url,
-        tip: step.tip ? { [locale]: step.tip } : null,
+        tip: step.tip ? { [detectLocale(step.tip)]: step.tip } : null,
       }));
 
       const { error: stepsError } = await supabase.from("recipe_steps").insert(stepsPayload);
@@ -414,11 +429,11 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({
         recipe_id: recipeId,
         ingredient_id: ing.ingredient_id || null,
-        custom_name: ing.ingredient_id ? null : { [locale]: ing.name },
+        custom_name: ing.ingredient_id ? null : { [detectLocale(ing.name)]: ing.name },
         amount: ing.amount,
         unit: ing.unit,
-        qualifier: ing.qualifier ? { [locale]: ing.qualifier } : null,
-        note: ing.note ? { [locale]: ing.note } : null,
+        qualifier: ing.qualifier ? { [detectLocale(ing.qualifier)]: ing.qualifier } : null,
+        note: ing.note ? { [detectLocale(ing.note)]: ing.note } : null,
         step_number: ingredientStepMap.get(i) ?? null,
         display_order: i + 1,
       }));
