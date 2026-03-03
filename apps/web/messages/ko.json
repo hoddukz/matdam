@@ -473,7 +473,10 @@
     "tasteSourHigh": "새콤한 거 좋음",
     "tasteUmami": "감칠맛",
     "tasteUmamiLow": "담백한 편",
-    "tasteUmamiHigh": "감칠맛 강한 편"
+    "tasteUmamiHigh": "감칠맛 강한 편",
+    "languageLabel": "언어",
+    "languageKo": "한국어",
+    "languageEn": "English"
   },
   "privacyPolicy": {
     "title": "개인정보처리방침",

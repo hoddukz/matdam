@@ -50,6 +50,7 @@ export interface UserPreferences {
   dietary_preferences?: DietaryPreference[];
   taste_preferences?: TastePreferences;
   preferred_unit?: "metric" | "imperial";
+  preferred_locale?: "ko" | "en";
 }
 
 export type UserRankKey =

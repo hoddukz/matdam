@@ -36,7 +36,8 @@ import type {
   TastePreferences,
   UserPreferences,
 } from "@matdam/types";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { useRouter, usePathname } from "next/navigation";
 import { useRef, useState } from "react";
 
 interface SettingsFormProps {
@@ -58,8 +59,14 @@ function initDietaryPrefs(prefs?: Partial<UserPreferences> | null): DietaryPrefe
 export function SettingsForm({ currentDisplayName, currentPreferences }: SettingsFormProps) {
   const supabaseRef = useRef(createClient());
   const t = useTranslations("settings");
+  const currentLocale = useLocale();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [displayName, setDisplayName] = useState(currentDisplayName);
+  const [selectedLocale, setSelectedLocale] = useState<"ko" | "en">(
+    (currentPreferences?.preferred_locale as "ko" | "en") ?? (currentLocale as "ko" | "en")
+  );
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
@@ -137,6 +144,7 @@ export function SettingsForm({ currentDisplayName, currentPreferences }: Setting
         dietary_preferences: dietaryPrefs,
       }),
       taste_preferences: tastes,
+      preferred_locale: selectedLocale,
     };
 
     const { error: updateError } = await supabaseRef.current
@@ -153,8 +161,17 @@ export function SettingsForm({ currentDisplayName, currentPreferences }: Setting
       return;
     }
 
+    // NEXT_LOCALE 쿠키 설정 (1년)
+    document.cookie = `NEXT_LOCALE=${selectedLocale};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
+
     setSubmitting(false);
     setSaved(true);
+
+    // locale이 변경된 경우 새 locale URL로 redirect
+    if (selectedLocale !== currentLocale) {
+      const newPath = pathname.replace(`/${currentLocale}`, `/${selectedLocale}`);
+      router.push(newPath);
+    }
   }
 
   return (
@@ -174,6 +191,28 @@ export function SettingsForm({ currentDisplayName, currentPreferences }: Setting
           maxLength={30}
           required
         />
+      </div>
+
+      {/* Language */}
+      <div className="space-y-3">
+        <Label>{t("languageLabel")}</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {(["ko", "en"] as const).map((loc) => (
+            <button
+              key={loc}
+              type="button"
+              onClick={() => {
+                setSelectedLocale(loc);
+                setSaved(false);
+              }}
+              className={`rounded-lg border px-3 py-2 text-sm transition-all hover:border-matdam-gold/50 ${
+                selectedLocale === loc ? SELECTED_STYLE : "border-border"
+              }`}
+            >
+              {t(loc === "ko" ? "languageKo" : "languageEn")}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Skill Level */}

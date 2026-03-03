@@ -5,6 +5,7 @@
 
 import Link from "next/link";
 import { useTranslations, useLocale } from "next-intl";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -18,13 +19,57 @@ import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { signOutAction } from "@/app/[locale]/login/actions";
 import type { User } from "@supabase/supabase-js";
+
+const LOCALE_OPTIONS = [
+  { code: "ko" as const, flag: "\u{1F1F0}\u{1F1F7}", label: "\uD55C\uAD6D\uC5B4" },
+  { code: "en" as const, flag: "\u{1F1FA}\u{1F1F8}", label: "English" },
+] as const;
+
+function getLocaleDisplay(code: string) {
+  return LOCALE_OPTIONS.find((o) => o.code === code) ?? LOCALE_OPTIONS[1];
+}
+
 export function GNB() {
   const t = useTranslations("nav");
   const locale = useLocale();
+  const pathname = usePathname();
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [myActivityOpen, setMyActivityOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const supabaseRef = useRef(createClient());
+
+  function switchLocale(newLocale: "ko" | "en") {
+    if (newLocale === locale) return;
+
+    // 1. NEXT_LOCALE 쿠키 설정 (1년)
+    document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
+
+    // 2. 현재 URL의 locale 부분만 교체
+    const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
+    router.push(newPath);
+
+    // 3. 로그인 상태면 DB preferences.preferred_locale fire-and-forget 업데이트
+    if (user) {
+      const supabase = supabaseRef.current;
+      supabase
+        .from("users")
+        .select("preferences")
+        .eq("user_id", user.id)
+        .single()
+        .then(({ data }) => {
+          if (data) {
+            supabase
+              .from("users")
+              .update({
+                preferences: { ...data.preferences, preferred_locale: newLocale },
+              })
+              .eq("user_id", user.id)
+              .then(() => {});
+          }
+        });
+    }
+  }
 
   useEffect(() => {
     const supabase = supabaseRef.current;
@@ -103,6 +148,30 @@ export function GNB() {
             </Link>
           </Button>
 
+          {/* Language Selector */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex items-center gap-1 text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
+              >
+                {getLocaleDisplay(locale).flag} {getLocaleDisplay(locale).label}
+                <ChevronDown className="h-3 w-3" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {LOCALE_OPTIONS.map((opt) => (
+                <DropdownMenuItem
+                  key={opt.code}
+                  onClick={() => switchLocale(opt.code)}
+                  className={locale === opt.code ? "font-bold" : ""}
+                >
+                  {opt.flag} {opt.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {isLoggedIn ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -152,6 +221,35 @@ export function GNB() {
       {mobileOpen && (
         <div className="border-t border-border bg-background px-4 py-4 md:hidden">
           <div className="flex flex-col gap-3">
+            {/* Language Selector (Mobile) */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="flex items-center gap-1 text-sm font-medium text-foreground/80"
+                >
+                  {getLocaleDisplay(locale).flag} {getLocaleDisplay(locale).label}
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                {LOCALE_OPTIONS.map((opt) => (
+                  <DropdownMenuItem
+                    key={opt.code}
+                    onClick={() => {
+                      switchLocale(opt.code);
+                      setMobileOpen(false);
+                    }}
+                    className={locale === opt.code ? "font-bold" : ""}
+                  >
+                    {opt.flag} {opt.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="border-t border-border" />
+
             {/* 탐색 그룹 */}
             <Link
               href={`/${locale}/explore`}

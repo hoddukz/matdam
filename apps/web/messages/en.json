@@ -473,7 +473,10 @@
     "tasteSourHigh": "Love tangy",
     "tasteUmami": "Umami",
     "tasteUmamiLow": "Light",
-    "tasteUmamiHigh": "Rich & savory"
+    "tasteUmamiHigh": "Rich & savory",
+    "languageLabel": "Language",
+    "languageKo": "한국어",
+    "languageEn": "English"
   },
   "privacyPolicy": {
     "title": "Privacy Policy",
