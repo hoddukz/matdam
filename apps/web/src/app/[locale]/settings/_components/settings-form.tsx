@@ -36,6 +36,7 @@ import type {
   TastePreferences,
   UserPreferences,
 } from "@matdam/types";
+import { initDietaryPrefs } from "@/lib/user/dietary-helpers";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
 import { useRef, useState } from "react";
@@ -43,17 +44,6 @@ import { useRef, useState } from "react";
 interface SettingsFormProps {
   currentDisplayName: string;
   currentPreferences?: Partial<UserPreferences> | null;
-}
-
-/** 기존 dietary_restrictions → DietaryPreference[] 폴백 변환 */
-function initDietaryPrefs(prefs?: Partial<UserPreferences> | null): DietaryPreference[] {
-  if (prefs?.dietary_preferences && prefs.dietary_preferences.length > 0) {
-    return prefs.dietary_preferences;
-  }
-  if (prefs?.dietary_restrictions && prefs.dietary_restrictions.length > 0) {
-    return prefs.dietary_restrictions.map((tag) => ({ tag, mode: "hard" as const }));
-  }
-  return [];
 }
 
 export function SettingsForm({ currentDisplayName, currentPreferences }: SettingsFormProps) {
@@ -169,7 +159,7 @@ export function SettingsForm({ currentDisplayName, currentPreferences }: Setting
 
     // locale이 변경된 경우 새 locale URL로 redirect
     if (selectedLocale !== currentLocale) {
-      const newPath = pathname.replace(`/${currentLocale}`, `/${selectedLocale}`);
+      const newPath = `/${selectedLocale}${pathname.slice(currentLocale.length + 1)}`;
       router.push(newPath);
     }
   }

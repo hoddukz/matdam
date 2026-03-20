@@ -8,6 +8,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { unwrapJoin } from "@/lib/supabase/unwrap-join";
 import { getLocalizedText, detectOriginalLocale } from "@/lib/recipe/localized-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -183,8 +184,7 @@ export default async function RecipeDetailPage({ params }: Props) {
   const translatedLocales = (recipe.translated_locales ?? {}) as Record<string, string>;
   const canEditTranslation = isAuthor && locale !== originalLocale;
 
-  // Supabase !inner join은 TS에서 배열 타입을 반환하지만 실제로는 단일 객체
-  const author = Array.isArray(recipe.users) ? recipe.users[0] : recipe.users;
+  const author = unwrapJoin(recipe.users);
 
   // JSON-LD structured data
   const jsonLd = {
@@ -349,9 +349,7 @@ export default async function RecipeDetailPage({ params }: Props) {
                 &rdquo;
               </Link>
               <span>
-                {t("by")}{" "}
-                {(Array.isArray(parentRecipe.users) ? parentRecipe.users[0] : parentRecipe.users)
-                  ?.display_name ?? "—"}
+                {t("by")} {unwrapJoin(parentRecipe.users)?.display_name ?? "—"}
               </span>
             </div>
           )}
@@ -544,7 +542,7 @@ export default async function RecipeDetailPage({ params }: Props) {
                   users: { display_name: string } | { display_name: string }[];
                 }) => {
                   const remixTitle = getLocalizedText(remix.title, locale);
-                  const remixAuthor = Array.isArray(remix.users) ? remix.users[0] : remix.users;
+                  const remixAuthor = unwrapJoin(remix.users);
                   const authorName = remixAuthor?.display_name ?? "—";
                   return (
                     <Link key={remix.recipe_id} href={`/${locale}/recipe/${remix.slug}`}>

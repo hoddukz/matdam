@@ -45,8 +45,8 @@ export function GNB() {
     // 1. NEXT_LOCALE 쿠키 설정 (1년)
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
 
-    // 2. 현재 URL의 locale 부분만 교체
-    const newPath = pathname.replace(`/${locale}`, `/${newLocale}`);
+    // 2. 현재 URL의 locale prefix만 교체 (pathname은 항상 /locale/... 형태)
+    const newPath = `/${newLocale}${pathname.slice(locale.length + 1)}`;
     router.push(newPath);
 
     // 3. 로그인 상태면 DB preferences.preferred_locale fire-and-forget 업데이트

@@ -6,8 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import { timingSafeEqual } from "crypto";
 import type { TranslationItem } from "@/lib/recipe/translation-types";
-
-const SUPPORTED_LOCALES = ["ko", "en"] as const;
+import { SUPPORTED_LOCALES } from "@/lib/i18n/constants";
 const MAX_RECIPES_PER_RUN = 5;
 
 export async function GET(request: Request) {
@@ -48,7 +47,8 @@ export async function GET(request: Request) {
   const { data: untranslatedSteps } = await supabase
     .from("recipe_steps")
     .select("recipe_id, description")
-    .not("description", "is", null);
+    .not("description", "is", null)
+    .limit(1000);
 
   const recipeIdsNeedingTranslation = new Set<string>();
   for (const step of untranslatedSteps ?? []) {
@@ -62,7 +62,10 @@ export async function GET(request: Request) {
   }
 
   // Also check recipe title/description JSONB
-  const { data: recipes } = await supabase.from("recipes").select("recipe_id, title, description");
+  const { data: recipes } = await supabase
+    .from("recipes")
+    .select("recipe_id, title, description")
+    .limit(1000);
 
   for (const recipe of recipes ?? []) {
     for (const field of ["title", "description"] as const) {

@@ -43,17 +43,6 @@ export function getRankFromScore(score: number): RankDefinition {
   return RANK_DEFINITIONS[0];
 }
 
-/** i18n 키 매핑 */
-export const RANK_I18N_MAP: Record<UserRankKey, string> = {
-  apprentice: "apprentice",
-  noviceCook: "noviceCook",
-  homeCook: "homeCook",
-  skilledCook: "skilledCook",
-  artisan: "artisan",
-  master: "master",
-  grandmaster: "grandmaster",
-};
-
 /**
  * 등급별 권한 매핑
  * 새 권한 추가 시 여기에 키 + 필요 등급만 추가하면 됨

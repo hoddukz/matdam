@@ -6,14 +6,20 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { LoginForm } from "./_components/login-form";
 
-export default async function LoginPage() {
+interface Props {
+  params: Promise<{ locale: string }>;
+}
+
+export default async function LoginPage({ params }: Props) {
+  const { locale } = await params;
   const supabase = await createClient();
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser();
 
-  if (user) {
-    redirect("/");
+  if (user && !error) {
+    redirect(`/${locale}`);
   }
 
   const t = await getTranslations("login");

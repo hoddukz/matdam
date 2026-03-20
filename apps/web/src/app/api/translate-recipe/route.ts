@@ -8,8 +8,7 @@ import { cookies } from "next/headers";
 import Anthropic from "@anthropic-ai/sdk";
 import type { TranslationItem } from "@/lib/recipe/translation-types";
 import { ensureLocaleObject } from "@/lib/recipe/localized-text";
-
-const SUPPORTED_LOCALES = ["ko", "en"] as const;
+import { SUPPORTED_LOCALES } from "@/lib/i18n/constants";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

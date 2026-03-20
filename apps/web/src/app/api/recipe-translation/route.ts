@@ -5,9 +5,9 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { ensureLocaleObject } from "@/lib/recipe/localized-text";
+import { SUPPORTED_LOCALES } from "@/lib/i18n/constants";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const SUPPORTED_LOCALES = ["ko", "en"] as const;
 const VALID_TABLES = ["recipes", "recipe_steps", "recipe_ingredients"] as const;
 type ValidTable = (typeof VALID_TABLES)[number];
 
@@ -107,9 +107,8 @@ export async function PATCH(request: Request) {
   }
 
   // Merge locale into JSONB (string이 spread되면 character-indexed key 손상 발생 방지)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const rawExisting = (row as any)[field];
-  const existing = ensureLocaleObject(rawExisting);
+  const rawExisting = (row as unknown as Record<string, unknown>)[field];
+  const existing = ensureLocaleObject(rawExisting as string | Record<string, string> | null);
   const merged = { ...existing, [locale]: value };
 
   let updateQuery = supabase

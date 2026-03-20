@@ -4,7 +4,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { getRankFromScore, RANK_I18N_MAP } from "@/lib/user/rank-constants";
+import { getRankFromScore } from "@/lib/user/rank-constants";
 import { BadgeCheck } from "lucide-react";
 import type { VerifiedType } from "@matdam/types";
 
@@ -17,7 +17,7 @@ interface RankBadgeProps {
 export function RankBadge({ activityScore, verifiedType, size = "sm" }: RankBadgeProps) {
   const t = useTranslations("rank");
   const rank = getRankFromScore(activityScore);
-  const label = t(RANK_I18N_MAP[rank.key]);
+  const label = t(rank.key);
 
   const sizeClasses = size === "sm" ? "text-[10px] px-1.5 py-0.5" : "text-xs px-2 py-0.5";
 

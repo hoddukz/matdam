@@ -32,6 +32,19 @@ import { lintRecipe, type LintResult } from "@/lib/recipe/recipe-linter";
 import { ensureLocaleObject, detectLocale } from "@/lib/recipe/localized-text";
 import { slugify } from "transliteration";
 
+/** 재료 인덱스 → step_number 매핑 빌더 */
+function buildIngredientStepMap(steps: { ingredient_indices: number[] }[]): Map<number, number> {
+  const map = new Map<number, number>();
+  steps.forEach((step, stepIdx) => {
+    for (const ingIdx of step.ingredient_indices) {
+      if (!map.has(ingIdx)) {
+        map.set(ingIdx, stepIdx + 1);
+      }
+    }
+  });
+  return map;
+}
+
 function generateSlug(title: string): string {
   const base = slugify(title, { lowercase: true, separator: "-", trim: true });
   const suffix = crypto.randomUUID().slice(0, 8);
@@ -336,14 +349,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
     }
 
     // 단일 트랜잭션 RPC로 DELETE→INSERT 원자적 처리
-    const ingredientStepMap = new Map<number, number>();
-    data.steps.forEach((step, stepIdx) => {
-      for (const ingIdx of step.ingredient_indices) {
-        if (!ingredientStepMap.has(ingIdx)) {
-          ingredientStepMap.set(ingIdx, stepIdx + 1);
-        }
-      }
-    });
+    const ingredientStepMap = buildIngredientStepMap(data.steps);
 
     const stepsPayload = data.steps.map((step, i) => {
       const rawStep = initialData.rawSteps?.[i];
@@ -416,14 +422,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       }
     }
 
-    const ingredientStepMap = new Map<number, number>();
-    data.steps.forEach((step, stepIdx) => {
-      for (const ingIdx of step.ingredient_indices) {
-        if (!ingredientStepMap.has(ingIdx)) {
-          ingredientStepMap.set(ingIdx, stepIdx + 1);
-        }
-      }
-    });
+    const ingredientStepMap = buildIngredientStepMap(data.steps);
 
     if (data.ingredients.length > 0) {
       const ingredientsPayload = data.ingredients.map((ing: IngredientEntry, i: number) => ({

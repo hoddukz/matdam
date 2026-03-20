@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { unwrapJoin } from "@/lib/supabase/unwrap-join";
 import Link from "next/link";
 import { HeroSection } from "@/components/home/hero-section";
 import { LatestRecipesSection } from "@/components/home/latest-recipes-section";
@@ -250,7 +251,7 @@ export default async function HomePage({ params }: Props) {
           upvote_count: 0,
           parent_recipe_id: null,
           dietary_tags: null,
-          users: Array.isArray(r.users) ? r.users[0] : r.users,
+          users: unwrapJoin(r.users)!,
         }))}
         t={{
           latestRecipes: t("latestRecipes"),
@@ -271,7 +272,7 @@ export default async function HomePage({ params }: Props) {
           ...r,
           upvote_count: 0,
           dietary_tags: null,
-          users: Array.isArray(r.users) ? r.users[0] : r.users,
+          users: unwrapJoin(r.users)!,
         }))}
         parentTitleMap={parentTitleMap}
         t={{

@@ -7,8 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import Anthropic from "@anthropic-ai/sdk";
 import { ensureLocaleObject } from "@/lib/recipe/localized-text";
-
-const SUPPORTED_LOCALES = ["ko", "en"] as const;
+import { SUPPORTED_LOCALES } from "@/lib/i18n/constants";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 

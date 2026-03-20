@@ -9,7 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 
-type FormContext =
+export type FormContext =
   | { targetType: "recipe"; recipeId: string; cookLogId: string }
   | { targetType: "ingredient"; ingredientId: string };
 

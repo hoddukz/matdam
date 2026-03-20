@@ -37,6 +37,7 @@ import type {
   TastePreferences,
   UserPreferences,
 } from "@matdam/types";
+import { initDietaryPrefs } from "@/lib/user/dietary-helpers";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -47,17 +48,6 @@ const TOTAL_STEPS = 4;
 interface OnboardingFormProps {
   defaultDisplayName: string;
   existingPreferences?: Partial<UserPreferences> | null;
-}
-
-/** 기존 dietary_restrictions → DietaryPreference[] 폴백 변환 */
-function initDietaryPrefs(prefs?: Partial<UserPreferences> | null): DietaryPreference[] {
-  if (prefs?.dietary_preferences && prefs.dietary_preferences.length > 0) {
-    return prefs.dietary_preferences;
-  }
-  if (prefs?.dietary_restrictions && prefs.dietary_restrictions.length > 0) {
-    return prefs.dietary_restrictions.map((tag) => ({ tag, mode: "hard" as const }));
-  }
-  return [];
 }
 
 export function OnboardingForm({ defaultDisplayName, existingPreferences }: OnboardingFormProps) {

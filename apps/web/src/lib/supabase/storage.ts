@@ -5,8 +5,8 @@ import imageCompression from "browser-image-compression";
 import { createClient } from "./client";
 
 const BUCKET = "recipe-images";
-const MAX_SIZE_MB = 2;
-const MAX_WIDTH = 1920;
+const MAX_SIZE_MB = 0.5;
+const MAX_WIDTH = 1280;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 const MIME_TO_EXT: Record<string, string> = {
   "image/jpeg": "jpg",

@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
               `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""} https://us-assets.i.posthog.com`,
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' *.supabase.co data: blob:",
-              "connect-src 'self' *.supabase.co *.sentry.io https://us.posthog.com https://us-assets.i.posthog.com",
+              "connect-src 'self' *.supabase.co *.sentry.io https://us.posthog.com https://us.i.posthog.com https://us-assets.i.posthog.com",
               "worker-src 'self' blob:",
               "font-src 'self'",
               "object-src 'none'",

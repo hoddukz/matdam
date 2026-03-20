@@ -88,7 +88,7 @@ export function CookingMode({ recipe, steps, ingredientsByStep, locale }: Cookin
       setPreviousStep(null);
       setCurrentStep((p) => p - 1);
     }
-  }, [currentStep, total]);
+  }, [currentStep]);
 
   const startTimer = () => {
     if (!step.timer_seconds) return;

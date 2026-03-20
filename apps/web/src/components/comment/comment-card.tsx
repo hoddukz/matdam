@@ -13,7 +13,8 @@ import { Button } from "@/components/ui/button";
 import { ThumbsUp, ThumbsDown, Trash2, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
 import { ReportDialog } from "@/components/report/report-dialog";
 import { RankBadge } from "@/components/user/rank-badge";
-import { CommentForm } from "./comment-form";
+import { CommentForm, type FormContext } from "./comment-form";
+import { unwrapJoin } from "@/lib/supabase/unwrap-join";
 
 type CommentUser = {
   display_name: string;
@@ -21,10 +22,6 @@ type CommentUser = {
   activity_score?: number;
   verified_type?: "chef" | "partner" | null;
 };
-
-type FormContext =
-  | { targetType: "recipe"; recipeId: string; cookLogId: string }
-  | { targetType: "ingredient"; ingredientId: string };
 
 export type CommentData = {
   comment_id: string;
@@ -88,8 +85,8 @@ export function CommentCard({
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [showReplies, setShowReplies] = useState(true);
 
-  const author = (Array.isArray(comment.users) ? comment.users[0] : comment.users) ?? null;
-  const timeAgo = getTimeAgo(comment.created_at, locale);
+  const author = unwrapJoin(comment.users);
+  const timeAgo = getTimeAgo(comment.created_at, t, locale);
 
   async function handleVote(vote: 1 | -1) {
     if (!isLoggedIn) {
@@ -320,23 +317,19 @@ export function CommentCard({
   );
 }
 
-function getTimeAgo(dateStr: string, locale: string): string {
+function getTimeAgo(
+  dateStr: string,
+  t: (key: string, values?: Record<string, number>) => string,
+  locale: string
+): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const minutes = Math.floor(diff / 60000);
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
 
-  if (locale === "ko") {
-    if (minutes < 1) return "방금 전";
-    if (minutes < 60) return `${minutes}분 전`;
-    if (hours < 24) return `${hours}시간 전`;
-    if (days < 30) return `${days}일 전`;
-    return new Date(dateStr).toLocaleDateString("ko-KR");
-  }
-
-  if (minutes < 1) return "just now";
-  if (minutes < 60) return `${minutes}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  if (days < 30) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString("en-US");
+  if (minutes < 1) return t("justNow");
+  if (minutes < 60) return t("minutesAgo", { count: minutes });
+  if (hours < 24) return t("hoursAgo", { count: hours });
+  if (days < 30) return t("daysAgo", { count: days });
+  return new Date(dateStr).toLocaleDateString(locale === "ko" ? "ko-KR" : "en-US");
 }
