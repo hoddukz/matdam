@@ -8,8 +8,11 @@ import { cookies } from "next/headers";
 import Anthropic from "@anthropic-ai/sdk";
 import { ensureLocaleObject } from "@/lib/recipe/localized-text";
 import { SUPPORTED_LOCALES } from "@/lib/i18n/constants";
+import { translatePair } from "@/lib/translation/translate-pair";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   // 1. Parse request
@@ -140,7 +143,16 @@ export async function POST(request: Request) {
 
   // 7. Batch translate with Claude Haiku
   const anthropic = new Anthropic({ apiKey });
-  const localeNames: Record<string, string> = { ko: "Korean", en: "English" };
+
+  const buildPrompt = (numberedTexts: string, sourceLang: string, targetLang: string) =>
+    `You are a translation assistant for a food/recipe community website.
+Translate the following announcement texts from ${sourceLang} to ${targetLang}.
+These are website announcement titles, content (in Markdown format), and summaries.
+Keep Markdown formatting intact. Keep the tone professional but friendly.
+Return ONLY the translations in the same numbered format, one per line.
+For multi-line content, keep it as a single [N] entry with newlines preserved.
+
+${numberedTexts}`;
 
   // Group by source→target locale pair
   const byPair = new Map<string, TranslationEntry[]>();
@@ -151,56 +163,27 @@ export async function POST(request: Request) {
   }
 
   const translations = new Map<TranslationEntry, string>();
+  let totalChunks = 0;
+  let failedChunks = 0;
 
   for (const [, pairItems] of byPair) {
-    const sourceLang = localeNames[pairItems[0].sourceLocale] ?? pairItems[0].sourceLocale;
-    const targetLang = localeNames[pairItems[0].targetLocale] ?? pairItems[0].targetLocale;
-
-    const numberedTexts = pairItems.map((item, i) => `[${i + 1}] ${item.sourceText}`).join("\n");
-
-    let response;
-    try {
-      response = await anthropic.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 4096,
-        messages: [
-          {
-            role: "user",
-            content: `You are a translation assistant for a food/recipe community website.
-Translate the following announcement texts from ${sourceLang} to ${targetLang}.
-These are website announcement titles, content (in Markdown format), and summaries.
-Keep Markdown formatting intact. Keep the tone professional but friendly.
-Return ONLY the translations in the same numbered format, one per line.
-For multi-line content, keep it as a single [N] entry with newlines preserved.
-
-${numberedTexts}`,
-          },
-        ],
-      });
-    } catch {
-      continue;
-    }
-
-    if (response.content.length === 0) continue;
-    const responseText = response.content[0].type === "text" ? response.content[0].text : "";
-
-    // Parse numbered responses (handle multi-line content)
-    const regex = /\[(\d+)\]\s*([\s\S]*?)(?=\n\[\d+\]|$)/g;
-    let match;
-    while ((match = regex.exec(responseText)) !== null) {
-      const idx = parseInt(match[1], 10) - 1;
-      if (idx >= 0 && idx < pairItems.length) {
-        const translatedText = match[2].trim();
-        const sourceText = pairItems[idx].sourceText;
-        if (translatedText.length > sourceText.length * 5) continue;
-        translations.set(pairItems[idx], translatedText);
-      }
+    const result = await translatePair(
+      anthropic,
+      pairItems,
+      pairItems[0].sourceLocale,
+      pairItems[0].targetLocale,
+      buildPrompt,
+      { contextLabel: `announcement ${announcementId}` }
+    );
+    totalChunks += result.totalChunks;
+    failedChunks += result.failedChunks;
+    for (const [item, text] of result.translations) {
+      translations.set(item, text);
     }
   }
 
   // 8. Update DB with translations
   let updated = 0;
-  const successLocales = new Set<string>();
 
   // Group updates by field
   const fieldUpdates: Record<string, Record<string, string>> = {};
@@ -212,30 +195,71 @@ ${numberedTexts}`,
       };
     }
     fieldUpdates[item.field][item.targetLocale] = translatedText;
-    updated++;
-    successLocales.add(item.targetLocale);
   }
 
-  // Apply updates
+  // Apply updates — only report items as translated if the DB write actually succeeds.
+  // There is a single combined update, so a failure here means nothing persisted.
   if (Object.keys(fieldUpdates).length > 0) {
     const updatePayload: Record<string, unknown> = {};
     for (const [field, merged] of Object.entries(fieldUpdates)) {
       updatePayload[field] = merged;
     }
 
-    // Update translated_locales timestamps
-    const existingTranslatedLocales =
-      (announcement.translated_locales as Record<string, string>) ?? {};
-    const mergedLocales: Record<string, string> = {
-      ...existingTranslatedLocales,
-    };
-    for (const loc of successLocales) {
-      mergedLocales[loc] = new Date().toISOString();
+    // translated_locales — 이번 실행에서 해당 locale로 번역이 필요했던 모든 항목이
+    // 전부 성공했을 때만 stamp (일부 필드만 성공한 locale은 stamp하지 않음)
+    const itemsByTargetLocale = new Map<string, TranslationEntry[]>();
+    for (const item of items) {
+      if (!itemsByTargetLocale.has(item.targetLocale)) {
+        itemsByTargetLocale.set(item.targetLocale, []);
+      }
+      itemsByTargetLocale.get(item.targetLocale)!.push(item);
     }
-    updatePayload.translated_locales = mergedLocales;
 
-    await supabase.from("announcements").update(updatePayload).eq("id", announcementId);
+    const successLocales = new Set<string>();
+    for (const [targetLocale, targetItems] of itemsByTargetLocale) {
+      if (targetItems.length === 0) continue;
+      const allSucceeded = targetItems.every((item) => translations.has(item));
+      if (allSucceeded) successLocales.add(targetLocale);
+    }
+
+    if (successLocales.size > 0) {
+      const existingTranslatedLocales =
+        (announcement.translated_locales as Record<string, string>) ?? {};
+      const mergedLocales: Record<string, string> = {
+        ...existingTranslatedLocales,
+      };
+      for (const loc of successLocales) {
+        mergedLocales[loc] = new Date().toISOString();
+      }
+      updatePayload.translated_locales = mergedLocales;
+    }
+
+    const { error: updateError } = await supabase
+      .from("announcements")
+      .update(updatePayload)
+      .eq("id", announcementId);
+
+    if (updateError) {
+      console.error(
+        `[translation] DB update failed (announcement ${announcementId}):`,
+        updateError.message
+      );
+      return NextResponse.json(
+        { error: "DB update failed", translated: 0, failed: failedChunks },
+        { status: 502 }
+      );
+    }
+
+    updated = translations.size;
   }
 
-  return NextResponse.json({ translated: updated });
+  // All translation calls failed → surface as an error instead of a silent 200
+  if (totalChunks > 0 && failedChunks === totalChunks) {
+    return NextResponse.json(
+      { error: "all translation calls failed", translated: updated, failed: failedChunks },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json({ translated: updated, failed: failedChunks });
 }

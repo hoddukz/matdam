@@ -9,8 +9,11 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { TranslationItem } from "@/lib/recipe/translation-types";
 import { ensureLocaleObject } from "@/lib/recipe/localized-text";
 import { SUPPORTED_LOCALES } from "@/lib/i18n/constants";
+import { translatePair } from "@/lib/translation/translate-pair";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   // 1. Parse request
@@ -175,7 +178,14 @@ export async function POST(request: Request) {
   // 6. Batch translate with Claude Haiku
   const anthropic = new Anthropic({ apiKey });
 
-  const localeNames: Record<string, string> = { ko: "Korean", en: "English" };
+  const buildPrompt = (numberedTexts: string, sourceLang: string, targetLang: string) =>
+    `You are a recipe translation assistant. Translate the following recipe texts from ${sourceLang} to ${targetLang}.
+These are cooking recipe step descriptions, tips, and ingredient names.
+Keep the cooking terminology natural and accurate.
+Return ONLY the translations in the same numbered format, one per line.
+For multi-line content, keep it as a single [N] entry with newlines preserved.
+
+${numberedTexts}`;
 
   // Group by source→target locale pair to minimize API calls
   const byPair = new Map<string, TranslationItem[]>();
@@ -186,59 +196,28 @@ export async function POST(request: Request) {
   }
 
   const translations = new Map<TranslationItem, string>();
+  let totalChunks = 0;
+  let failedChunks = 0;
 
   for (const [, pairItems] of byPair) {
-    const sourceLang = localeNames[pairItems[0].sourceLocale] ?? pairItems[0].sourceLocale;
-    const targetLang = localeNames[pairItems[0].targetLocale] ?? pairItems[0].targetLocale;
-
-    const numberedTexts = pairItems.map((item, i) => `[${i + 1}] ${item.sourceText}`).join("\n");
-
-    let response;
-    try {
-      response = await anthropic.messages.create({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 4096,
-        messages: [
-          {
-            role: "user",
-            content: `You are a recipe translation assistant. Translate the following recipe texts from ${sourceLang} to ${targetLang}.
-These are cooking recipe step descriptions, tips, and ingredient names.
-Keep the cooking terminology natural and accurate.
-Return ONLY the translations in the same numbered format, one per line.
-
-${numberedTexts}`,
-          },
-        ],
-      });
-    } catch {
-      // Skip this pair on Claude API error, continue with others
-      continue;
-    }
-
-    if (response.content.length === 0) continue;
-    const responseText = response.content[0].type === "text" ? response.content[0].text : "";
-
-    // Parse numbered responses
-    const lines = responseText.split("\n").filter((l) => l.trim());
-    for (const line of lines) {
-      const match = line.match(/^\[(\d+)\]\s*(.+)$/);
-      if (match) {
-        const idx = parseInt(match[1], 10) - 1;
-        if (idx >= 0 && idx < pairItems.length) {
-          const translatedText = match[2].trim();
-          const sourceText = pairItems[idx].sourceText;
-          // S3: Skip abnormally long AI responses (> 5x source length)
-          // Korean→English often expands 3-4x due to Korean's compact nature
-          if (translatedText.length > sourceText.length * 5) continue;
-          translations.set(pairItems[idx], translatedText);
-        }
-      }
+    const result = await translatePair(
+      anthropic,
+      pairItems,
+      pairItems[0].sourceLocale,
+      pairItems[0].targetLocale,
+      buildPrompt,
+      { contextLabel: `recipe ${recipeId}` }
+    );
+    totalChunks += result.totalChunks;
+    failedChunks += result.failedChunks;
+    for (const [item, text] of result.translations) {
+      translations.set(item, text);
     }
   }
 
   // 7. Update DB with translations
   let updated = 0;
-  const successLocales = new Set<string>();
+  const itemUpdateSucceeded = new Set<TranslationItem>();
 
   for (const [item, translatedText] of translations) {
     const merged = { ...ensureLocaleObject(item.existing), [item.targetLocale]: translatedText };
@@ -251,11 +230,32 @@ ${numberedTexts}`,
 
     if (!error) {
       updated++;
-      successLocales.add(item.targetLocale);
+      itemUpdateSucceeded.add(item);
+    } else {
+      console.error(
+        `[translation] DB update failed (recipe ${recipeId}) table=${item.table} field=${item.field} rowId=${item.rowId} targetLocale=${item.targetLocale}:`,
+        error.message
+      );
     }
   }
 
-  // 8. Update translated_locales — 성공한 locale만 기록
+  // 8. Update translated_locales — 이번 실행에서 해당 locale로 번역이 필요했던
+  //    모든 항목이 전부 성공했을 때만 stamp (일부만 성공한 locale은 stamp하지 않음)
+  const itemsByTargetLocale = new Map<string, TranslationItem[]>();
+  for (const item of items) {
+    if (!itemsByTargetLocale.has(item.targetLocale)) {
+      itemsByTargetLocale.set(item.targetLocale, []);
+    }
+    itemsByTargetLocale.get(item.targetLocale)!.push(item);
+  }
+
+  const successLocales = new Set<string>();
+  for (const [targetLocale, targetItems] of itemsByTargetLocale) {
+    if (targetItems.length === 0) continue;
+    const allSucceeded = targetItems.every((item) => itemUpdateSucceeded.has(item));
+    if (allSucceeded) successLocales.add(targetLocale);
+  }
+
   if (successLocales.size > 0) {
     const existingTranslatedLocales = (recipe.translated_locales as Record<string, string>) ?? {};
     const merged: Record<string, string> = { ...existingTranslatedLocales };
@@ -265,5 +265,23 @@ ${numberedTexts}`,
     await supabase.from("recipes").update({ translated_locales: merged }).eq("recipe_id", recipeId);
   }
 
-  return NextResponse.json({ translated: updated });
+  // 9. All translation calls failed → surface as an error instead of a silent 200
+  if (totalChunks > 0 && failedChunks === totalChunks) {
+    return NextResponse.json(
+      { error: "all translation calls failed", translated: updated, failed: failedChunks },
+      { status: 502 }
+    );
+  }
+
+  // AI produced at least one translation, but every DB write for it failed →
+  // surface as an error instead of a silent 200 (nothing actually persisted).
+  const dbFailed = translations.size - updated;
+  if (translations.size > 0 && updated === 0) {
+    return NextResponse.json(
+      { error: "all DB updates failed", translated: 0, failed: failedChunks, dbFailed },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json({ translated: updated, failed: failedChunks, dbFailed });
 }

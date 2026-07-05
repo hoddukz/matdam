@@ -17,6 +17,15 @@
 
 - [ ] **레시피 재료 수정 UX 개선** — 현재 재료가 버블(태그) 형태로 표시되어 있어서 수정이 매우 불편함. 버블 클릭 시 해당 재료를 인라인으로 수정할 수 있도록 변경 필요. (2026-03-20 확인)
 
+### 번역 파이프라인 잔여 이슈 (2026-07-05 조사에서 발견, 이번 수정 범위 밖)
+
+- [ ] **동시 실행 race** — 같은 레시피에 번역이 동시에 돌면(생성/수정 트리거 + 수동 버튼 + 크론) 요청 시작 시점의 JSONB 스냅샷 기준으로 merge-write하므로 나중 쓰기가 먼저 쓴 번역을 덮어쓸 수 있음. 낙관적 잠금(버전 컬럼 또는 updated_at 비교) 도입 검토
+- [ ] **force 모드 소스 언어 가정** — force 시 ko 키가 있으면 무조건 ko를 소스로 간주. 영어 원본 레시피(ko가 AI 번역)에서 force 실행하면 사람이 쓴 영어가 AI 재번역으로 덮일 수 있음. `detectOriginalLocale` 활용 필요
+- [ ] **detectLocale ja/zh 반환** — SUPPORTED_LOCALES 밖의 키("ja"/"zh")가 JSONB에 생길 수 있고, CJK 아닌 짧은 텍스트(로마자 한국어, "1/2 tsp")는 en으로 오감지됨
+- [ ] **translate-announcement 미연결** — 호출하는 곳이 없는 죽은 엔드포인트. 공지 작성/수정 시 트리거 연결 필요
+- [ ] **Vercel 크론 동작 확인** — `vercel.json`이 `apps/web`에 있으므로 Vercel 프로젝트 루트 설정이 `apps/web`인지 대시보드에서 확인 필요 (아니면 크론이 아예 실행 안 됨). `CRON_SECRET` 환경변수 설정 여부도 확인
+- [ ] **마이그레이션 016 프로덕션 적용** — 적용 전 마이그레이션 파일 헤더의 사전 점검 SELECT로 en→ko 이동 대상 행 확인 권장
+
 ### 코드리뷰 미완료
 
 - [x] 2026-02-26 번역 기능 코드리뷰 완료 (15건 발견, 전부 수정)
@@ -238,6 +247,37 @@
 - [ ] 대기 컴포넌트 활성화 시: `chef-of-the-week-section.tsx` — "View Profile" 링크를 해당 셰프 프로필로 연결
 - [ ] 대기 컴포넌트 활성화 시: `essential-ingredients-section.tsx` — glossary 페이지 구현 후 링크 연결
 - [ ] 대기 컴포넌트 활성화 시: `kdrama-cravings-section.tsx` — KDramaItem type에 `id` 필드 추가 (React key 안정성)
+
+---
+
+## 2026-07-05 (일)
+
+### 프로젝트 전반 유지보수 점검
+
+- type-check / lint / production build 전부 통과 확인
+- 미커밋 작업물 커밋 정리 (worklog·demand-monitoring 문서 + 015 마이그레이션 + recipes_draft)
+
+### 보안 패치
+
+- next 15.5.12 → 15.5.20 (Server Components DoS, rewrites HTTP request smuggling)
+- next-intl 4.8.3 → 4.13.1 (open redirect)
+- 취약점 83건 → 64건 (high 30→22). 남은 critical 1건(protobufjs, 간접 의존성)은 별도 처리 필요
+
+### AI 번역 파이프라인 버그 수정
+
+**조사:** "번역이 제대로 안 됨" 증상의 원인 11건 발견. 핵심: 모든 API 에러가 `catch { continue }`로 무시되어 HTTP 200 반환, 라인 단위 파서가 멀티라인 번역의 첫 줄만 저장, max_tokens 4096에 레시피 전체를 한 요청으로 보내 뒷부분 잘림, 필드 1개만 성공해도 translated_locales에 "번역 완료" 기록.
+
+**수정 내용:**
+
+- 공용 lib 신설 (`lib/translation/parse.ts`, `translate-pair.ts`) — 3개 라우트 중복 로직 통합
+- 에러 로깅 + 전부 실패 시 502 + failed/dbFailed 카운트 응답, 3개 라우트에 `maxDuration: 60` 추가
+- 멀티라인 파서 + `stop_reason` 잘림 감지(잘린 마지막 항목 폐기) + 원문 3,000자 단위 청크 분할
+- 길이 가드 완화: `max(원문×5, 40)` — 짧은 재료명 번역 무한 거부 루프 해소
+- `translated_locales`는 해당 locale 전 항목 DB 쓰기 성공 시에만 기록 (크론은 기록 자체가 누락돼 있던 것도 수정)
+- 레시피 수정 시에도 번역 트리거 (`force: true`) — 기존엔 생성 시에만 동작
+- 016 마이그레이션: 레거시 "en 키에 한국어" 데이터 정리 — ko 키 있으면 en 제거, 없으면 en→ko 이동(내용 보존). 로컬 Postgres에서 케이스별 + 멱등성 검증 완료
+- 코드리뷰 2차 수정 4건: update 트리거 force 누락(무동작), announcement DB 쓰기 실패 시 낙관적 200 응답, DB 전체 실패 시그널 부재, 비텍스트 응답 블록 무시
+- 범위 밖 잔여 이슈 6건은 상단 "번역 파이프라인 잔여 이슈" 체크리스트에 기록
 
 ---
 

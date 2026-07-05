@@ -291,7 +291,7 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ recipeId }),
-    }).catch(() => {});
+    }).catch((err) => console.warn("[translate-recipe] fire-and-forget request failed", err));
 
     if (published) {
       router.push(`/${locale}/recipe/${slug}`);
@@ -396,6 +396,16 @@ export function RecipeForm({ initialData }: RecipeFormProps = {}) {
       p_ingredients: ingredientsPayload,
     });
     if (upsertError) throw new Error(upsertError.message);
+
+    // Fire-and-forget: AI 자동번역. collectItems는 존재하는 JSONB locale 키 기준으로
+    // 타겟을 계산하므로 이미 양 언어가 채워진 레시피는 force 없이는 타겟이 0개가 되어
+    // 수정 후에도 다른 언어 텍스트가 갱신되지 않는다. force: true로 강제 재번역시킨다.
+    // 비공개(draft) 레시피면 translate-recipe가 404를 반환하지만 fire-and-forget이므로 무해함
+    fetch("/api/translate-recipe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ recipeId, force: true }),
+    }).catch((err) => console.warn("[translate-recipe] fire-and-forget request failed", err));
 
     // 캐시 우회를 위해 하드 네비게이션
     if (published) {
